@@ -24,10 +24,10 @@ func main() {
 		library.POST("/", controllers.CreateBook)
 		library.PUT("/:id", controllers.UpdateBook)
 		library.DELETE("/:id", controllers.DeleteBook)
-		// library.DELETE("/", controllers.DeleteAllBooks)
+		library.DELETE("/", controllers.DeleteAllBooks)
 		library.GET("/", controllers.AllBooks)
-		// library.GET("/one/:name", controllers.FindBook)
-		// library.GET("/all/:name", controllers.FindAllBooks)
+		library.GET("/one/:id", controllers.GetBook)
+		library.GET("/all/:name", controllers.GetBooks)
 		// library.POST("/multiple", controllers.InsertMultipleBooks)
 	}
 

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{.Title}}</title>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>{{.Title}}</th>
+                <th>Let's add some books</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <ul>
+                        {{range .Books}}
+                        <li>
+                            <p>
+                                <a href="/library/one/{{.ID | extractNumericPart}}">
+                                    <div>{{.Name}} by {{.Author}}</div>
+                                </a>
+                            </p>
+                        </li>
+                        {{end}}
+                    </ul>
+                </td>
+                <td valign="top">
+                    <form id="bookForm" action="/library/" method="post">
+                        <label>Book Name: <input type="text" name="name" required></label>
+                        <br>
+                        <label>Author: <input type="text" name="author" required></label>
+                        <br>
+                        <label>Text: <textarea name="text" required></textarea></label>
+                        <br>
+                        <input type="submit" value="Add book">
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

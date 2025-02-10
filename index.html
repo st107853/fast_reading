@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .book-details {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+            max-width: 600px;
+            margin: auto;
+        }
+        .book-details h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .book-details p {
+            margin: 5px 0;
+        }
+        .book-text {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <tbody>
+        <tr>
+            <td>
+                <ul>
+                    <li>
+                        <pre>{{.Text}}</pre>
+                    </li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <div class="book-details">
+                <h1>{{.Name}}</h1>
+                <p><strong>Author:</strong> {{.Author}}</p>
+                <p><strong>Text:</strong> <span id="book-text"></span></p>
+                <p><strong>Release Date:</strong> {{.ReleaseDate}}</p>
+                <button id="start-button">Start</button>
+            </div>
+        </tr>
+    </tbody>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const text = `{{.Text}}`;
+            const words = text.split(" ");
+            const intervalTime = 600; // 600 milliseconds for each word
+            let currentIndex = 0;
+
+            function updateText() {
+                if (currentIndex < words.length) {
+                    const currentWord = words[currentIndex];
+                    document.getElementById("book-text").innerText = currentWord;
+                    currentIndex++;
+                } else {
+                    clearInterval(interval);
+                }
+            }
+            
+            document.getElementById("start-button").addEventListener("click", function() {
+                interval = setInterval(updateText, intervalTime); // Update every 600 milliseconds
+            });
+        });
+    </script>
+</body>
+</html>

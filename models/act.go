@@ -11,22 +11,25 @@ import (
 )
 
 type Book struct {
-	ID          primitive.ObjectID `json:"id" bson:"_id.omitempty"`
-	Name        string             `json:"name" bson:"name"`
-	Author      string             `json:"author bson:"author"`
-	Text        string             `json:"text" bson:"text"`
+	ID          primitive.ObjectID `json:"id" bson:"id"`
+	Name        string             `json:"name" binding:"required" bson:"name"`
+	Author      string             `json:"author" binding:"required" bson:"author"`
+	Text        string             `json:"text" binding:"required" bson:"text"`
 	ReleaseDate time.Time          `json:"date of release" bson:"date"`
 }
 
 func InsertBook(book Book) error {
-	collection := db.Database(dbName).Collection(collName)
-	inserted, err := collection.InsertOne(context.TODO(), book)
+	// Generate a new unique ObjectID for the book
+	book.ID = primitive.NewObjectID()
 
+	collection := db.Database(dbName).Collection(collName)
+	result, err := collection.InsertOne(context.TODO(), book)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to insert book: %v", err)
 	}
-	fmt.Println("Inserted a record with id: ", inserted.InsertedID)
-	return err
+
+	fmt.Printf("Inserted a record with id: %v\n", result.InsertedID)
+	return nil
 }
 
 func InsertMany(books []Book) error {
@@ -47,13 +50,9 @@ func InsertMany(books []Book) error {
 	return err
 }
 
-func UpdateBook(bookId string, book Book) error {
-	id, err := primitive.ObjectIDFromHex(bookId)
-	if err != nil {
-		return err
-	}
+func UpdateBook(bookId primitive.ObjectID, book Book) error {
 
-	filter := bson.M{"_id": id}
+	filter := bson.M{"id": bookId}
 	update := bson.M{"$set": bson.M{"author": book.Author, "text": book.Text, "name": book.Name, "date of release": book.ReleaseDate}}
 
 	collection := db.Database(dbName).Collection(collName)
@@ -72,7 +71,7 @@ func DeleteBook(bookId string) error {
 		return err
 	}
 
-	filter := bson.M{"_id": id}
+	filter := bson.M{"id": id}
 
 	collection := db.Database(dbName).Collection(collName)
 	result, err := collection.DeleteOne(context.TODO(), filter)
@@ -96,6 +95,26 @@ func FindBook(bookName string) Book {
 	}
 
 	return book
+}
+
+func FindBookByID(bookID string) (Book, error) {
+	var book Book
+
+	// Convert the string ID to a primitive.ObjectID
+	id, err := primitive.ObjectIDFromHex(bookID)
+	if err != nil {
+		return book, fmt.Errorf("invalid ObjectID: %v", err)
+	}
+
+	filter := bson.M{"id": id}
+
+	collection := db.Database(dbName).Collection(collName)
+	err = collection.FindOne(context.TODO(), filter).Decode(&book)
+	if err != nil {
+		return book, fmt.Errorf("mongo: no documents in result: %v", err)
+	}
+
+	return book, nil
 }
 
 func FindAll(bookName string) []Book {
@@ -136,7 +155,7 @@ func ListAllBooks() []Book {
 
 func DeleteAll() error {
 	collection := db.Database(dbName).Collection(collName)
-	delRes, err := collection.DeleteMany(context.TODO(), bson.D{{}}, nil)
+	delRes, err := collection.DeleteMany(context.TODO(), bson.M{}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}

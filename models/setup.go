@@ -18,9 +18,6 @@ type Logger struct {
 var db Logger
 
 func Connect() error {
-	// Capture connection propeties.
-	//	host := os.Getenv("HOST")
-
 	client, err := mongo.Connect(options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		return err
