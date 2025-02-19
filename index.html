@@ -2,74 +2,126 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Book Details</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        .book-details {
-            border: 1px solid #ccc;
-            padding: 20px;
-            border-radius: 5px;
-            max-width: 600px;
-            margin: auto;
-        }
-        .book-details h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-        .book-details p {
-            margin: 5px 0;
-        }
-        .book-text {
-            margin-top: 20px;
-            font-size: 18px;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Reader</title>
 </head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f3f3f3;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+    }
+    .container {
+        display: flex;
+        width: 80%;
+        background: white;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+    }
+    .book-info {
+        width: 60%;
+        padding-right: 20px;
+    }
+    .book-text {
+        margin-top: 10px;
+        background: #fff;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        min-height: 150px;
+    }
+    .reader {
+        width: 40%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .word-box {
+        font-size: 24px;
+        font-weight: bold;
+        background: #eee;
+        padding: 20px;
+        width: 200px;
+        text-align: center;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+    .controls {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    button {
+        padding: 10px;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+    .start {
+        background: green;
+        color: white;
+    }
+    .stop {
+        background: red;
+        color: white;
+    }
+</style>
 <body>
-    <tbody>
-        <tr>
-            <td>
-                <ul>
-                    <li>
-                        <pre>{{.Text}}</pre>
-                    </li>
-                </ul>
-            </td>
-        </tr>
-        <tr>
-            <div class="book-details">
-                <h1>{{.Name}}</h1>
-                <p><strong>Author:</strong> {{.Author}}</p>
-                <p><strong>Text:</strong> <span id="book-text"></span></p>
-                <p><strong>Release Date:</strong> {{.ReleaseDate}}</p>
-                <button id="start-button">Start</button>
+    <div class="container">
+        <div class="book-info">
+            <h1>{{.Name}}</h1>
+            <p>{{.Author}}, {{.ReleaseDate}}</p>
+            <div class="book-text">{{.Text}}</div>
+        </div>
+        <div class="reader">
+            <div class="word-box" id="book-text">---</div>
+            <div class="controls">
+                <button class="start" onclick="startReading()">▶</button>
+                <button class="stop" onclick="stopReading()">⏸</button>
+                <input type="number" id="speed" value="600" min="100" onchange="updateSpeed()">
             </div>
-        </tr>
-    </tbody>
+        </div>
+    </div>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const text = `{{.Text}}`;
-            const words = text.split(" ");
-            const intervalTime = 600; // 600 milliseconds for each word
-            let currentIndex = 0;
+        const text = `{{.Text}}`
+        const words = text.split(" ");
+        let index = 0;
+        let intervalId = null;
+        let speed = 600;
 
-            function updateText() {
-                if (currentIndex < words.length) {
-                    const currentWord = words[currentIndex];
-                    document.getElementById("book-text").innerText = currentWord;
-                    currentIndex++;
-                } else {
-                    clearInterval(interval);
-                }
+        function updateText() {
+            if (index < words.length) {
+                document.getElementById("book-text").innerText = words[index];
+                index++;
+            } else {
+                clearInterval(intervalId);
+                intervalId = null;
             }
-            
-            document.getElementById("start-button").addEventListener("click", function() {
-                interval = setInterval(updateText, intervalTime); // Update every 600 milliseconds
-            });
-        });
+        }
+
+        function startReading() {
+            if (!intervalId) {
+                intervalId = setInterval(updateText, speed);
+            }
+        }
+
+        function stopReading() {
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+        }
+
+        function updateSpeed() {
+            speed = document.getElementById("speed").value;
+            if (intervalId) {
+                stopReading();
+                startReading();
+            }
+        }
     </script>
 </body>
 </html>

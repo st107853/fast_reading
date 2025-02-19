@@ -1,45 +1,96 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>{{.Title}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f3f3;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 80%;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            text-align: center;
+        }
+        .search-box {
+            margin-bottom: 20px;
+        }
+        .search-input {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tag {
+            background: #007bff;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .book-list {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+        .book-item {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 200px;
+            text-align: center;
+        }
+        .book-title {
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-    <table>
-        <thead>
-            <tr>
-                <th>{{.Title}}</th>
-                <th>Let's add some books</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>
-                    <ul>
-                        {{range .Books}}
-                        <li>
-                            <p>
-                                <a href="/library/one/{{.ID | extractNumericPart}}">
-                                    <div>{{.Name}} by {{.Author}}</div>
-                                </a>
-                            </p>
-                        </li>
-                        {{end}}
-                    </ul>
-                </td>
-                <td valign="top">
-                    <form id="bookForm" action="/library/" method="post">
-                        <label>Book Name: <input type="text" name="name" required></label>
-                        <br>
-                        <label>Author: <input type="text" name="author" required></label>
-                        <br>
-                        <label>Text: <textarea name="text" required></textarea></label>
-                        <br>
-                        <input type="submit" value="Add book">
-                    </form>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="container">
+        <h1>Поиск книг</h1>
+        <div class="search-box">
+            <input type="text" class="search-input" placeholder="Введите название книги...">
+        </div>
+        <div class="tags">
+            <div class="tag">Фантастика</div>
+            <div class="tag">Детектив</div>
+            <div class="tag">Роман</div>
+            <div class="tag">История</div>
+            <div class="tag">Философия</div>
+            <div class="tag">Биография</div>
+            <div class="tag">Саморазвитие</div>
+        </div>
+        <div class="book-list">
+            {{range .Books}}
+                <div class="book-item">
+                    <div class="book-title">
+                        <a href="/library/one/{{.ID | extractNumericPart}}">
+                        <div>{{.Name}}</div></a>
+                    </div>
+                    <div class="book-author">{{.Author}}</div>
+                </div>
+            {{end}}
+        </div>
+    </div>
 </body>
 </html>

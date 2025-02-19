@@ -15,7 +15,7 @@ type Book struct {
 	Name        string             `json:"name" binding:"required" bson:"name"`
 	Author      string             `json:"author" binding:"required" bson:"author"`
 	Text        string             `json:"text" binding:"required" bson:"text"`
-	ReleaseDate time.Time          `json:"date of release" bson:"date"`
+	ReleaseDate time.Time          `json:"date" bson:"date"`
 }
 
 func InsertBook(book Book) error {

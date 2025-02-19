@@ -23,6 +23,7 @@ var tmpl = template.Must(template.New("template.html").Funcs(template.FuncMap{
 	"extractNumericPart": extractNumericPart,
 }).ParseFiles("template.html"))
 
+// Book reading page
 var index = template.Must(template.New("index.html").ParseFiles("index.html"))
 
 type Data struct {
@@ -44,8 +45,6 @@ func AllBooks(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	c.JSON(http.StatusInternalServerError, books)
 }
 
 func CreateBook(c *gin.Context) {
