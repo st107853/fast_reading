@@ -1,0 +1,59 @@
+body {
+    font-family: Times, serif;
+    background-image: url(news_paperjpg.jpg);
+    color: #4d0101;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+.container {
+    width: 80%;
+    background: #f5e1cba0;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    text-align: center;
+}
+.search-box {
+    margin-bottom: 20px;
+}
+.search-input {
+    width: 80%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.tag {
+    background: rgb(114, 4, 4);
+    color: rgb(233, 235, 185);
+    padding: 8px 12px;
+    border-radius: 15px;
+    font-size: 14px;
+    cursor: pointer;
+}
+.book-list {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+.book-item {
+    background: #f8f8f8;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 200px;
+    text-align: center;
+}
+.book-title {
+    font-weight: bold;
+}

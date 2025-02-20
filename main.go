@@ -11,7 +11,7 @@ import (
 
 func main() {
 	r := gin.Default()
-	r.Static("/static", "./")
+	r.Static("/static", "./static")
 
 	r.Use(gin.Logger())
 

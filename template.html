@@ -4,81 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Search</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f3f3f3;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .container {
-            width: 80%;
-            background: white;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-            text-align: center;
-        }
-        .search-box {
-            margin-bottom: 20px;
-        }
-        .search-input {
-            width: 80%;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .tags {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .tag {
-            background: #007bff;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 15px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        .book-list {
-            margin-top: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-        }
-        .book-item {
-            background: #f8f8f8;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            width: 200px;
-            text-align: center;
-        }
-        .book-title {
-            font-weight: bold;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="/static/main_page.css">
 </head>
 <body>
     <div class="container">
-        <h1>Поиск книг</h1>
+        <h1>Book Search</h1>
         <div class="search-box">
-            <input type="text" class="search-input" placeholder="Введите название книги...">
+            <input type="text" class="search-input" placeholder="Enter the title of the book...">
         </div>
         <div class="tags">
-            <div class="tag">Фантастика</div>
-            <div class="tag">Детектив</div>
-            <div class="tag">Роман</div>
-            <div class="tag">История</div>
-            <div class="tag">Философия</div>
-            <div class="tag">Биография</div>
-            <div class="tag">Саморазвитие</div>
+            <div class="tag">Self-development</div>
+            <div class="tag">Biography</div>
+            <div class="tag">Philosophy</div>
+            <div class="tag">History</div>
+            <div class="tag">Novel</div>
+            <div class="tag">Detective</div>
+            <div class="tag">Fiction</div>
         </div>
         <div class="book-list">
             {{range .Books}}

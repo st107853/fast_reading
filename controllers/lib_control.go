@@ -31,6 +31,11 @@ type Data struct {
 	Books []models.Book
 }
 
+func AddCSS(c *gin.Context) {
+	fmt.Println("I am here")
+
+}
+
 func AllBooks(c *gin.Context) {
 	var books []models.Book
 	books = models.ListAllBooks()
@@ -40,6 +45,7 @@ func AllBooks(c *gin.Context) {
 		Books: books,
 	}
 
+	//c.File("styles.css")
 	// Execute the template and write the output to the response writer
 	if err := tmpl.Execute(c.Writer, data); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

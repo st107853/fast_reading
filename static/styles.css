@@ -1,0 +1,89 @@
+body {
+    font-family: Times, serif;
+    background-image: url(news_paperjpg.jpg);
+    color: #4d0101;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+.container {
+    display: flex;
+    width: 80%;
+    background: #f5e1cba0;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+.book-info {
+    width: 60%;
+    padding-right: 20px;
+}
+.book-text {
+    font-size: 30px;
+    margin-top: 10px;
+    background: #f5e1cb;
+    padding: 10px;
+    border: 1px solid #f5e1cb;
+    border-radius: 5px;
+    min-height: 150px;
+}
+.reader {
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.word-box {
+    font-size: 40px;
+    font-weight: bold;
+    background: #f5e1cb;
+    padding: 20px;
+    width: 200px;
+    text-align: center;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+.controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+button {
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+
+input[type='number'],
+input[type="number"]:hover,
+input[type="number"]:focus {
+    appearance: none;
+    -moz-appearance: textfield;
+    width: 70px;
+    height: 35px;
+    background-color: rgb(1, 65, 1);
+    border-color: rgb(1, 65, 1);
+    border-radius: 5px;
+    color: rgb(233, 235, 185);
+    font-size: 15;
+    text-align-last: center;
+
+}
+.start {
+    width: 40px;
+    height: 40px;
+    background: rgb(1, 65, 1);
+    color: rgb(233, 235, 185);
+}
+.stop {
+    width: 40px;
+    height: 40px;
+    background: rgb(114, 4, 4);
+    color: rgb(233, 235, 185);
+}
