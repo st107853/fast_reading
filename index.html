@@ -11,15 +11,15 @@
         <div class="book-info">
             <h1>{{.Name}}</h1>
             <p>{{.Author}}, {{.ReleaseDate}}</p>
-            <div class="book-text">{{.Text}}</div>
-        </div>
-        <div class="reader">
             <div class="word-box" id="book-text">---</div>
-            <div class="controls">
-                <button class="start" onclick="startReading()">▶</button>
-                <button class="stop" onclick="stopReading()">⏸</button>
-                <input type="number" id="speed" value="600" min="100" onchange="updateSpeed()" class="input-text qty text">
+            <div class="reader">
+                <div class="controls">
+                    <button class="start" onclick="startReading()">▶</button>
+                    <button class="stop" onclick="stopReading()">⏸</button>
+                    <input type="number" id="speed" value="600" min="100" onchange="updateSpeed()" class="input-text qty text">
+                </div>
             </div>
+            <div class="book-text">{{.Text}}</div>
         </div>
     </div>
     <script>

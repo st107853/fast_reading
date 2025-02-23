@@ -28,10 +28,10 @@ func main() {
 		library.DELETE("/", controllers.DeleteAllBooks)
 		library.GET("/", controllers.AllBooks)
 		library.GET("/one/:id", controllers.GetBook)
-		library.GET("/all/:name", controllers.GetBooks)
+		library.GET("/all/:name", controllers.GetBooksByName)
 		// library.POST("/multiple", controllers.InsertMultipleBooks)
 	}
 
 	log.Println("Server started")
-	r.Run()
+	r.Run("localhost:8081")
 }

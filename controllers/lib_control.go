@@ -31,11 +31,6 @@ type Data struct {
 	Books []models.Book
 }
 
-func AddCSS(c *gin.Context) {
-	fmt.Println("I am here")
-
-}
-
 func AllBooks(c *gin.Context) {
 	var books []models.Book
 	books = models.ListAllBooks()
@@ -45,7 +40,6 @@ func AllBooks(c *gin.Context) {
 		Books: books,
 	}
 
-	//c.File("styles.css")
 	// Execute the template and write the output to the response writer
 	if err := tmpl.Execute(c.Writer, data); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -70,11 +64,21 @@ func CreateBook(c *gin.Context) {
 }
 
 // GetBooks retrieves all books from the database
-func GetBooks(c *gin.Context) {
+func GetBooksByName(c *gin.Context) {
 	var books []models.Book
 	name := c.Param("name")
 	books = models.FindAll(name)
-	c.JSON(http.StatusOK, books)
+
+	data := Data{
+		Title: "All what we have",
+		Books: books,
+	}
+
+	// Execute the template and write the output to the response writer
+	if err := tmpl.Execute(c.Writer, data); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 }
 
 // GetBook retrieves a book by its ID

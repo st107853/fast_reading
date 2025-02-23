@@ -10,7 +10,10 @@
     <div class="container">
         <h1>Book Search</h1>
         <div class="search-box">
-            <input type="text" class="search-input" placeholder="Enter the title of the book...">
+            <form id="bookForm" action="/library/all/" method="get" onsubmit="updateAction()">
+                <input name="name" id="name" type="text" class="search-input" placeholder="Enter the title of the book...">
+                
+            </form>
         </div>
         <div class="tags">
             <div class="tag">Self-development</div>
@@ -33,5 +36,11 @@
             {{end}}
         </div>
     </div>
+    <script>
+        function updateAction() {
+            var name = document.getElementById('name').value;
+            document.getElementById('bookForm').action += name;
+        }
+     </script>
 </body>
 </html>
