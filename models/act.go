@@ -120,7 +120,7 @@ func FindBookByID(bookID string) (Book, error) {
 func FindAll(bookName string) []Book {
 	var books []Book
 
-	filter := bson.D{{Key: "name", Value: bookName}}
+	filter := bson.M{"name": bookName}
 
 	collection := db.Database(dbName).Collection(collName)
 	cursor, err := collection.Find(context.TODO(), filter)

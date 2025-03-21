@@ -9,6 +9,20 @@
 <body>
     <div class="container">
         <h1>Book Search</h1>
+
+        <form action="/library/upload" method="post" enctype="multipart/form-data">
+            <div>
+              <label for="profile_pic">Choose file to upload</label>
+              <input
+                type="file"
+                id="book"
+                name="book_text"
+                accept=".txt" />
+                <input type="submit" value="Upload" />
+
+            </div>
+          </form>
+
         <div class="search-box">
             <form id="bookForm" action="/library/all/" method="get" onsubmit="updateAction()">
                 <input name="name" id="name" type="text" class="search-input" placeholder="Enter the title of the book...">
@@ -36,11 +50,6 @@
             {{end}}
         </div>
     </div>
-    <script>
-        function updateAction() {
-            var name = document.getElementById('name').value;
-            document.getElementById('bookForm').action += name;
-        }
-     </script>
+    <script src="/static/main_page.js"></script>
 </body>
 </html>

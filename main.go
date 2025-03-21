@@ -23,6 +23,7 @@ func main() {
 	library := r.Group("/library")
 	{
 		library.POST("/", controllers.CreateBook)
+		library.POST("/upload", controllers.UploadFile2)
 		library.PUT("/:id", controllers.UpdateBook)
 		library.DELETE("/:id", controllers.DeleteBook)
 		library.DELETE("/", controllers.DeleteAllBooks)
@@ -33,5 +34,5 @@ func main() {
 	}
 
 	log.Println("Server started")
-	r.Run("localhost:8081")
+	r.Run("localhost:8080")
 }

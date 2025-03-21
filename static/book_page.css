@@ -8,30 +8,30 @@ body {
 }
 .container {
     display: flex;
-    width: 80%;
-    background: #f5e1cba0;
+    width: 100%;
     padding: 20px;
+    background: #f5e1cba0;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     border-radius: 10px;
 }
 .book-info {
-    width: 60%;
-    padding-right: 20px;
+    width: 100%;
 }
 .book-text {
     font-size: 30px;
     margin-top: 10px;
     background: #f5e1cb;
-    padding: 10px;
-    border: 1px solid #f5e1cb;
     border-radius: 5px;
     min-height: 150px;
 }
 .reader {
-    width: 40%;
+    /* Убираем фиксированную ширину */
+    /* width: 40%; */
+    justify-content: center; 
     display: flex;
     flex-direction: column;
     align-items: center;
+    flex: 1; /* добавляем flex: 1, чтобы занимал доступное пространство */
 }
 .word-box {
     font-size: 40px;
@@ -41,7 +41,7 @@ body {
     width: 200px;
     text-align: center;
     border-radius: 5px;
-    margin-bottom: 10px;
+    margin: 0px;
 }
 .controls {
     display: flex;

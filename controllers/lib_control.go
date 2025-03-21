@@ -21,10 +21,10 @@ func extractNumericPart(id primitive.ObjectID) string {
 // Initialize the template with the custom function
 var tmpl = template.Must(template.New("template.html").Funcs(template.FuncMap{
 	"extractNumericPart": extractNumericPart,
-}).ParseFiles("template.html"))
+}).ParseFiles("./static/template.html"))
 
 // Book reading page
-var index = template.Must(template.New("index.html").ParseFiles("index.html"))
+var index = template.Must(template.New("book_page.html").ParseFiles("./static/book_page.html"))
 
 type Data struct {
 	Title string
@@ -65,8 +65,10 @@ func CreateBook(c *gin.Context) {
 
 // GetBooks retrieves all books from the database
 func GetBooksByName(c *gin.Context) {
+	fmt.Println("GetBooksByName")
 	var books []models.Book
 	name := c.Param("name")
+	fmt.Println("name: ", name)
 	books = models.FindAll(name)
 
 	data := Data{
@@ -84,7 +86,6 @@ func GetBooksByName(c *gin.Context) {
 // GetBook retrieves a book by its ID
 func GetBook(c *gin.Context) {
 	id := c.Param("id")
-	fmt.Println("id: ", id)
 	var book models.Book
 	book, err := models.FindBookByID(id)
 	if err != nil {
@@ -130,4 +131,26 @@ func DeleteAllBooks(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Book deleted"})
+}
+
+func UploadFile(c *gin.Context) {
+	file, _ := c.FormFile("file")
+	c.SaveUploadedFile(file, file.Filename)
+	c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
+}
+
+func UploadFile2(c *gin.Context) {
+	fmt.Fprintf(c.Writer, "Upload file\n")
+
+	c.Request.ParseMultipartForm(10 << 20)
+	file, handler, err := c.Request.FormFile("file")
+	if err != nil {
+		fmt.Println("Error", err)
+		return
+	}
+
+	defer file.Close()
+	fmt.Printf("Uploaded File: %+v\n", handler.Filename)
+	fmt.Println("File size:", handler.Size)
+	fmt.Println("MIME Header:", handler.Header)
 }
