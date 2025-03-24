@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add book</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="mb-3">
+            <input type="text" class="form-control" id="bookName" placeholder="Book name here"><br/>
+            <input type="text" class="form-control" id="bookAuthor" placeholder="Author"><br/>
+            <input type="date" class="form-control" id="bookAuthor">    
+        <div class="addBookButton">
+            <form action="/library/upload" method="post" enctype="multipart/form-data">
+                <label for="file">Add book by file</label>
+                <input type="file" id="file" style="opacity: 0">
+            </form>
+        </div>
+        <div>
+            <label for="exampleFormControlTextarea1" class="form-label">Book text</label><br/>
+            <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,36 @@
+body {
+    font-family: Times, serif;
+    background-image: url(news_paperjpg.jpg);
+    color: #4d0101;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+.container {
+    background: #f5e1cba0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 20px;
+    width: 100%;
+}
+.form-control{
+    border-radius: 10px;
+    border: 1px solid #4d0101;
+    margin-bottom: 10px;
+    padding: 5px;
+}
+.addBookButton{
+    background: #4d0101;
+    border-radius: 10px;
+    border: 1px solid #4d0101;
+    color: white;
+    cursor: pointer;
+    display: inline-block;
+    height: 20px;
+    overflow: hidden;
+    padding: 10px;
+    position: absolute;
+    right: 10px;
+    top: 45px;
+    width: 110px;
+}
