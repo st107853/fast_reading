@@ -10,16 +10,9 @@
     <div class="container">
         <h1>Book Search</h1>
 
-        <form action="/library/upload" method="post" enctype="multipart/form-data">
+        <form action="/library/addbook" method="get">
             <div>
-              <label for="profile_pic">Choose file to upload</label>
-              <input
-                type="file"
-                id="book"
-                name="book_text"
-                accept=".txt" />
-                <input type="submit" value="Upload" />
-
+                <button class="start">+</button>
             </div>
           </form>
 

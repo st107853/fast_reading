@@ -14,7 +14,6 @@ import (
 func extractNumericPart(id primitive.ObjectID) string {
 	// Assuming the numeric part is the last part of the ObjectID
 	new := id.Hex()
-	fmt.Println("id from func: ", new)
 	return new
 }
 
@@ -25,6 +24,8 @@ var tmpl = template.Must(template.New("template.html").Funcs(template.FuncMap{
 
 // Book reading page
 var index = template.Must(template.New("book_page.html").ParseFiles("./static/book_page.html"))
+
+var addBook = template.Must(template.New("index.html").ParseFiles("./static/index.html"))
 
 type Data struct {
 	Title string
@@ -48,7 +49,6 @@ func AllBooks(c *gin.Context) {
 }
 
 func CreateBook(c *gin.Context) {
-
 	var book models.Book
 	if err := c.ShouldBindJSON(&book); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -65,10 +65,8 @@ func CreateBook(c *gin.Context) {
 
 // GetBooks retrieves all books from the database
 func GetBooksByName(c *gin.Context) {
-	fmt.Println("GetBooksByName")
 	var books []models.Book
 	name := c.Param("name")
-	fmt.Println("name: ", name)
 	books = models.FindAll(name)
 
 	data := Data{
@@ -139,18 +137,9 @@ func UploadFile(c *gin.Context) {
 	c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
 }
 
-func UploadFile2(c *gin.Context) {
-	fmt.Fprintf(c.Writer, "Upload file\n")
-
-	c.Request.ParseMultipartForm(10 << 20)
-	file, handler, err := c.Request.FormFile("file")
-	if err != nil {
-		fmt.Println("Error", err)
+func AddBook(c *gin.Context) {
+	if err := addBook.Execute(c.Writer, nil); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	defer file.Close()
-	fmt.Printf("Uploaded File: %+v\n", handler.Filename)
-	fmt.Println("File size:", handler.Size)
-	fmt.Println("MIME Header:", handler.Header)
 }
