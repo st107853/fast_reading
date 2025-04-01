@@ -18,9 +18,6 @@ function submitForm() {
         "text": bookTextElement.value.trim()
     };
 
-    console.log("Создан объект:", dict);
-
-    console.log("будет передан:", dict);
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/library/", true);
     xhr.setRequestHeader('Content-Type', 'application/json');
@@ -33,6 +30,32 @@ function submitForm() {
             window.location.href = "/";  // Переходим на главную страницу
         }
     };
+}
+
+function updateText() {
+    const fileInput = document.getElementById("file");
+    const bookTextArea = document.getElementById("bookText");
+
+    // Проверяем, выбран ли файл
+    if (fileInput.files.length === 0) {
+        alert("Please select a file.");
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+
+    // Читаем содержимое файла
+    reader.onload = function(event) {
+        const fileContent = event.target.result;
+        bookTextArea.value = fileContent; // Записываем содержимое файла в textarea
+    };
+
+    reader.onerror = function() {
+        alert("Error reading file.");
+    };
+
+    reader.readAsText(file); // Читаем файл как текст
 }
 
 document.addEventListener("DOMContentLoaded", function() {

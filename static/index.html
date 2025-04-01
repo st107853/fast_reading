@@ -13,11 +13,9 @@
             <input type="text" class="form-control" id="bookAuthor" placeholder="Author *" required><br/>
             <input type="date" class="form-control" id="releaseDate">    
         <div class="addBookButton">
-            <form action="/library/upload" method="post" enctype="multipart/form-data">
                 <label for="file">Add book by file</label>
                 <input type="file" id="file" name="file"/><br/>
-                <input type="submit"/>
-            </form>
+                <input type="submit" onclick="updateText()"/>
         </div>
         <div>
             <label for="bookText" class="form-label">Book text</label><br/>

@@ -55,6 +55,13 @@ func CreateBook(c *gin.Context) {
 		return
 	}
 
+	// Check if the book already exists
+	existingBook := models.BookExist(book.Name, book.Author)
+	if existingBook != false {
+		c.JSON(http.StatusConflict, gin.H{"error": "Book already exists"})
+		return
+	}
+
 	err := models.InsertBook(book)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error2": err.Error()})
