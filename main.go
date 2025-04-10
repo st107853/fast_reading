@@ -23,7 +23,6 @@ func main() {
 	library := r.Group("/library")
 	{
 		library.POST("/", controllers.CreateBook)
-		library.POST("/upload", controllers.UploadFile)
 		library.PUT("/:id", controllers.UpdateBook)
 		library.DELETE("/:id", controllers.DeleteBook)
 		library.DELETE("/", controllers.DeleteAllBooks)
