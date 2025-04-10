@@ -13,9 +13,8 @@
             <input type="text" class="form-control" id="bookAuthor" placeholder="Author *" required><br/>
             <input type="date" class="form-control" id="releaseDate">    
         <div class="addBookButton">
-                <label for="file">Add book by file</label>
-                <input type="file" id="file" name="file"/><br/>
-                <input type="submit" onclick="updateText()"/>
+            <label for="file" class="label_file">Add book by file</label>
+            <input type="file" id="file" name="file" onchange="updateText()"/><br/>
         </div>
         <div>
             <label for="bookText" class="form-label">Book text</label><br/>
@@ -23,7 +22,7 @@
         </div>
         <div>
             <label for="submitBtn">Upload book to server?</label><br/>
-            <input type="submit" id="submitBtn" onclick="submitForm()"/>
+            <input type="submit" id="submitBtn" onclick="submitForm(this)"/>
         </div>
     </div>
 </body>

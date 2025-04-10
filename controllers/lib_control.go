@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"html/template"
 	"net/http"
 
@@ -136,12 +135,6 @@ func DeleteAllBooks(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Book deleted"})
-}
-
-func UploadFile(c *gin.Context) {
-	file, _ := c.FormFile("file")
-	c.SaveUploadedFile(file, file.Filename)
-	c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
 }
 
 func AddBook(c *gin.Context) {

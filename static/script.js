@@ -1,4 +1,5 @@
-function submitForm() {
+function submitForm(button) {
+
     console.log("Функция submitForm вызвана!");
 
     var bookNameElement = document.getElementById('bookName');
@@ -24,10 +25,10 @@ function submitForm() {
     xhr.send(JSON.stringify(dict));
     console.log("Передан:", JSON.stringify(dict));
     xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4 && xhr.status == 200) {
+        if (xhr.readyState === 4 && xhr.status === 201) {
             console.log("Ответ сервера:", xhr.responseText);
-            alert("Книга успешно добавлена!");
-            window.location.href = "/";  // Переходим на главную страницу
+            button.classList.add("clicked"); // Если всё ок, кнопка меняет цвет
+            // window.location.href = "/library/";  // Переходим на главную страницу
         }
     };
 }
@@ -58,6 +59,3 @@ function updateText() {
     reader.readAsText(file); // Читаем файл как текст
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-    document.getElementById("submitBtn").addEventListener("click", submitForm);
-});

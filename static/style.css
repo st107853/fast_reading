@@ -19,18 +19,44 @@ body {
     margin-bottom: 10px;
     padding: 5px;
 }
-.addBookButton{
-    background: #4d0101;
-    border-radius: 10px;
-    border: 1px solid #4d0101;
-    color: white;
-    cursor: pointer;
-    display: inline-block;
-    height: 50px;
-    overflow: hidden;
-    padding: 10px;
+.addBookButton {
+    font-family: Arial, sans-serif;
     position: absolute;
-    right: 10px;
-    top: 45px;
-    width: 210px;
+    margin-bottom: 10px;
+    padding: 20px;
+    top: 35px;
+    right: -25px;
+}
+
+.label_file {
+    padding: 10px 20px;
+    background-color: rgb(114, 4, 4);
+    color: rgb(233, 235, 185);
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+
+input[type="file"] {
+    display: none;
+}
+
+input[type="submit"] {
+    padding: 10px 20px;
+    background-color: rgb(1, 65, 1);
+    color: rgb(233, 235, 185);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+input[type="submit"].clicked {
+    background-color: rgb(0, 100, 0);
+}
+
+#bookText {
+    width: 100%;
+    height: 200px;
+    resize: none; 
 }

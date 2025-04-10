@@ -97,6 +97,18 @@ func FindBook(bookName string) Book {
 	return book
 }
 
+func BookExist(bookName, bookAuthor string) bool {
+	filter := bson.M{"name": bookName, "author": bookAuthor}
+
+	collection := db.Database(dbName).Collection(collName)
+	count, err := collection.CountDocuments(context.TODO(), filter)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return count > 0
+}
+
 func FindBookByID(bookID string) (Book, error) {
 	var book Book
 

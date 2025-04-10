@@ -24,7 +24,7 @@
     </div>
     <script>
         const text = `{{.Text}}`;
-        const words = text.split(" ");
+        const words = text.split(/\s+/);
         let index = 0;
         let intervalId = null;
         let speed = 600;
