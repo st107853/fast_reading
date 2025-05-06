@@ -2,35 +2,57 @@ package models
 
 import (
 	"context"
-	"fmt"
+	"log"
 
-	"go.mongodb.org/mongo-driver/v2/mongo"
-	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"github.com/go-redis/redis"
+	"github.com/st107853/fast_reading/config"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const dbName = "library"
-const collName = "books"
+const DBName = "library"
+const CollName = "books"
+
+var conf, _ = config.LoadConfig(".")
 
 type Logger struct {
 	*mongo.Client // The database access interface
 }
 
-var db Logger
+var DB Logger
 
-func Connect() error {
-	client, err := mongo.Connect(options.Client().ApplyURI("mongodb://localhost:27017"))
+func ConnectToMongoDB() error {
+	ctx := context.TODO()
+	mongoconn := options.Client().ApplyURI(conf.DBUri)
+	mongoclient, err := mongo.Connect(ctx, mongoconn)
 	if err != nil {
 		return err
 	}
 
 	// Check the connection
-	err = client.Ping(context.TODO(), nil)
+	err = mongoclient.Ping(ctx, nil)
 	if err != nil {
 		return err
 	}
 
-	db = Logger{client}
+	DB = Logger{mongoclient}
+	log.Println("Connected to MongoDB!")
+	return nil
+}
 
-	fmt.Println("Connected to MongoDB!")
+func ConnectToRedis() error {
+	redisclient := redis.NewClient(&redis.Options{
+		Addr:     conf.RedisUri,
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+	if _, err := redisclient.Ping().Result(); err != nil {
+		panic(err)
+	}
+	err := redisclient.Set("key", "value", 0).Err()
+	if err != nil {
+		panic(err)
+	}
+	log.Println("Redis client connected successfully...")
 	return nil
 }
