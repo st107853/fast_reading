@@ -65,7 +65,7 @@ func (b *BookServiseImpl) FindBookByID(bookID string) (Book, error) {
 		return book, fmt.Errorf("invalid ObjectID: %v", err)
 	}
 
-	filter := bson.M{"id": id}
+	filter := bson.M{"_id": id}
 
 	collection := models.DB.Database(models.DBName).Collection(models.CollName)
 	err = collection.FindOne(context.TODO(), filter).Decode(&book)
