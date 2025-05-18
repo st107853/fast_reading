@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"strings"
 
@@ -13,6 +14,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// Book reading page
+var loginPage = template.Must(template.New("login_page.html").ParseFiles("./static/login_page.html"))
+
 type AuthController struct {
 	authService services.AuthService
 	userService services.UserService
@@ -20,6 +24,17 @@ type AuthController struct {
 
 func NewAuthController(authService services.AuthService, userService services.UserService) AuthController {
 	return AuthController{authService, userService}
+}
+
+// LoginPage renders the login page.
+func (ac *AuthController) LoginPage(c *gin.Context) {
+	// Execute the bookPage template and write the output to the response writer
+	fmt.Println("LoginPage")
+
+	if err := loginPage.Execute(c.Writer, ac); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 }
 
 // SignUpUser validats the user’s input and returned an error if any of the rules were not satisfied.

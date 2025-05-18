@@ -9,6 +9,21 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// Initialize the template with the custom function
+var mainPage = template.Must(template.New("main_page.html").Funcs(template.FuncMap{
+	"extractNumericPart": extractNumericPart,
+}).ParseFiles("./static/main_page.html"))
+
+// Book reading page
+var bookPage = template.Must(template.New("book_page.html").ParseFiles("./static/book_page.html"))
+
+var addBook = template.Must(template.New("create_book.html").ParseFiles("./static/create_book.html"))
+
+type Data struct {
+	Title string
+	Books []services.Book
+}
+
 type BookController struct {
 	bookService services.BookService
 }
@@ -24,21 +39,6 @@ func extractNumericPart(id primitive.ObjectID) string {
 	return new
 }
 
-// Initialize the template with the custom function
-var tmpl = template.Must(template.New("template.html").Funcs(template.FuncMap{
-	"extractNumericPart": extractNumericPart,
-}).ParseFiles("./static/template.html"))
-
-// Book reading page
-var index = template.Must(template.New("book_page.html").ParseFiles("./static/book_page.html"))
-
-var addBook = template.Must(template.New("index.html").ParseFiles("./static/index.html"))
-
-type Data struct {
-	Title string
-	Books []services.Book
-}
-
 func (bc *BookController) AllBooks(c *gin.Context) {
 	var books []services.Book
 	books = bc.bookService.ListAllBooks()
@@ -49,7 +49,7 @@ func (bc *BookController) AllBooks(c *gin.Context) {
 	}
 
 	// Execute the template and write the output to the response writer
-	if err := tmpl.Execute(c.Writer, data); err != nil {
+	if err := mainPage.Execute(c.Writer, data); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -89,7 +89,7 @@ func (bc *BookController) GetBooksByName(c *gin.Context) {
 	}
 
 	// Execute the template and write the output to the response writer
-	if err := tmpl.Execute(c.Writer, data); err != nil {
+	if err := mainPage.Execute(c.Writer, data); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -105,8 +105,8 @@ func (bc *BookController) GetBook(c *gin.Context) {
 		return
 	}
 
-	// Execute the index template and write the output to the response writer
-	if err := index.Execute(c.Writer, book); err != nil {
+	// Execute the bookPage template and write the output to the response writer
+	if err := bookPage.Execute(c.Writer, book); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

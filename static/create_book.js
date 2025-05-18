@@ -23,7 +23,6 @@ function submitForm(button) {
     xhr.open("POST", "/library/", true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send(JSON.stringify(dict));
-    console.log("Передан:", JSON.stringify(dict));
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4 && xhr.status === 201) {
             console.log("Ответ сервера:", xhr.responseText);
