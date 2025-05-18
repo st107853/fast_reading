@@ -27,7 +27,6 @@ loginForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const email = document.getElementById("login-email").value;
     const password = document.getElementById("login-password").value;
-    alert(`Log In: ${email} / ${password}`);
 
     var dict = {
         "email": email,
@@ -39,10 +38,9 @@ loginForm.addEventListener("submit", (e) => {
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send(JSON.stringify(dict));
     xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 201) {
+        if (xhr.readyState === 4 && xhr.status === 200) {
             console.log("Ответ сервера:", xhr.responseText);
-            button.classList.add("clicked"); // Если всё ок, кнопка меняет цвет
-            // window.location.href = "/library/";  // Переходим на главную страницу
+            window.location.href = "/api/users/me";  // Переходим на главную страницу
         }
     };
     // Here you can send data to the server

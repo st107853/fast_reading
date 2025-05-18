@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Page</title>
+  <link rel="stylesheet" type="text/css" href="/static/user_page.css">
+</head>
+<body>
+  <div class="user-container">
+    <h2 id="userName">{{.Name}}</h2>
+
+    <div class="section">
+      <h3>Favorite Books</h3>
+      <div class="labels" id="favoriteBooks">
+        <!-- Favorite book labels will go here -->
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Books Created</h3>
+      <form action="/library/addbook" method="get">
+        <div>
+            <button>+</button>
+        </div>
+      </form>
+      <ul class="book-list" id="createdBooks">
+        <!-- Created book list will go here -->
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Dummy data
+    const user = {
+      favoriteBooks: ["1984", "Brave New World", "The Hobbit"],
+      createdBooks: ["My First Book", "Adventures in Coding"]
+    };
+
+    // Populate favorite book labels
+    const favoriteBooksContainer = document.getElementById("favoriteBooks");
+    user.favoriteBooks.forEach(book => {
+      const label = document.createElement("span");
+      label.className = "label";
+      label.innerText = book;
+      favoriteBooksContainer.appendChild(label);
+    });
+
+    // Populate created books
+    const createdBooksContainer = document.getElementById("createdBooks");
+    user.createdBooks.forEach(book => {
+      const li = document.createElement("li");
+      li.className = "book-item";
+      li.innerText = book;
+      createdBooksContainer.appendChild(li);
+    });
+
+    // Handle new book creation
+    function createNewBook() {
+      const bookName = prompt("Enter the name of the new book:");
+      if (bookName) {
+        const li = document.createElement("li");
+        li.className = "book-item";
+        li.innerText = bookName;
+        createdBooksContainer.appendChild(li);
+        user.createdBooks.push(bookName);
+      }
+    }
+  </script>
+</body>
+</html>

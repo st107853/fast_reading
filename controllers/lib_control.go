@@ -19,7 +19,7 @@ var bookPage = template.Must(template.New("book_page.html").ParseFiles("./static
 
 var addBook = template.Must(template.New("create_book.html").ParseFiles("./static/create_book.html"))
 
-type Data struct {
+type BookData struct {
 	Title string
 	Books []services.Book
 }
@@ -43,7 +43,7 @@ func (bc *BookController) AllBooks(c *gin.Context) {
 	var books []services.Book
 	books = bc.bookService.ListAllBooks()
 
-	data := Data{
+	data := BookData{
 		Title: "All what we have",
 		Books: books,
 	}
@@ -83,7 +83,7 @@ func (bc *BookController) GetBooksByName(c *gin.Context) {
 	name := c.Param("name")
 	books = bc.bookService.FindAll(name)
 
-	data := Data{
+	data := BookData{
 		Title: "All what we have",
 		Books: books,
 	}
