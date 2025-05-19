@@ -34,13 +34,13 @@ loginForm.addEventListener("submit", (e) => {
     };
 
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/auth/login", true);
+    xhr.open("POST", "/library/auth/login", true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send(JSON.stringify(dict));
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4 && xhr.status === 200) {
             console.log("Ответ сервера:", xhr.responseText);
-            window.location.href = "/api/users/me";  // Переходим на главную страницу
+            window.location.href = "/library/users/me";  // Переходим на главную страницу
         }
     };
     // Here you can send data to the server

@@ -107,16 +107,14 @@ func main() {
 
 	server.Use(cors.New(corsConfig))
 
-	routerAPI := server.Group("/api")
-	routerAPI.GET("/healthchecker", func(ctx *gin.Context) {
+	router := server.Group("/library")
+	router.GET("/healthchecker", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": value})
 	})
 
-	routerBook := server.Group("/library")
-
-	AuthRouteController.AuthRoute(routerAPI, userService)
-	UserRouteController.UserRoute(routerAPI, userService)
-	BookRouteController.BookRoute(routerBook, bookService)
+	AuthRouteController.AuthRoute(router, userService)
+	UserRouteController.UserRoute(router, userService)
+	BookRouteController.BookRoute(router, bookService)
 
 	log.Println("Registered routes:")
 	for _, route := range server.Routes() {

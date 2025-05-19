@@ -8,13 +8,14 @@
 </head>
 <body>
     <div class="container">
-        <h1>Book Search</h1>
 
-        <form action="/library/addbook" method="get">
-            <div>
-                <button class="start">+</button>
-            </div>
-        </form>
+        <div>
+            <a class="navbar-brand" href="/library/auth/login">
+            <img src="/static/login.png" alt="Log in" width="60" height="60">
+            </a>
+        </div>
+
+        <h1>Book Search</h1>
 
         <div class="search-box">
             <form id="bookForm" action="/library/all/" method="get" onsubmit="updateAction()">

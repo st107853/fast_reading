@@ -12,16 +12,14 @@ button {
     cursor: pointer;
     border-radius: 25px;
 }
-.stop {
-    width: 40px;
-    height: 40px;
-    background: #f5e1cba0;
-    color: #4d0101;
+.navbar-brand{
+    margin-top: -40px;
 }
 .container {
     width: 80%;
     background: #f5e1cba0;
     padding: 20px;
+    padding-top: 0%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     border-radius: 10px;
     text-align: center;
