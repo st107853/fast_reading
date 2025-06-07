@@ -31,6 +31,8 @@ type DBResponse struct {
 	Email           string             `json:"email" bson:"email"`
 	Password        string             `json:"password" bson:"password"`
 	PasswordConfirm string             `json:"passwordConfirm,omitempty" bson:"passwordConfirm,omitempty"`
+	Favourite       []BookResponse     `json:"favourite" bson:"favourite"`
+	Written         []BookResponse     `json:"createdbooks" bson:"createdbooks"`
 	Role            string             `json:"role" bson:"role"`
 	Verified        bool               `json:"verified" bson:"verified"`
 	CreatedAt       time.Time          `json:"created_at" bson:"created_at"`

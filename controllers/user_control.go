@@ -18,7 +18,9 @@ type UserController struct {
 }
 
 type UserData struct {
-	Name string
+	Name      string
+	Favourite []models.BookResponse
+	Written   []models.BookResponse
 }
 
 func NewUserController(userService services.UserService) UserController {
@@ -31,7 +33,9 @@ func (uc *UserController) GetMe(ctx *gin.Context) {
 	//var user = models.FilteredResponse(currentUser)
 
 	data := UserData{
-		Name: currentUser.Name,
+		Name:      currentUser.Name,
+		Favourite: currentUser.Favourite,
+		Written:   currentUser.Written,
 	}
 
 	// Execute the template and write the output to the response writer

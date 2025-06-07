@@ -25,7 +25,15 @@
         </div>
       </form>
       <ul class="book-list" id="createdBooks">
-        <!-- Created book list will go here -->
+        {{range .Written}}
+                <div class="book-item">
+                    <div class="book-title">
+                        <a href="/library/one/{{.ID | extractNumericPart}}">
+                        <div>{{.Name}}</div></a>
+                    </div>
+                    <div class="book-author">{{.Author}}</div>
+                </div>
+        {{end}}
       </ul>
     </div>
   </div>
