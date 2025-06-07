@@ -26,10 +26,11 @@ type BookData struct {
 
 type BookController struct {
 	bookService services.BookService
+	userService services.UserService
 }
 
-func NewBookController(bookService services.BookService) BookController {
-	return BookController{bookService}
+func NewBookController(bookService services.BookService, userService services.UserService) BookController {
+	return BookController{bookService, userService}
 }
 
 // Custom function to extract the numeric part of the ObjectID
@@ -69,12 +70,21 @@ func (bc *BookController) CreateBook(c *gin.Context) {
 		return
 	}
 
-	err := bc.bookService.InsertBook(book)
+	err, id := bc.bookService.InsertBook(book)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error2": err.Error()})
 		return
 	}
+
+	cookie, err := c.Cookie("email")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found"})
+		return
+	}
 	c.JSON(http.StatusCreated, book.Name)
+
+	// Call the function to add the book to created books
+	bc.userService.AddBookToCreatedBooks(cookie, id, book.Name, book.Author)
 }
 
 // GetBooks retrieves all books from the database

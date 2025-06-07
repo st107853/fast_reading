@@ -32,6 +32,8 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 	user.UpdatedAt = user.CreatedAt
 	user.Email = strings.ToLower(user.Email) // Normalize email to lowercase.
 	user.PasswordConfirm = ""
+	user.Favourite = []models.BookResponse{}
+	user.Written = []models.BookResponse{}
 	user.Verified = true
 	user.Role = "user"
 

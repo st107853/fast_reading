@@ -6,7 +6,7 @@ type BookService interface {
 	UpdateBook(bookId primitive.ObjectID, book Book) error
 	DeleteBook(bookId string) error
 	DeleteAll() error
-	InsertBook(book Book) error
+	InsertBook(book Book) (error, primitive.ObjectID)
 	BookExist(bookName, bookAuthor string) bool
 	FindBookByID(bookID string) (Book, error)
 	ListAllBooks() []Book

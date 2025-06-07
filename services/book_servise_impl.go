@@ -30,18 +30,18 @@ func NewBookService(collection *mongo.Collection, ctx context.Context) *BookServ
 }
 
 // InsertBook inserts a new book into the database.
-func (b *BookServiseImpl) InsertBook(book Book) error {
+func (b *BookServiseImpl) InsertBook(book Book) (error, primitive.ObjectID) {
 	// Generate a new unique ObjectID for the book
 	book.ID = primitive.NewObjectID()
 
 	collection := models.DB.Database(models.DBName).Collection(models.CollName)
 	result, err := collection.InsertOne(context.TODO(), book)
 	if err != nil {
-		return fmt.Errorf("failed to insert book: %v", err)
+		return fmt.Errorf("failed to insert book: %v", err), primitive.NilObjectID
 	}
 
 	fmt.Printf("Inserted a record with id: %v\n", result.InsertedID)
-	return nil
+	return nil, book.ID
 }
 
 func (b *BookServiseImpl) BookExist(bookName, bookAuthor string) bool {

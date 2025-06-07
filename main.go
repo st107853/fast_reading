@@ -67,7 +67,7 @@ func init() {
 	UserController = controllers.NewUserController(userService)
 	UserRouteController = routes.NewRouteUserController(UserController)
 
-	BookController = controllers.NewBookController(bookService)
+	BookController = controllers.NewBookController(bookService, userService)
 	BookRouteController = routes.NewBookRouteController(BookController)
 
 	server = gin.New()         // Create a new Gin engine without default middleware
