@@ -38,9 +38,8 @@ loginForm.addEventListener("submit", (e) => {
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send(JSON.stringify(dict));
     xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            console.log("Ответ сервера:", xhr.responseText);
-            window.location.href = "/library/users/me";  // Переходим на главную страницу
+        if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 201)) {
+            window.location.href = "/library/users/me";
         }
     };
     // Here you can send data to the server
@@ -48,15 +47,34 @@ loginForm.addEventListener("submit", (e) => {
 
 registerForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    const name = document.getElementById("register-name").value;
     const email = document.getElementById("register-email").value;
+    const name = document.getElementById("register-name").value;
     const password = document.getElementById("register-password").value;
-    const confirmPassword = document.getElementById("register-confirm-password").value;
+    const passwordConfirm = document.getElementById("register-confirm-password").value;
 
-    if (password !== confirmPassword) {
-    alert("Passwords do not match!");
-    return;
-    }
+    var dict = {
+        "email": email,
+        "name": name,
+        "password": password,
+        "passwordConfirm": passwordConfirm
+    };
 
-    
+    console.log("Sended to server data:", dict);
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/library/auth/register", true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.send(JSON.stringify(dict));
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 201)) {
+            xhr.open("POST", "/library/auth/login", true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify(dict));
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 201)) {
+                    window.location.href = "/library/users/me";
+                }
+            };    
+        }
+    };
 });
