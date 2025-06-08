@@ -13,7 +13,7 @@ import (
 )
 
 type Book struct {
-	ID          primitive.ObjectID `json:"id" bson:"_id"` // Change bson tag to "_id"
+	ID          primitive.ObjectID `json:"id" bson:"_id"`
 	Name        string             `json:"name" binding:"required" bson:"name"`
 	Author      string             `json:"author" binding:"required" bson:"author"`
 	Text        string             `json:"text" binding:"required" bson:"text"`

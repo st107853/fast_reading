@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 
@@ -78,13 +79,19 @@ func (bc *BookController) CreateBook(c *gin.Context) {
 
 	cookie, err := c.Cookie("email")
 	if err != nil {
+		fmt.Println("error:", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found"})
 		return
 	}
-	c.JSON(http.StatusCreated, book.Name)
 
 	// Call the function to add the book to created books
-	bc.userService.AddBookToCreatedBooks(cookie, id, book.Name, book.Author)
+	err = bc.userService.AddBookToCreatedBooks(cookie, id, book.Name, book.Author)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add book to created books"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, book.Name)
 }
 
 // GetBooks retrieves all books from the database

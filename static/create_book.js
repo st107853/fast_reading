@@ -1,7 +1,5 @@
 function submitForm(button) {
 
-    console.log("Функция submitForm вызвана!");
-
     var bookNameElement = document.getElementById('bookName');
     var bookAuthorElement = document.getElementById('bookAuthor');
     var releaseDateElement = document.getElementById('releaseDate');
