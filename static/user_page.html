@@ -38,42 +38,6 @@
     </div>
   </div>
 
-  <script>
-    // Dummy data
-    const user = {
-      favoriteBooks: ["1984", "Brave New World", "The Hobbit"],
-      createdBooks: ["My First Book", "Adventures in Coding"]
-    };
-
-    // Populate favorite book labels
-    const favoriteBooksContainer = document.getElementById("favoriteBooks");
-    user.favoriteBooks.forEach(book => {
-      const label = document.createElement("span");
-      label.className = "label";
-      label.innerText = book;
-      favoriteBooksContainer.appendChild(label);
-    });
-
-    // Populate created books
-    const createdBooksContainer = document.getElementById("createdBooks");
-    user.createdBooks.forEach(book => {
-      const li = document.createElement("li");
-      li.className = "book-item";
-      li.innerText = book;
-      createdBooksContainer.appendChild(li);
-    });
-
-    // Handle new book creation
-    function createNewBook() {
-      const bookName = prompt("Enter the name of the new book:");
-      if (bookName) {
-        const li = document.createElement("li");
-        li.className = "book-item";
-        li.innerText = bookName;
-        createdBooksContainer.appendChild(li);
-        user.createdBooks.push(bookName);
-      }
-    }
-  </script>
+  <script>src="/static/user_page.js"</script>
 </body>
 </html>
