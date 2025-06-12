@@ -57,5 +57,48 @@ body {
   }
 
   button:hover {
-    background-color: #005fa3;
+    background-color: rgb(1, 65, 1);
   }
+
+  .book-item {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.book-cloud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 33.33vw;
+  min-height: 70px;
+  padding: 10px;
+  background: #f5e1cb;
+  border-radius: 20px;
+  margin-top: 20px;
+}
+
+.icon {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+}
+
+.book-info {
+  flex-grow: 1;
+  text-align: center;
+}
+
+.book-name {
+  display: block;
+  font-weight: 600;
+  font-size: 18px;
+  color: #333;
+  text-decoration: none;
+  margin-bottom: 4px;
+}
+
+.book-author {
+  font-size: 14px;
+  color: #666;
+}

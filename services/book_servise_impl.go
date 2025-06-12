@@ -103,7 +103,7 @@ func (b *BookServiseImpl) DeleteBook(bookId string) error {
 		return err
 	}
 
-	fmt.Println("Deleted record: ", result)
+	fmt.Println("Deleted record: ", id.Hex(), " with result: ", result.DeletedCount)
 	return nil
 }
 
