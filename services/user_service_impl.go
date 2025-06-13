@@ -55,13 +55,24 @@ func (us *UserServiceImpl) FindUserByEmail(email string) (*models.DBResponse, er
 
 // AddBookToCreatedBooks appends a book name to the user's CreatedBooks array.
 func (us *UserServiceImpl) AddBookToCreatedBooks(email string, bookId primitive.ObjectID, bookName, bookAuthor string) error {
-	query := bson.M{"email": strings.ToLower(email)}
+	query := bson.M{"email": email}
 	book := models.BookResponse{
 		ID:     bookId,
 		Name:   bookName,
 		Author: bookAuthor,
 	}
 	update := bson.M{"$push": bson.M{"createdbooks": book}}
+
+	_, err := us.collection.UpdateOne(us.ctx, query, update)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (us *UserServiceImpl) DeleteBookFromCreatedBooks(email, bookId string) error {
+	query := bson.M{"email": email}
+	update := bson.M{"$pull": bson.M{"createdbooks": bson.M{"_id": bookId}}}
 
 	_, err := us.collection.UpdateOne(us.ctx, query, update)
 	if err != nil {

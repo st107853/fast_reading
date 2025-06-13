@@ -147,8 +147,15 @@ func (bc *BookController) UpdateBook(c *gin.Context) {
 // DeleteBook deletes a book by its ID
 func (bc *BookController) DeleteBook(c *gin.Context) {
 	id := c.Param("id")
+	email := c.Param("email")
+
 	if err := bc.bookService.DeleteBook(id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := bc.userService.DeleteBookFromCreatedBooks(email, id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove book from created books"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Book deleted"})

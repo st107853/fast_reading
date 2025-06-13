@@ -6,7 +6,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/st107853/fast_reading/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -34,8 +33,7 @@ func (b *BookServiseImpl) InsertBook(book Book) (error, primitive.ObjectID) {
 	// Generate a new unique ObjectID for the book
 	book.ID = primitive.NewObjectID()
 
-	collection := models.DB.Database(models.DBName).Collection(models.CollName)
-	result, err := collection.InsertOne(context.TODO(), book)
+	result, err := b.collection.InsertOne(context.TODO(), book)
 	if err != nil {
 		return fmt.Errorf("failed to insert book: %v", err), primitive.NilObjectID
 	}
@@ -47,8 +45,7 @@ func (b *BookServiseImpl) InsertBook(book Book) (error, primitive.ObjectID) {
 func (b *BookServiseImpl) BookExist(bookName, bookAuthor string) bool {
 	filter := bson.M{"name": bookName, "author": bookAuthor}
 
-	collection := models.DB.Database(models.DBName).Collection(models.CollName)
-	count, err := collection.CountDocuments(context.TODO(), filter)
+	count, err := b.collection.CountDocuments(context.TODO(), filter)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -67,8 +64,7 @@ func (b *BookServiseImpl) FindBookByID(bookID string) (Book, error) {
 
 	filter := bson.M{"_id": id}
 
-	collection := models.DB.Database(models.DBName).Collection(models.CollName)
-	err = collection.FindOne(context.TODO(), filter).Decode(&book)
+	err = b.collection.FindOne(context.TODO(), filter).Decode(&book)
 	if err != nil {
 		return book, fmt.Errorf("mongo: no documents in result: %v", err)
 	}
@@ -78,8 +74,7 @@ func (b *BookServiseImpl) FindBookByID(bookID string) (Book, error) {
 
 // DeleteAll implements BookService.
 func (b *BookServiseImpl) DeleteAll() error {
-	collection := models.DB.Database(models.DBName).Collection(models.CollName)
-	delRes, err := collection.DeleteMany(context.TODO(), bson.M{}, nil)
+	delRes, err := b.collection.DeleteMany(context.TODO(), bson.M{}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -97,8 +92,7 @@ func (b *BookServiseImpl) DeleteBook(bookId string) error {
 
 	filter := bson.M{"_id": id}
 
-	collection := models.DB.Database(models.DBName).Collection(models.CollName)
-	result, err := collection.DeleteOne(context.TODO(), filter)
+	result, err := b.collection.DeleteOne(context.TODO(), filter)
 	if err != nil {
 		return err
 	}
@@ -110,8 +104,7 @@ func (b *BookServiseImpl) DeleteBook(bookId string) error {
 func (b *BookServiseImpl) ListAllBooks() []Book {
 	var books []Book
 
-	collection := models.DB.Database(models.DBName).Collection(models.CollName)
-	cursor, err := collection.Find(context.TODO(), bson.M{})
+	cursor, err := b.collection.Find(context.TODO(), bson.M{})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -129,8 +122,7 @@ func (b *BookServiseImpl) FindAll(bookName string) []Book {
 
 	filter := bson.M{"name": bookName}
 
-	collection := models.DB.Database(models.DBName).Collection(models.CollName)
-	cursor, err := collection.Find(context.TODO(), filter)
+	cursor, err := b.collection.Find(context.TODO(), filter)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -148,8 +140,7 @@ func (b *BookServiseImpl) FindBook(bookName string) Book {
 
 	filter := bson.D{{Key: "name", Value: bookName}}
 
-	collection := models.DB.Database(models.DBName).Collection(models.CollName)
-	err := collection.FindOne(context.TODO(), filter).Decode(&book)
+	err := b.collection.FindOne(context.TODO(), filter).Decode(&book)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -163,8 +154,7 @@ func (b *BookServiseImpl) UpdateBook(bookId primitive.ObjectID, book Book) error
 	filter := bson.M{"id": bookId}
 	update := bson.M{"$set": bson.M{"author": book.Author, "text": book.Text, "name": book.Name, "date of release": book.ReleaseDate}}
 
-	collection := models.DB.Database(models.DBName).Collection(models.CollName)
-	result, err := collection.UpdateOne(context.TODO(), filter, update)
+	result, err := b.collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return err
 	}
