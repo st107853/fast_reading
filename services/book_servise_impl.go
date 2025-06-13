@@ -95,7 +95,7 @@ func (b *BookServiseImpl) DeleteBook(bookId string) error {
 		return err
 	}
 
-	filter := bson.M{"id": id}
+	filter := bson.M{"_id": id}
 
 	collection := models.DB.Database(models.DBName).Collection(models.CollName)
 	result, err := collection.DeleteOne(context.TODO(), filter)
