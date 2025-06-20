@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -29,134 +28,132 @@ func NewBookService(collection *mongo.Collection, ctx context.Context) *BookServ
 }
 
 // InsertBook inserts a new book into the database.
-func (b *BookServiseImpl) InsertBook(book Book) (error, primitive.ObjectID) {
+func (bs *BookServiseImpl) InsertBook(book Book) (error, primitive.ObjectID) {
 	// Generate a new unique ObjectID for the book
 	book.ID = primitive.NewObjectID()
 
-	result, err := b.collection.InsertOne(context.TODO(), book)
+	_, err := bs.collection.InsertOne(bs.ctx, book)
 	if err != nil {
-		return fmt.Errorf("failed to insert book: %v", err), primitive.NilObjectID
+		return fmt.Errorf("bsi: failed to insert book: %w", err), primitive.NilObjectID
 	}
 
-	fmt.Printf("Inserted a record with id: %v\n", result.InsertedID)
 	return nil, book.ID
 }
 
-func (b *BookServiseImpl) BookExist(bookName, bookAuthor string) bool {
+func (bs *BookServiseImpl) BookExist(bookName, bookAuthor string) (bool, error) {
 	filter := bson.M{"name": bookName, "author": bookAuthor}
 
-	count, err := b.collection.CountDocuments(context.TODO(), filter)
+	count, err := bs.collection.CountDocuments(bs.ctx, filter)
 	if err != nil {
-		log.Fatal(err)
+		return false, fmt.Errorf("bsi: failed to count documents: %w", err)
 	}
 
-	return count > 0
+	return count > 0, nil
 }
 
-func (b *BookServiseImpl) FindBookByID(bookID string) (Book, error) {
+func (bs *BookServiseImpl) FindBookByID(bookID string) (Book, error) {
 	var book Book
 
 	// Convert the string ID to a primitive.ObjectID
 	id, err := primitive.ObjectIDFromHex(bookID)
 	if err != nil {
-		return book, fmt.Errorf("invalid ObjectID: %v", err)
+		return book, fmt.Errorf("bsi: invalid ObjectID: %w", err)
 	}
 
 	filter := bson.M{"_id": id}
 
-	err = b.collection.FindOne(context.TODO(), filter).Decode(&book)
+	err = bs.collection.FindOne(bs.ctx, filter).Decode(&book)
 	if err != nil {
-		return book, fmt.Errorf("mongo: no documents in result: %v", err)
+		return book, fmt.Errorf("bsi: no documents found: %w", err)
 	}
 
 	return book, nil
 }
 
 // DeleteAll implements BookService.
-func (b *BookServiseImpl) DeleteAll() error {
-	delRes, err := b.collection.DeleteMany(context.TODO(), bson.M{}, nil)
+func (bs *BookServiseImpl) DeleteAll() error {
+	_, err := bs.collection.DeleteMany(bs.ctx, bson.M{}, nil)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("bsi: failed to delete all books: %w", err)
 	}
 
-	fmt.Println("Deleted all records: ", delRes)
 	return err
 }
 
 // DeleteBook implements BookService.
-func (b *BookServiseImpl) DeleteBook(bookId string) error {
+func (bs *BookServiseImpl) DeleteBook(bookId string) error {
 	id, err := primitive.ObjectIDFromHex(bookId)
 	if err != nil {
-		return err
+		return fmt.Errorf("bsi: invalid ObjectID: %w", err)
 	}
 
 	filter := bson.M{"_id": id}
 
-	result, err := b.collection.DeleteOne(context.TODO(), filter)
+	result, err := bs.collection.DeleteOne(bs.ctx, filter)
 	if err != nil {
-		return err
+		return fmt.Errorf("bsi: failed to delete book: %w", err)
 	}
 
 	fmt.Println("Deleted record: ", id.Hex(), " with result: ", result.DeletedCount)
 	return nil
 }
 
-func (b *BookServiseImpl) ListAllBooks() []Book {
+func (bs *BookServiseImpl) ListAllBooks() ([]Book, error) {
 	var books []Book
 
-	cursor, err := b.collection.Find(context.TODO(), bson.M{})
+	cursor, err := bs.collection.Find(bs.ctx, bson.M{})
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("bsi: failed to find all books: %w", err)
 	}
 
-	err = cursor.All(context.TODO(), &books)
+	err = cursor.All(bs.ctx, &books)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("bsi: failed to decode books: %w", err)
 	}
 
-	return books
+	return books, nil
 }
 
-func (b *BookServiseImpl) FindAll(bookName string) []Book {
+func (bs *BookServiseImpl) FindAll(bookName string) ([]Book, error) {
 	var books []Book
 
 	filter := bson.M{"name": bookName}
 
-	cursor, err := b.collection.Find(context.TODO(), filter)
+	cursor, err := bs.collection.Find(bs.ctx, filter)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("bsi: failed to find books by name: %w", err)
 	}
 
-	err = cursor.All(context.TODO(), &books)
+	err = cursor.All(bs.ctx, &books)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("bsi: failed to decode books: %w", err)
 	}
 
-	return books
+	return books, nil
 }
 
-func (b *BookServiseImpl) FindBook(bookName string) Book {
+func (bs *BookServiseImpl) FindBook(bookName string) (Book, error) {
 	var book Book
 
 	filter := bson.D{{Key: "name", Value: bookName}}
 
-	err := b.collection.FindOne(context.TODO(), filter).Decode(&book)
+	err := bs.collection.FindOne(bs.ctx, filter).Decode(&book)
 	if err != nil {
-		log.Fatal(err)
+		return book, fmt.Errorf("bsi: failed to find book by name: %w", err)
 	}
 
-	return book
+	return book, nil
 }
 
 // UpdateBook implements BookService.
-func (b *BookServiseImpl) UpdateBook(bookId primitive.ObjectID, book Book) error {
+func (bs *BookServiseImpl) UpdateBook(bookId primitive.ObjectID, book Book) error {
 
 	filter := bson.M{"id": bookId}
 	update := bson.M{"$set": bson.M{"author": book.Author, "text": book.Text, "name": book.Name, "date of release": book.ReleaseDate}}
 
-	result, err := b.collection.UpdateOne(context.TODO(), filter, update)
+	result, err := bs.collection.UpdateOne(bs.ctx, filter, update)
 	if err != nil {
-		return err
+		return fmt.Errorf("bsi: failed to update book: %w", err)
 	}
 	fmt.Println("Updated record: ", result)
 

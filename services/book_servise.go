@@ -7,9 +7,9 @@ type BookService interface {
 	DeleteBook(bookId string) error
 	DeleteAll() error
 	InsertBook(book Book) (error, primitive.ObjectID)
-	BookExist(bookName, bookAuthor string) bool
+	BookExist(bookName, bookAuthor string) (bool, error)
 	FindBookByID(bookID string) (Book, error)
-	ListAllBooks() []Book
-	FindAll(bookName string) []Book
-	FindBook(bookName string) Book
+	ListAllBooks() ([]Book, error)
+	FindAll(bookName string) ([]Book, error)
+	FindBook(bookName string) (Book, error)
 }

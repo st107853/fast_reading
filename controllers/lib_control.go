@@ -43,7 +43,12 @@ func extractNumericPart(id primitive.ObjectID) string {
 
 func (bc *BookController) AllBooks(c *gin.Context) {
 	var books []services.Book
-	books = bc.bookService.ListAllBooks()
+	books, err := bc.bookService.ListAllBooks()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	data := BookData{
 		Title: "All what we have",
@@ -65,8 +70,12 @@ func (bc *BookController) CreateBook(c *gin.Context) {
 	}
 
 	// Check if the book already exists
-	existingBook := bc.bookService.BookExist(book.Name, book.Author)
-	if existingBook != false {
+	existingBook, err := bc.bookService.BookExist(book.Name, book.Author)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if existingBook {
 		c.JSON(http.StatusConflict, gin.H{"error": "Book already exists"})
 		return
 	}
@@ -98,7 +107,12 @@ func (bc *BookController) CreateBook(c *gin.Context) {
 func (bc *BookController) GetBooksByName(c *gin.Context) {
 	var books []services.Book
 	name := c.Param("name")
-	books = bc.bookService.FindAll(name)
+	books, err := bc.bookService.FindAll(name)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	data := BookData{
 		Title: "All what we have",
@@ -147,7 +161,11 @@ func (bc *BookController) UpdateBook(c *gin.Context) {
 // DeleteBook deletes a book by its ID
 func (bc *BookController) DeleteBook(c *gin.Context) {
 	id := c.Param("id")
-	email := c.Param("email")
+	email, err := c.Cookie("email")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found"})
+		return
+	}
 
 	if err := bc.bookService.DeleteBook(id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

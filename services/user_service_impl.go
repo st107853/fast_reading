@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/st107853/fast_reading/models"
@@ -55,28 +56,68 @@ func (us *UserServiceImpl) FindUserByEmail(email string) (*models.DBResponse, er
 
 // AddBookToCreatedBooks appends a book name to the user's CreatedBooks array.
 func (us *UserServiceImpl) AddBookToCreatedBooks(email string, bookId primitive.ObjectID, bookName, bookAuthor string) error {
-	query := bson.M{"email": email}
+	// Ensure book format matches your schema
 	book := models.BookResponse{
 		ID:     bookId,
 		Name:   bookName,
 		Author: bookAuthor,
 	}
-	update := bson.M{"$push": bson.M{"createdbooks": book}}
 
-	_, err := us.collection.UpdateOne(us.ctx, query, update)
+	// First, ensure createdbooks exists and is an array
+	_, err := us.collection.UpdateOne(
+		us.ctx,
+		bson.M{
+			"email": email,
+			"$or": []bson.M{
+				{"createdbooks": bson.M{"$exists": false}},
+				{"createdbooks": nil},
+			},
+		},
+		bson.M{
+			"$set": bson.M{"createdbooks": bson.A{}},
+		},
+	)
 	if err != nil {
+		return fmt.Errorf("failed to initialize createdbooks: %w", err)
+	}
+
+	// Now push the book
+	_, err = us.collection.UpdateOne(
+		us.ctx,
+		bson.M{"email": email},
+		bson.M{"$push": bson.M{"createdbooks": book}},
+	)
+	if err != nil {
+		fmt.Println("Error updating user:", err)
 		return err
 	}
+
 	return nil
 }
 
 func (us *UserServiceImpl) DeleteBookFromCreatedBooks(email, bookId string) error {
-	query := bson.M{"email": email}
-	update := bson.M{"$pull": bson.M{"createdbooks": bson.M{"_id": bookId}}}
-
-	_, err := us.collection.UpdateOne(us.ctx, query, update)
+	// Convert bookId string to ObjectID
+	bookIdObj, err := primitive.ObjectIDFromHex(bookId)
 	if err != nil {
-		return err
+		return fmt.Errorf("invalid bookId: %w", err)
 	}
+
+	// Query by user's email
+	query := bson.M{"email": email}
+
+	// $pull the book with matching _id from createdbooks
+	update := bson.M{
+		"$pull": bson.M{
+			"createdbooks": bson.M{
+				"_id": bookIdObj,
+			},
+		},
+	}
+
+	_, err = us.collection.UpdateOne(us.ctx, query, update)
+	if err != nil {
+		return fmt.Errorf("failed to pull book from createdbooks: %w", err)
+	}
+
 	return nil
 }
