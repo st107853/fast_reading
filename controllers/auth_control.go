@@ -28,9 +28,6 @@ func NewAuthController(authService services.AuthService, userService services.Us
 
 // LoginPage renders the login page.
 func (ac *AuthController) LoginPage(c *gin.Context) {
-	// Execute the bookPage template and write the output to the response writer
-	fmt.Println("LoginPage")
-
 	if err := loginPage.Execute(c.Writer, ac); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -42,7 +39,7 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 	var user *models.SignUpInput
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "error": err.Error()})
 		return
 	}
 
@@ -55,10 +52,10 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "email already exist") {
-			ctx.JSON(http.StatusConflict, gin.H{"status": "error", "message": err.Error()})
+			ctx.JSON(http.StatusConflict, gin.H{"status": "error", "error": err.Error()})
 			return
 		}
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": err.Error()})
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "error": err.Error()})
 		return
 	}
 
@@ -70,7 +67,7 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	var credentials *models.SignInInput
 
 	if err := ctx.ShouldBindJSON(&credentials); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "error": err.Error()})
 		return
 	}
 
@@ -80,7 +77,7 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
 			return
 		}
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "error": err.Error()})
 		return
 	}
 
@@ -94,13 +91,13 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	// Generate Tokens
 	access_token, err := utils.CreateToken(config.AccessTokenExpiresIn, user.ID, config.AccessTokenPrivateKey)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "error": err.Error()})
 		return
 	}
 
 	refresh_token, err := utils.CreateToken(config.RefreshTokenExpiresIn, user.ID, config.RefreshTokenPrivateKey)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "error": err.Error()})
 		return
 	}
 
@@ -113,12 +110,10 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 }
 
 func (ac *AuthController) RefreshAccessToken(ctx *gin.Context) {
-	message := "could not refresh access token"
-
 	cookie, err := ctx.Cookie("refresh_token")
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "message": message})
+		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "message": "could not refresh access token", "error": err.Error()})
 		return
 	}
 
@@ -126,19 +121,19 @@ func (ac *AuthController) RefreshAccessToken(ctx *gin.Context) {
 
 	sub, err := utils.ValidateToken(cookie, config.RefreshTokenPublicKey)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "message": err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "error": err.Error()})
 		return
 	}
 
 	user, err := ac.userService.FindUserById(fmt.Sprint(sub))
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "message": "the user belonging to this token no logger exists"})
+		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "message": "the user belonging to this token no logger exists", "error": err.Error()})
 		return
 	}
 
 	access_token, err := utils.CreateToken(config.AccessTokenExpiresIn, user.ID, config.AccessTokenPrivateKey)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "message": err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "error": err.Error()})
 		return
 	}
 

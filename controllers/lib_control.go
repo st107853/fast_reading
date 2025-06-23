@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"html/template"
 	"net/http"
 
@@ -82,21 +81,20 @@ func (bc *BookController) CreateBook(c *gin.Context) {
 
 	err, id := bc.bookService.InsertBook(book)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error2": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	cookie, err := c.Cookie("email")
 	if err != nil {
-		fmt.Println("error:", err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found " + err.Error()})
 		return
 	}
 
 	// Call the function to add the book to created books
 	err = bc.userService.AddBookToCreatedBooks(cookie, id, book.Name, book.Author)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add book to created books"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add book to created books " + err.Error()})
 		return
 	}
 
@@ -152,7 +150,7 @@ func (bc *BookController) UpdateBook(c *gin.Context) {
 	}
 
 	if err := bc.bookService.UpdateBook(book.ID, book); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Book not found " + err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, book)
@@ -163,7 +161,7 @@ func (bc *BookController) DeleteBook(c *gin.Context) {
 	id := c.Param("id")
 	email, err := c.Cookie("email")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found " + err.Error()})
 		return
 	}
 
@@ -173,7 +171,7 @@ func (bc *BookController) DeleteBook(c *gin.Context) {
 	}
 
 	if err := bc.userService.DeleteBookFromCreatedBooks(email, id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove book from created books"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove book from created books " + err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Book deleted"})

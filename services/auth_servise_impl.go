@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -46,7 +46,7 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 	if err != nil {
 		// Handle duplicate email error.
 		if er, ok := err.(mongo.WriteException); ok && er.WriteErrors[0].Code == 11000 {
-			return nil, errors.New("user with that email already exist")
+			return nil, fmt.Errorf("asi: user with that email already exist")
 		}
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 	opt.SetUnique(true)
 	index := mongo.IndexModel{Keys: bson.M{"email": 1}, Options: opt}
 	if _, err := uc.collection.Indexes().CreateOne(uc.ctx, index); err != nil {
-		return nil, errors.New("could not create index for email")
+		return nil, fmt.Errorf("asi: could not create index for email. error: %w", err)
 	}
 
 	// Retrieve the newly created user from the database.
@@ -64,7 +64,7 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 	query := bson.M{"_id": res.InsertedID}
 	err = uc.collection.FindOne(uc.ctx, query).Decode(&newUser)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("asi: %w", err)
 	}
 
 	return newUser, nil

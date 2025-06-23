@@ -32,7 +32,7 @@ func (us *UserServiceImpl) FindUserById(id string) (*models.DBResponse, error) {
 		if err == mongo.ErrNoDocuments {
 			return &models.DBResponse{}, err
 		}
-		return nil, err
+		return nil, fmt.Errorf("usi: %w", err)
 	}
 
 	return user, nil
@@ -48,7 +48,7 @@ func (us *UserServiceImpl) FindUserByEmail(email string) (*models.DBResponse, er
 		if err == mongo.ErrNoDocuments {
 			return &models.DBResponse{}, err
 		}
-		return nil, err
+		return nil, fmt.Errorf("usi: %w", err)
 	}
 
 	return user, nil
@@ -88,8 +88,7 @@ func (us *UserServiceImpl) AddBookToCreatedBooks(email string, bookId primitive.
 		bson.M{"$push": bson.M{"createdbooks": book}},
 	)
 	if err != nil {
-		fmt.Println("Error updating user:", err)
-		return err
+		return fmt.Errorf("usi: updating user error: %w", err)
 	}
 
 	return nil
