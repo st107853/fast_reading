@@ -12,9 +12,18 @@
 
     <div class="section">
       <h3>Favorite Books</h3>
-      <div class="labels" id="favoriteBooks">
-        <!-- Favorite book labels will go here -->
-      </div>
+      <ul class="book-list" id="favoriteBooks">
+        {{range .Favourite}}
+          <li class="book-cloud">
+            <img src="/static/edit.png" alt="Edit book" class="icon">
+
+            <div class="book-info">
+              <a href="/library/one/{{.ID | extractNumericPart}}" id="book-href" class="book-name">{{.Name}}</a>
+              <div class="book-author">{{.Author}}</div>
+            </div>
+          </li>
+        {{end}}
+      </ul>
     </div>
 
     <div class="section">
@@ -24,7 +33,7 @@
       </form>
       <ul class="book-list" id="createdBooks">
         {{range .Written}}
-          <div class="book-cloud">
+          <li class="book-cloud">
             <img src="/static/edit.png" alt="Edit book" class="icon">
 
             <div class="book-info">
@@ -33,7 +42,7 @@
             </div>
 
             <img src="/static/trash.png" alt="Delete book" class="icon" onclick="deleteBook('{{.ID | extractNumericPart}}')">
-          </div>
+          </li>
         {{end}}
       </ul>
     </div>

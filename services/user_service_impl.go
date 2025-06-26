@@ -94,6 +94,78 @@ func (us *UserServiceImpl) AddBookToCreatedBooks(email string, bookId primitive.
 	return nil
 }
 
+func (us *UserServiceImpl) AddBookToFavoriteBooks(email string, bookId primitive.ObjectID, bookName, bookAuthor string) error {
+
+	// Check if the book is already in the favourite list
+	count, err := us.collection.CountDocuments(
+		us.ctx,
+		bson.M{
+			"email":         email,
+			"favourite._id": bookId,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to check favourite books: %w", err)
+	}
+	if count > 0 {
+		// Query by user's email
+		query := bson.M{"email": email}
+
+		// $pull the book with matching _id from createdbooks
+		update := bson.M{
+			"$pull": bson.M{
+				"favourite": bson.M{
+					"_id": bookId,
+				},
+			},
+		}
+
+		_, err = us.collection.UpdateOne(us.ctx, query, update)
+		if err != nil {
+			return fmt.Errorf("failed to pull book from favourite: %w", err)
+		}
+
+		return nil
+	}
+
+	// Ensure book format matches your schema
+	book := models.BookResponse{
+		ID:     bookId,
+		Name:   bookName,
+		Author: bookAuthor,
+	}
+
+	// First, ensure createdbooks exists and is an array
+	_, err = us.collection.UpdateOne(
+		us.ctx,
+		bson.M{
+			"email": email,
+			"$or": []bson.M{
+				{"favourite": bson.M{"$exists": false}},
+				{"favourite": nil},
+			},
+		},
+		bson.M{
+			"$set": bson.M{"favourite": bson.A{}},
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to initialize favourite: %w", err)
+	}
+
+	// Now push the book
+	_, err = us.collection.UpdateOne(
+		us.ctx,
+		bson.M{"email": email},
+		bson.M{"$push": bson.M{"favourite": book}},
+	)
+	if err != nil {
+		return fmt.Errorf("usi: updating user error: %w", err)
+	}
+
+	return nil
+}
+
 func (us *UserServiceImpl) DeleteBookFromCreatedBooks(email, bookId string) error {
 	// Convert bookId string to ObjectID
 	bookIdObj, err := primitive.ObjectIDFromHex(bookId)

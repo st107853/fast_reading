@@ -9,5 +9,6 @@ type UserService interface {
 	FindUserById(string) (*models.DBResponse, error)
 	FindUserByEmail(string) (*models.DBResponse, error)
 	AddBookToCreatedBooks(email string, bookId primitive.ObjectID, bookName, bookAuthor string) error
+	AddBookToFavoriteBooks(email string, bookId primitive.ObjectID, bookName, bookAuthor string) error
 	DeleteBookFromCreatedBooks(email, bookId string) error
 }

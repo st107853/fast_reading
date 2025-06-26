@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/st107853/fast_reading/models"
 	"github.com/st107853/fast_reading/services"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -21,7 +22,7 @@ var addBook = template.Must(template.New("create_book.html").ParseFiles("./stati
 
 type BookData struct {
 	Title string
-	Books []services.Book
+	Books []models.Book
 }
 
 type BookController struct {
@@ -41,7 +42,7 @@ func extractNumericPart(id primitive.ObjectID) string {
 }
 
 func (bc *BookController) AllBooks(c *gin.Context) {
-	var books []services.Book
+	var books []models.Book
 	books, err := bc.bookService.ListAllBooks()
 
 	if err != nil {
@@ -62,7 +63,7 @@ func (bc *BookController) AllBooks(c *gin.Context) {
 }
 
 func (bc *BookController) CreateBook(c *gin.Context) {
-	var book services.Book
+	var book models.Book
 	if err := c.ShouldBindJSON(&book); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -101,9 +102,32 @@ func (bc *BookController) CreateBook(c *gin.Context) {
 	c.JSON(http.StatusCreated, book.Name)
 }
 
+func (bc *BookController) BookFavourite(c *gin.Context) {
+	var book models.BookResponse
+	if err := c.ShouldBindJSON(&book); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	cookie, err := c.Cookie("email")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found " + err.Error()})
+		return
+	}
+
+	// Call the function to add the book to favorite books
+	err = bc.userService.AddBookToFavoriteBooks(cookie, book.ID, book.Name, book.Author)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add book to favorite books " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, book.Name)
+}
+
 // GetBooks retrieves all books from the database
 func (bc *BookController) GetBooksByName(c *gin.Context) {
-	var books []services.Book
+	var books []models.Book
 	name := c.Param("name")
 	books, err := bc.bookService.FindAll(name)
 
@@ -127,7 +151,7 @@ func (bc *BookController) GetBooksByName(c *gin.Context) {
 // GetBook retrieves a book by its ID
 func (bc *BookController) GetBook(c *gin.Context) {
 	id := c.Param("id")
-	var book services.Book
+	var book models.Book
 	book, err := bc.bookService.FindBookByID(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -143,7 +167,7 @@ func (bc *BookController) GetBook(c *gin.Context) {
 
 // UpdateBook updates an existing book
 func (bc *BookController) UpdateBook(c *gin.Context) {
-	var book services.Book
+	var book models.Book
 	if err := c.ShouldBindJSON(&book); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

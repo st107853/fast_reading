@@ -3,20 +3,12 @@ package services
 import (
 	"context"
 	"fmt"
-	"time"
 
+	"github.com/st107853/fast_reading/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
-type Book struct {
-	ID          primitive.ObjectID `json:"id" bson:"_id"`
-	Name        string             `json:"name" binding:"required" bson:"name"`
-	Author      string             `json:"author" binding:"required" bson:"author"`
-	Text        string             `json:"text" binding:"required" bson:"text"`
-	ReleaseDate time.Time          `json:"date" bson:"date"`
-}
 
 type BookServiseImpl struct {
 	collection *mongo.Collection
@@ -28,7 +20,7 @@ func NewBookService(collection *mongo.Collection, ctx context.Context) *BookServ
 }
 
 // InsertBook inserts a new book into the database.
-func (bs *BookServiseImpl) InsertBook(book Book) (error, primitive.ObjectID) {
+func (bs *BookServiseImpl) InsertBook(book models.Book) (error, primitive.ObjectID) {
 	// Generate a new unique ObjectID for the book
 	book.ID = primitive.NewObjectID()
 
@@ -51,8 +43,8 @@ func (bs *BookServiseImpl) BookExist(bookName, bookAuthor string) (bool, error) 
 	return count > 0, nil
 }
 
-func (bs *BookServiseImpl) FindBookByID(bookID string) (Book, error) {
-	var book Book
+func (bs *BookServiseImpl) FindBookByID(bookID string) (models.Book, error) {
+	var book models.Book
 
 	// Convert the string ID to a primitive.ObjectID
 	id, err := primitive.ObjectIDFromHex(bookID)
@@ -98,8 +90,8 @@ func (bs *BookServiseImpl) DeleteBook(bookId string) error {
 	return nil
 }
 
-func (bs *BookServiseImpl) ListAllBooks() ([]Book, error) {
-	var books []Book
+func (bs *BookServiseImpl) ListAllBooks() ([]models.Book, error) {
+	var books []models.Book
 
 	cursor, err := bs.collection.Find(bs.ctx, bson.M{})
 	if err != nil {
@@ -114,8 +106,8 @@ func (bs *BookServiseImpl) ListAllBooks() ([]Book, error) {
 	return books, nil
 }
 
-func (bs *BookServiseImpl) FindAll(bookName string) ([]Book, error) {
-	var books []Book
+func (bs *BookServiseImpl) FindAll(bookName string) ([]models.Book, error) {
+	var books []models.Book
 
 	filter := bson.M{"name": bookName}
 
@@ -132,8 +124,8 @@ func (bs *BookServiseImpl) FindAll(bookName string) ([]Book, error) {
 	return books, nil
 }
 
-func (bs *BookServiseImpl) FindBook(bookName string) (Book, error) {
-	var book Book
+func (bs *BookServiseImpl) FindBook(bookName string) (models.Book, error) {
+	var book models.Book
 
 	filter := bson.D{{Key: "name", Value: bookName}}
 
@@ -146,7 +138,7 @@ func (bs *BookServiseImpl) FindBook(bookName string) (Book, error) {
 }
 
 // UpdateBook implements BookService.
-func (bs *BookServiseImpl) UpdateBook(bookId primitive.ObjectID, book Book) error {
+func (bs *BookServiseImpl) UpdateBook(bookId primitive.ObjectID, book models.Book) error {
 
 	filter := bson.M{"id": bookId}
 	update := bson.M{"$set": bson.M{"author": book.Author, "text": book.Text, "name": book.Name, "date of release": book.ReleaseDate}}
