@@ -4,39 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Search</title>
-    <link rel="stylesheet" type="text/css" href="/static/main_page.css">
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
 </head>
 <body>
     <div class="container">
 
-        <div class="navbar-brand" onclick="login()" >
-            <img src="/static/login.png" alt="Log in" width="60" height="60">
-        </div>
+        <nav class="navbar">
+        <!-- Left: customize button -->
+        <button class="customize-btn"></button>
 
-        <h1>Book Search</h1>
+        <!-- Center: logo button -->
+        <button class="logo-btn"></button>
+
+        <!-- Right: avatar button -->
+        <div class="avatar-btn" onclick="login()"></div>
+        </nav>
 
         <div class="search-box">
-            <form id="bookForm" action="/library/all/" method="get" onsubmit="updateAction()">
-                <input name="name" id="name" type="text" class="search-input" placeholder="Enter the title of the book...">
-            </form>
+        <form id="bookForm" action="/library/all/" method="get" onsubmit="updateAction()">
+            <div class="search-container">
+            <input name="name" id="name" type="text" class="search-input" placeholder="Enter the title of the book...">
+            <span class="search-icon"></span>
+            </div>
+        </form>
         </div>
-        <div class="tags">
-            <div class="tag">Self-development</div>
-            <div class="tag">Biography</div>
-            <div class="tag">Philosophy</div>
-            <div class="tag">History</div>
-            <div class="tag">Novel</div>
-            <div class="tag">Detective</div>
-            <div class="tag">Fiction</div>
+
+        <div class="labels">
+            <div class="label">Self-development</div>
+            <div class="label">Biography</div>
+            <div class="label">Philosophy</div>
+            <div class="label">History</div>
+            <div class="label">Novel</div>
+            <div class="label">Detective</div>
+            <div class="label">Fiction</div>
         </div>
-        <div class="book-list">
+        <div class="card-list">
             {{range .Books}}
-                <div class="book-item">
-                    <div class="book-title">
-                        <a href="/library/one/{{.ID | extractNumericPart}}">
-                        <div>{{.Name}}</div></a>
-                    </div>
-                    <div class="book-author">{{.Author}}</div>
+                <div class="card">
+                    <a href="/library/one/{{.ID | extractNumericPart}}">
+                    <img src="/static/lolita-cover.jpg" alt="Book cover of Lolita"></a>
+                    <div class="card-title">{{.Name}}</div>     
+                    <div class="card-author">{{.Author}}</div>
                 </div>
             {{end}}
         </div>

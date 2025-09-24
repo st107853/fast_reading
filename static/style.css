@@ -1,0 +1,218 @@
+:root {
+    --primary-color: #022B3A;
+    --secondary-color: #1F7A8C;
+    --neutral-1-color: #FFFFFF;
+    --neutral-2-color: #E1E5F2;
+    --neutral-2-transparant-color: color-mix(in srgb, var(--neutral-2-color) 80%, transparent);
+    --neutral-3-color: #BFDBF7;
+
+    --current-font-family: Arial, sans-serif;
+    --hi-size: 2.5em;
+    --h2-size: 2em;
+    --h3-size: 1.5em;
+    --p-size: 1em;
+}
+
+body {
+    font-family: var(--current-font-family);
+    background-image: url(back1.jpg);
+    display: flex;
+    justify-content: center;
+}
+
+p {
+    color: var(--primary-color);
+    font-size: var(--p-size);
+    line-height: 1.5;
+    margin-top: 0;
+    margin-bottom: 1em;
+}
+
+h1 {
+    color: var(--primary-color);
+    font-size: 2.5em;
+    margin-top: 0.67em;
+    margin-bottom: 0.67em;
+    font-weight: bold;
+}
+
+h2 {
+    color: var(--primary-color);
+    font-size: 2em;
+    margin-top: 0.83em;
+    margin-bottom: 0.83em;
+    font-weight: medium;
+}
+
+h3 {
+    color: var(--primary-color);
+    font-size: 1.5em;
+    margin-top: 0.67em;
+    margin-bottom: 0.67em;
+    font-weight: normal;
+}
+
+/*** Buttons ***/
+button {
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  padding: 0 16px;
+  background-color: var(--primary-color);
+  box-sizing: border-box;
+}
+
+/* Customize button (left) */
+.customize-btn {
+  width: 32px;
+  height: 32px;
+  background-image: url(edit.png);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Logo button (center) */
+.logo-btn {
+  position: absolute;      
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 40px;
+  background-image: url(trash.png);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Avatar button (right) */
+.avatar-btn {
+  width: 36px;
+  height: 36px;
+  background-image: url(login.png);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.container {
+    width: 80%;
+    max-width: 900px;
+    height: 100%;
+    background: var(--neutral-2-transparant-color);
+    padding: 0px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/*** Swarch Box ***/
+.search-container {
+    position: relative;
+    width: 80%;
+    margin: 15px auto;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 20px;
+    font-size: var(--p-size);
+    border: 1px solid var(--primary-color);
+    border-radius: 25px;
+    box-sizing: border-box;
+}
+
+.search-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    background-image: url("search.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    pointer-events: none; /* makes sure clicking icon still focuses input */
+}
+
+.search-input:focus {
+    outline-color: var(--primary-color);
+}
+
+/*** Labels ***/
+.labels {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 0px;
+}
+.label {
+    display: inline;
+    padding: 6px 15px;
+    border-radius: 15px;
+    font-size: var(--p-size);
+    background-color: var(--neutral-2-color);
+    color: var(--primary-color);
+    border: var(--primary-color) 1px solid;
+}
+.label:active {
+    background-color: var(--secondary-color);
+    color: var(--neutral-1-color);
+}
+.label:hover {
+    background-color: var(--primary-color);
+    color: var(--neutral-1-color);
+}
+
+/*** Book Card ***/
+.card-list {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  width: 240px;
+  height: 369px;
+  padding: 16px;
+  gap: 16px;
+
+  background-color: var(--neutral-1-color);
+  box-sizing: border-box;
+  overflow: hidden; /* ensures children don’t overflow */
+}
+.card img {
+  width: 100%;
+  height: 247px;
+  object-fit: cover;
+}
+.card-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+.card-author {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  text-align: left;
+}
+.card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}

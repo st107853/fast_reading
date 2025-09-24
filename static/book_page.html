@@ -12,8 +12,7 @@
             <h1>{{.Name}}</h1>
             <p>{{.Author}}, {{.ReleaseDate}}</p>
             <div>
-                <label for="favBtn">Upload book to server?</label><br/>
-                <input type="submit" id="favBtn" onclick="submitForm(this)"/>
+                <button id="favBtn" onclick="submitForm(this)">📌</button>
             </div>
             <div class="reader">
                 <div class="word-box" id="book-text">---</div>
@@ -65,45 +64,43 @@
         }
 
         function submitForm(button) {
+            var bookNameElement = `{{.Name}}`;
+            var bookAuthorElement = `{{.Author}}`;
+            // Извлекаем числовую часть ID из строки
+            var idRaw = `{{.ID}}`;
+            var match = idRaw.match(/ObjectID\(["']?([a-fA-F0-9]+)["']?\)/);
+            var bookId = match ? match[1] : "";
 
-    var bookNameElement = `{{.Name}}`;
-    var bookAuthorElement = `{{.Author}}`;
-    // Извлекаем числовую часть ID из строки вида ObjectID("6854e445a8626ced1f2cb3cf")
-    var idRaw = `{{.ID}}`;
-    var match = idRaw.match(/ObjectID\(["']?([a-fA-F0-9]+)["']?\)/);
-    var bookId = match ? match[1] : "";
+            if (!bookNameElement || !bookAuthorElement || !bookId) {
+                console.log(!bookNameElement)
+                console.log(!bookAuthorElement)
+                console.log(!bookId)
+                console.error("Ошибка: один из элементов не найден!");
+                return;
+            }
 
-    if (!bookNameElement || !bookAuthorElement || !bookId) {
-        console.log(!bookNameElement)
-        console.log(!bookAuthorElement)
-        console.log(!bookId)
-        console.error("Ошибка: один из элементов не найден!");
-        return;
-    }
+            var dict = {
+                "name": bookNameElement,
+                "author": bookAuthorElement,
+                "id": bookId
+            };
 
-    var dict = {
-        "name": bookNameElement,
-        "author": bookAuthorElement,
-        "id": bookId
-    };
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/library/one/"+bookId+"/favourite", true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.send(JSON.stringify(dict));
-   xhr.onreadystatechange = function() {
-    if (xhr.readyState === 4) {
-        if (xhr.status === 201) {
-            console.log("Ответ сервера:", xhr.responseText);
-            button.classList.add("clicked");
-            // window.location.href = "/library/";
-        } else {
-            console.error("Ошибка при отправке запроса:", xhr.status, xhr.responseText);
-            alert("Ошибка: " + xhr.status + "\n" + xhr.responseText);
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/library/one/"+bookId+"/favourite", true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify(dict));
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 201) {
+                        console.log("Ответ сервера:", xhr.responseText);
+                        button.classList.add("clicked");
+                        // window.location.href = "/library/";
+                    } else {
+                        console.error("Ошибка при отправке запроса:", xhr.status, xhr.responseText);
+                    }
+                }
+            };
         }
-    }
-};
-}
     </script>
 </body>
 </html>
