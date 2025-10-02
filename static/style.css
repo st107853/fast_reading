@@ -1,118 +1,222 @@
+/*
+|-----------------------------------------------------------
+| || 1. BASE AND RESET STYLES
+|-----------------------------------------------------------
+*/
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
 :root {
+    /* Color Variables */
     --primary-color: #022B3A;
     --secondary-color: #1F7A8C;
     --neutral-1-color: #FFFFFF;
     --neutral-2-color: #E1E5F2;
-    --neutral-2-transparant-color: color-mix(in srgb, var(--neutral-2-color) 80%, transparent);
+    --neutral-2-alpha: color-mix(in srgb, var(--neutral-2-color) 80%, transparent); /* Renamed and fixed typo */
     --neutral-3-color: #BFDBF7;
 
-    --current-font-family: Arial, sans-serif;
-    --hi-size: 2.5em;
-    --h2-size: 2em;
-    --h3-size: 1.5em;
-    --p-size: 1em;
+    /* Typography Variables */
+    --font-family-base: Arial, sans-serif;
+    --font-size-xxl: 2.5em; /* h1 size */
+    --font-size-xl: 2em;    /* h2 size */
+    --font-size-lg: 1.5em;   /* h3 size */
+    --font-size-md: 1.1em;   /* h4 size */
+    --font-size-sm: 1em;    /* p size / base text */
+
+    /* Layout/Component Variables */
+    --navbar-height: 60px;
+    --border-radius-lg: 25px;
+    --border-radius-md: 10px;
+
+    /* Image Variables */
+    --icon-edit: url("edit.png");
+    --icon-logo: url("logo_long_white.svg");
+    --icon-login: url("login.png");
+    --icon-search: url("search.png");
 }
 
 body {
-    font-family: var(--current-font-family);
+    font-family: var(--font-family-base);
     background-image: url(back1.jpg);
     display: flex;
     justify-content: center;
+    color: var(--primary-color);
 }
 
-p {
-    color: var(--primary-color);
-    font-size: var(--p-size);
-    line-height: 1.5;
-    margin-top: 0;
-    margin-bottom: 1em;
+/* Base Typography Styling */
+h1, h2, h3, h4, p {
+    color: inherit; /* Inherit color from body/parent */
 }
 
 h1 {
-    color: var(--primary-color);
-    font-size: 2.5em;
-    margin-top: 0.67em;
-    margin-bottom: 0.67em;
-    font-weight: bold;
+    font-size: var(--font-size-xxl);
+    font-weight: 700; /* Boldness */
+    margin: 0.67em 0 0.67em 20px;
 }
 
 h2 {
-    color: var(--primary-color);
-    font-size: 2em;
-    margin-top: 0.83em;
-    margin-bottom: 0.83em;
-    font-weight: medium;
+    font-size: var(--font-size-xl);
+    font-weight: 500; /* Semi-bold */
+    margin: 0 0 0.1em 0;
 }
 
 h3 {
-    color: var(--primary-color);
-    font-size: 1.5em;
-    margin-top: 0.67em;
-    margin-bottom: 0.67em;
-    font-weight: normal;
+    font-size: var(--font-size-lg);
+    font-weight: 400; /* Normal */
+    margin: 0 0 0.3em 0;
 }
 
-/*** Buttons ***/
+h4 {
+    font-size: var(--font-size-md);
+    font-weight: 400;
+    margin: 0.3em 0 0 0;
+}
+
+p {
+    font-size: var(--font-size-sm);
+    margin: 0.7em 0 1em 0;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid var(--primary-color);
+}
+
+/*
+|-----------------------------------------------------------
+| || 2. LAYOUT AND CONTAINERS
+|-----------------------------------------------------------
+*/
+
+.container {
+    position: relative;
+    width: 80%;
+    min-height: 100vh;
+    max-width: 900px;
+    background: var(--neutral-2-alpha);
+    margin: var(--navbar-height) auto 0 auto;
+    padding: 20px;
+}
+
+.objects {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    padding: 0 15px;
+}
+
+/*
+|-----------------------------------------------------------
+| || 3. COMPONENTS: NAVBAR
+|-----------------------------------------------------------
+*/
+
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 80%;
+    max-width: 901px;
+    z-index: 100;
+    height: var(--navbar-height);
+    background-color: var(--primary-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.icon-btn { /* Base class for all buttons in the navbar */
+    position: static;
+    width: 40px;
+    height: 40px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    background-position: center;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+}
+
+.customize-btn {
+    background-image: var(--icon-edit);
+}
+
+.logo-btn {
+    width: 150px;
+    height: 50px;
+    background-image: var(--icon-logo);
+}
+
+.avatar-btn {
+    background-image: var(--icon-login);
+}
+
+/*
+|-----------------------------------------------------------
+| || 4. COMPONENTS: BUTTONS AND LABELS
+|-----------------------------------------------------------
+*/
+
+/* Base button styling */
 button {
     padding: 10px;
     border: none;
     cursor: pointer;
+    background-color: transparent;
+    color: var(--primary-color);
 }
 
-.navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 60px;
-  padding: 0 16px;
-  background-color: var(--primary-color);
-  box-sizing: border-box;
+/* Modifier class for big button */
+.btn--large {
+    padding: 10px 30px;
+    margin-top: 60px;
+    font-size: 1.2em;
+    border-radius: 30px;
+    border: 2px solid var(--primary-color);
 }
 
-/* Customize button (left) */
-.customize-btn {
-  width: 32px;
-  height: 32px;
-  background-image: url(edit.png);
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
+/* Label Component */
+.label {
+    display: inline;
+    padding: 6px 15px;
+    border-radius: 15px;
+    font-size: var(--font-size-sm);
+    background-color: var(--neutral-2-color);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    cursor: default;
 }
 
-/* Logo button (center) */
-.logo-btn {
-  position: absolute;      
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100px;
-  height: 40px;
-  background-image: url(trash.png);
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
+.label:hover, .btn--large:hover { /* Targeted hover effects */
+    background-color: var(--primary-color);
+    color: var(--neutral-1-color);
+}
+.label:active, .btn--large:active {
+    background-color: var(--secondary-color);
+    color: var(--neutral-1-color);
+    border-color: var(--secondary-color);
 }
 
-/* Avatar button (right) */
-.avatar-btn {
-  width: 36px;
-  height: 36px;
-  background-image: url(login.png);
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-}
+/*
+|-----------------------------------------------------------
+| || 5. COMPONENTS: SEARCH AND FORMS
+|-----------------------------------------------------------
+*/
 
-.container {
-    width: 80%;
-    max-width: 900px;
-    height: 100%;
-    background: var(--neutral-2-transparant-color);
-    padding: 0px;
-    margin: 0 auto;
-    text-align: center;
-}
-
-/*** Swarch Box ***/
 .search-container {
     position: relative;
     width: 80%;
@@ -122,97 +226,321 @@ button {
 .search-input {
     width: 100%;
     padding: 10px 20px;
-    font-size: var(--p-size);
+    font-size: var(--font-size-sm);
     border: 1px solid var(--primary-color);
-    border-radius: 25px;
-    box-sizing: border-box;
+    border-radius: var(--border-radius-lg);
 }
 
 .search-icon {
     position: absolute;
-    right: 10px;
+    right: 20px;
     top: 50%;
     transform: translateY(-50%);
     width: 20px;
     height: 20px;
-    background-image: url("search.png");
+    background-image: var(--icon-search);
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    pointer-events: none; /* makes sure clicking icon still focuses input */
+    pointer-events: none;
 }
 
-.search-input:focus {
+.search-input:focus, .form-select:focus {
     outline-color: var(--primary-color);
 }
 
-/*** Labels ***/
-.labels {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 0px;
+.form-select {
+    padding: 10px;
+    border: 1px solid var(--neutral-2-color);
+    border-radius: var(--border-radius-md);
+    flex-grow: 1;
+    background-color: var(--neutral-1-color);
+    width: 100%;
+    margin-bottom: 10px;
+    min-width: 120px;
 }
-.label {
-    display: inline;
-    padding: 6px 15px;
-    border-radius: 15px;
-    font-size: var(--p-size);
-    background-color: var(--neutral-2-color);
-    color: var(--primary-color);
-    border: var(--primary-color) 1px solid;
+
+/*
+|-----------------------------------------------------------
+| || 6. COMPONENTS: RANGE AND SWITCH
+|-----------------------------------------------------------
+*/
+
+/* Range Input (Slider) Styling */
+input[type="range"] {
+    -webkit-appearance: none;
+    display: block;
+    width: 80%;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 5px;
+    margin: 20px auto;
 }
-.label:active {
-    background-color: var(--secondary-color);
-    color: var(--neutral-1-color);
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 17px;
+    width: 17px;
+    border-radius: var(--border-radius-md);
+    background: var(--secondary-color);
+    border-bottom: 4px solid var(--primary-color);
+    cursor: pointer;
 }
-.label:hover {
+
+/* Slider Track (The background for the thumb) */
+input[type="range"]::-webkit-slider-runnable-track {
+    -webkit-appearance: none;
+    box-shadow: none;
+    border: none;
+    background: transparent;
+}
+
+/* Switch Component (Theme Toggle) */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    margin-top: 10px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.switch-track { /* Renamed from .slider to avoid conflict */
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 34px;
+    background-color: var(--neutral-1-color);
+    transition: .4s;
+    width: 100%;
+    margin-top: 0; /* Removed conflicting margin */
+}
+
+.switch-track:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
     background-color: var(--primary-color);
-    color: var(--neutral-1-color);
+    transition: .4s;
 }
 
-/*** Book Card ***/
+input:checked + .switch-track {
+    background-color: var(--neutral-3-color);
+}
+
+input:checked + .switch-track:before {
+    transform: translateX(26px);
+    background: var(--secondary-color);
+}
+
+/* Rounded sliders */
+.switch-track.round {
+    border-radius: 34px;
+}
+
+.switch-track.round:before {
+    border-radius: 50%;
+    background-color: var(--secondary-color);
+    border-bottom: 4px solid var(--primary-color);
+}
+
+/*
+|-----------------------------------------------------------
+| || 7. COMPONENTS: CARDS
+|-----------------------------------------------------------
+*/
+
 .card-list {
-    margin-top: 20px;
+    margin: 20px 0;
+    padding: 0 20px;
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    gap: 12px;
+
+    overflow-x: scroll;
+    scroll-behavior: auto;
+
+    /* Hide Scrollbar */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.card-list::-webkit-scrollbar {
+    height: 0;
+}
+
+.card {
+    flex: 0 0 200px;
+    height: 300px;
+    width: 200px;
+    padding: 16px;
+    background-color: var(--neutral-1-color);
+    transition: box-shadow 0.3s;
+}
+
+.card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.card img {
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+}
+
+.card-title, .card-author {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.card-author {
+    font-size: 14px;
+}
+
+/* Big Book Card */
+.book-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    background-color: var(--neutral-1-color);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    overflow: hidden;
+    margin: 40px auto;
+    width: 100%;
+}
+
+.book-info {
+    flex: 2;
+    padding: 20px;
+    background-color: var(--neutral-2-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.book-image {
+    flex: 1;
+    background-color: var(--neutral-2-color);
+    display: flex;
     justify-content: center;
+    align-items: center;
+    min-width: 200px;
+}
+
+.book-image img {
+    max-width: 100%;
+    max-height: 250px;
+    object-fit: cover;
+}
+
+/*
+|-----------------------------------------------------------
+| || 8. COMPONENTS: MODAL SETTINGS
+|-----------------------------------------------------------
+*/
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: var(--neutral-2-color);
+    padding: 20px;
+    border-radius: var(--border-radius-lg);
+    width: 90%;
+    max-width: 700px;
+    transform: translateY(-50px);
+    transition: transform 0.3s ease-out;
+}
+
+/* Settings Grid Layout */
+.settings-grid {
+    display: grid;
+    grid-template-areas:
+        "colour brightness text example"
+        "colour theme text example";
+    grid-template-columns: repeat(4, 1fr);
     gap: 15px;
 }
-.card {
-  display: flex;
-  flex-direction: column;
-  width: 240px;
-  height: 369px;
-  padding: 16px;
-  gap: 16px;
 
-  background-color: var(--neutral-1-color);
-  box-sizing: border-box;
-  overflow: hidden; /* ensures children don’t overflow */
-}
-.card img {
-  width: 100%;
-  height: 247px;
-  object-fit: cover;
-}
-.card-title {
-  font-size: 16px;
-  font-weight: 500;
-  margin: 0;
+/* Swatches, Text Groups, etc. */
+.colour-group { grid-area: colour; }
+.brightness-group { grid-area: brightness; }
+.text-group { grid-area: text; }
+.theme-group { grid-area: theme; }
+.example-group { grid-area: example; text-align: center; }
 
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-align: left;
+.swatch {
+    height: 40px;
+    width: 40px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
 }
-.card-author {
-  font-size: 14px;
-  color: #666;
-  margin: 0;
-  text-align: left;
+
+.swatch[aria-checked="true"] {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px white;
 }
-.card:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+
+/*
+|-----------------------------------------------------------
+| || 9. MEDIA QUERIES (Mobile-First approach used for the main grid)
+|-----------------------------------------------------------
+*/
+
+@media (max-width: 700px) {
+    .settings-grid {
+        grid-template-areas:
+            "colour"
+            "brightness"
+            "text"
+            "theme"
+            "example";
+        grid-template-columns: 1fr;
+    }
+    .modal-content {
+        width: 95%; /* Adjust width for very small screens */
+    }
+    .navbar, .container {
+        width: 100%; /* Go full width on small screens */
+    }
 }

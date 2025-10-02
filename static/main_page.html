@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
-<head>
+<html lang="en"> <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Search</title>
@@ -10,45 +9,132 @@
     <div class="container">
 
         <nav class="navbar">
-        <!-- Left: customize button -->
-        <button class="customize-btn"></button>
+            <button class="customize-btn icon-btn" id="openSettingsBtn" aria-label="Open settings menu"></button>
 
-        <!-- Center: logo button -->
-        <button class="logo-btn"></button>
+            <button class="logo-btn icon-btn" aria-label="Go to home page"></button>
 
-        <!-- Right: avatar button -->
-        <div class="avatar-btn" onclick="login()"></div>
+            <button class="avatar-btn icon-btn" id="avatarBtn" aria-label="User profile or login"></button>
         </nav>
 
-        <div class="search-box">
-        <form id="bookForm" action="/library/all/" method="get" onsubmit="updateAction()">
-            <div class="search-container">
-            <input name="name" id="name" type="text" class="search-input" placeholder="Enter the title of the book...">
-            <span class="search-icon"></span>
+        <div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+            <div class="modal-content">
+                <header class="modal-header">
+                    <h2 id="settingsTitle">Settings</h2>
+                    <button class="btn--large" aria-label="Close settings" id="closeSettingsBtn" style="margin-top: 0px;">&lt;/&gt;</button>
+                </header>
+
+                <div class="settings-grid">
+                    <section class="colour-group">
+                        <h3>Colour</h3> <div class="objects" style="justify-content: left;">
+                            <div class="swatch" style="background-color: #d84343;" data-color="#d84343" role="radio" aria-checked="true" tabindex="0"></div>
+                            <div class="swatch" style="background-color: #4a90e2;" data-color="#4a90e2" role="radio" aria-checked="false" tabindex="0"></div>
+                            <div class="swatch" style="background-color: #e0e0e0;" data-color="#e0e0e0" role="radio" aria-checked="false" tabindex="0"></div>
+                            <div class="swatch" style="background-color: #1e3d59;" data-color="#1e3d59" role="radio" aria-checked="false" tabindex="0"></div>
+                            <div class="swatch" style="background-color: #3f684c;" data-color="#3f684c" role="radio" aria-checked="false" tabindex="0"></div>
+                            <div class="swatch" style="background-color: #f0e6e6;" data-color="#f0e6e6" role="radio" aria-checked="false" tabindex="0"></div>
+                        </div>
+                    </section>
+
+                    <section class="brightness-group">
+                        <h3>Brightness</h3>
+                        <input type="range" min="0" max="100" value="50" class="form-range" id="BrightnessRange" aria-label="Screen brightness adjustment">
+                    </section>
+
+                    <section class="text-group">
+                        <h3>Font Style</h3>
+                        <select class="form-select" aria-label="Font Family">
+                            <option value="Montserrat">Montserrat</option>
+                            <option value="Roboto">Roboto</option>
+                        </select>
+                        <select class="form-select" aria-label="Font Style">
+                            <option value="500">Semi bold</option> <option value="400">Regular</option>
+                        </select>
+                        <select class="form-select" aria-label="Font Size">
+                            <option value="32px">32</option> <option value="16px">16</option>
+                        </select>
+                    </section>
+
+                    <section class="example-group">
+                        <h1>Text</h1>
+                        <h2>Text</h2>
+                        <h3>Text</h3>
+                        <p>Text</p>
+                    </section>
+
+                    <section class="theme-group">
+                        <h3>Theme</h3>
+                        <label class="switch">
+                            <input type="checkbox" id="theme-toggle" aria-label="Toggle dark theme">
+                            <span class="switch-track round"></span>
+                        </label>
+                    </section>
+
+                </div>
             </div>
-        </form>
         </div>
 
-        <div class="labels">
-            <div class="label">Self-development</div>
-            <div class="label">Biography</div>
-            <div class="label">Philosophy</div>
-            <div class="label">History</div>
-            <div class="label">Novel</div>
-            <div class="label">Detective</div>
-            <div class="label">Fiction</div>
-        </div>
-        <div class="card-list">
-            {{range .Books}}
-                <div class="card">
+        <main>
+            <div class="search-box">
+                <form id="bookForm" action="/library/all/" method="get" onsubmit="updateAction()">
+                    <div class="search-container">
+                        <input name="name" id="name" type="text" class="search-input" placeholder="Enter the title of the book..." aria-label="Enter the title of the book">
+                        <span class="search-icon"></span>
+                    </div>
+                </form>
+            </div>
+
+            <div class="objects">
+                <div class="label" tabindex="0">Self-development</div> <div class="label" tabindex="0">Biography</div>
+                <div class="label" tabindex="0">Philosophy</div>
+                <div class="label" tabindex="0">History</div>
+                <div class="label" tabindex="0">Novel</div>
+                <div class="label" tabindex="0">Detective</div>
+                <div class="label" tabindex="0">Fiction</div>
+            </div>
+
+
+            <div class="objects" style="justify-content: left;">
+                <button class="btn--large">All books</button>
+                <button class="btn--large">Favourite books</button>
+            </div>
+            <hr>
+            
+            <h1>Popular books</h1>
+
+            <div class="card-list" id="cardList">
+                {{range .Books}}
+                    <div class="card">
                     <a href="/library/one/{{.ID | extractNumericPart}}">
-                    <img src="/static/lolita-cover.jpg" alt="Book cover of Lolita"></a>
-                    <div class="card-title">{{.Name}}</div>     
+                        <img src="/static/lolita-cover.jpg" alt="Book cover for {{.Name}} by {{.Author}}">
+                    </a>
+                    <div class="card-title">{{.Name}}</div>
                     <div class="card-author">{{.Author}}</div>
+                    </div> 		 
+                {{end}}
+            </div>
+
+            <input type="range" class="form-range" id="customRange1" value="0">
+
+            <div class="book-card">
+                <div class="book-info">
+                    <h2>Name of really cool and long book</h2>
+                    <h3>Author of this wonderful book</h3>
+                    <p>
+                        Heaven Has No Favorites is a novel by the German writer Erich Maria Remarque.
+                        This novel is a story about passion and love, set in 1948 with a background
+                        of automobile racing. Inspired by racing driver Alfonso de Portago.
+                    </p>
+                    <div class="labels" role="group" aria-label="Book categories"> <div class="label">Label</div>
+                        <div class="label">Label</div>
+                        <div class="label">Label</div>
+                    </div>
                 </div>
-            {{end}}
-        </div>
+                <div class="book-image">
+                    <img src="/static/lolita-cover.jpg" alt="Book cover of Heaven Has No Favorites">
+                </div>
+            </div>
+        </main>
     </div>
-    <script src="/static/main_page.js"></script>
+    <script src="/static/script.js"></script>
 </body>
 </html>
