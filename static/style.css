@@ -22,7 +22,7 @@ body {
     --secondary-color: #1F7A8C;
     --neutral-1-color: #FFFFFF;
     --neutral-2-color: #E1E5F2;
-    --neutral-2-alpha: color-mix(in srgb, var(--neutral-2-color) 80%, transparent); /* Renamed and fixed typo */
+    --neutral-2-alpha: color-mix(in srgb, var(--neutral-2-color) 80%, transparent);
     --neutral-3-color: #BFDBF7;
 
     /* Typography Variables */
@@ -43,6 +43,13 @@ body {
     --icon-logo: url("logo_long_white.svg");
     --icon-login: url("login.png");
     --icon-search: url("search.png");
+    --icon-mark: url("bookmark_empt.svg");
+    --icon-mark-ch: url("bookmark_fill.svg");
+    --icon-play: url("play.svg");
+    --icon-play-ch: url("play_fill.svg");
+    --icon-pause: url("pause.svg");
+    --icon-pause-ch: url("pause_fill.svg");
+
 }
 
 body {
@@ -92,6 +99,15 @@ hr {
     border-top: 1px solid var(--primary-color);
 }
 
+
+.dark-theme {
+    --primary-color: #f5f5f7;
+    --secondary-color: #3a3a3c;
+    --neutral-1-color: #1c1c1e;
+    --neutral-2-color: #2c2c2e;
+    --neutral-2-alpha: color-mix(in srgb, var(--neutral-2-color) 80%, transparent);
+    --neutral-3-color: #000000;
+}
 /*
 |-----------------------------------------------------------
 | || 2. LAYOUT AND CONTAINERS
@@ -310,7 +326,7 @@ input[type="range"]::-webkit-slider-runnable-track {
     height: 0;
 }
 
-.switch-track { /* Renamed from .slider to avoid conflict */
+.switch-track, .switch-mark, .switch-play{ /* Renamed from .slider to avoid conflict */
     position: absolute;
     cursor: pointer;
     top: 0;
@@ -318,9 +334,8 @@ input[type="range"]::-webkit-slider-runnable-track {
     right: 0;
     bottom: 0;
     height: 34px;
-    background-color: var(--neutral-1-color);
-    transition: .4s;
     width: 100%;
+    background-color: var(--neutral-1-color);
     margin-top: 0; /* Removed conflicting margin */
 }
 
@@ -353,6 +368,31 @@ input:checked + .switch-track:before {
     border-radius: 50%;
     background-color: var(--secondary-color);
     border-bottom: 4px solid var(--primary-color);
+}
+
+.switch-mark {
+  display: block;
+  background: var(--icon-mark) center/contain no-repeat;
+  width: 50px;
+  height: 50px;
+  transition: 0.3s;
+}
+
+/* Change icon when checked */
+.switch input:checked + .switch-mark {
+  background: var(--icon-mark-ch) center/contain no-repeat;
+}
+
+.switch-play {
+  display: block;
+  background: var(--icon-play) center/contain no-repeat;
+  width: 50px;
+  height: 50px;
+}
+
+/* Change icon when checked */
+.switch input:checked + .switch-play {
+  background: var(--icon-pause-ch) center/contain no-repeat;
 }
 
 /*
@@ -523,7 +563,65 @@ input:checked + .switch-track:before {
 
 /*
 |-----------------------------------------------------------
-| || 9. MEDIA QUERIES (Mobile-First approach used for the main grid)
+| || 9. COMPONENTS: READING MODE (Word-Box)
+|-----------------------------------------------------------
+*/
+
+.header-group {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin-bottom: 40px;
+    width: 100%;
+}
+
+.title-block {
+    display: flex;
+    flex-direction: column;
+}
+
+.book-text {
+    white-space: pre-line;
+    font-size: 30px;
+    margin-top: 10px;
+    background: var(--neutral-1-color);
+    border-radius: 5px;
+    min-height: 150px;
+    padding: 20px;
+}
+
+.word-box {
+    font-size: 40px;
+    font-weight: bold;
+    background: var(--neutral-1-color);
+    padding: 20px;
+    width: 500px;
+    max-width: 70%;
+    text-align: center;
+    border-radius: 5px;
+    margin-right: 20px;
+}
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+}
+
+.controls #speed {
+    background-color: var(--secondary-color); /* Match the dark color in the image */
+    color: var(--neutral-1-color);
+    font-size: 1em;
+    text-align: center;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 0;
+    width: 60px; /* Adjust width to look compact */
+}
+
+/*
+|-----------------------------------------------------------
+| || 10. MEDIA QUERIES (Mobile-First approach used for the main grid)
 |-----------------------------------------------------------
 */
 
@@ -542,5 +640,12 @@ input:checked + .switch-track:before {
     }
     .navbar, .container {
         width: 100%; /* Go full width on small screens */
+    }
+    .word-box {
+        width: 100%;
+        max-width: 80%; /* Allow for smaller width */
+        margin-right: 10px; /* Reduced margin */
+        padding: 15px;
+        font-size: 30px;
     }
 }

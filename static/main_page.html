@@ -10,10 +10,10 @@
 
         <nav class="navbar">
             <button class="customize-btn icon-btn" id="openSettingsBtn" aria-label="Open settings menu"></button>
-
-            <button class="logo-btn icon-btn" aria-label="Go to home page"></button>
-
-            <button class="avatar-btn icon-btn" id="avatarBtn" aria-label="User profile or login"></button>
+            <a href="/library/">
+            <button class="logo-btn icon-btn" aria-label="Go to home page" action="/library/"></button>
+            </a>
+            <button class="avatar-btn icon-btn" id="avatarBtn" aria-label="User profile or login" onclick="login()"></button>
         </nav>
 
         <div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
@@ -135,6 +135,6 @@
             </div>
         </main>
     </div>
-    <script src="/static/script.js"></script>
+    <script src="/static/main_page.js"></script>
 </body>
 </html>

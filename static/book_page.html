@@ -4,30 +4,106 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Reader</title>
-    <link rel="stylesheet" type="text/css" href="/static/book_page.css">
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
 </head>
 <body>
     <div class="container">
-        <div class="book-info">
-            <h1>{{.Name}}</h1>
-            <p>{{.Author}}, {{.ReleaseDate}}</p>
-            <div>
-                <button id="favBtn" onclick="submitForm(this)">📌</button>
+
+        <nav class="navbar">
+            <button class="customize-btn icon-btn" id="openSettingsBtn" aria-label="Open settings menu"></button>
+            <a href="/library/">
+            <button class="logo-btn icon-btn" aria-label="Go to home page" action="/library/"></button>
+            </a>
+            <button class="avatar-btn icon-btn" id="avatarBtn" aria-label="User profile or login"></button>
+        </nav>
+
+        <div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+            <div class="modal-content">
+                <header class="modal-header">
+                    <h2 id="settingsTitle">Settings</h2>
+                    <button class="btn--large" aria-label="Close settings" id="closeSettingsBtn" style="margin-top: 0px;">&lt;/&gt;</button>
+                </header>
+
+                <div class="settings-grid">
+                    <section class="colour-group">
+                        <h3>Colour</h3> <div class="objects" style="justify-content: left;">
+                            <div class="swatch" style="background-color: #d84343;" data-color="#d84343" role="radio" aria-checked="true" tabindex="0"></div>
+                            <div class="swatch" style="background-color: #4a90e2;" data-color="#4a90e2" role="radio" aria-checked="false" tabindex="0"></div>
+                            <div class="swatch" style="background-color: #e0e0e0;" data-color="#e0e0e0" role="radio" aria-checked="false" tabindex="0"></div>
+                            <div class="swatch" style="background-color: #1e3d59;" data-color="#1e3d59" role="radio" aria-checked="false" tabindex="0"></div>
+                            <div class="swatch" style="background-color: #3f684c;" data-color="#3f684c" role="radio" aria-checked="false" tabindex="0"></div>
+                            <div class="swatch" style="background-color: #f0e6e6;" data-color="#f0e6e6" role="radio" aria-checked="false" tabindex="0"></div>
+                        </div>
+                    </section>
+
+                    <section class="brightness-group">
+                        <h3>Brightness</h3>
+                        <input type="range" min="0" max="100" value="50" class="form-range" id="BrightnessRange" aria-label="Screen brightness adjustment">
+                    </section>
+
+                    <section class="text-group">
+                        <h3>Font Style</h3>
+                        <select class="form-select" aria-label="Font Family">
+                            <option value="Montserrat">Montserrat</option>
+                            <option value="Roboto">Roboto</option>
+                        </select>
+                        <select class="form-select" aria-label="Font Style">
+                            <option value="500">Semi bold</option> <option value="400">Regular</option>
+                        </select>
+                        <select class="form-select" aria-label="Font Size">
+                            <option value="32px">32</option> <option value="16px">16</option>
+                        </select>
+                    </section>
+
+                    <section class="example-group">
+                        <h1>Text</h1>
+                        <h2>Text</h2>
+                        <h3>Text</h3>
+                        <p>Text</p>
+                    </section>
+
+                    <section class="theme-group">
+                        <h3>Theme</h3>
+                        <label class="switch">
+                            <input type="checkbox" id="theme-toggle" aria-label="Toggle dark theme">
+                            <span class="switch-track round"></span>
+                        </label>
+                    </section>
+
+                </div>
             </div>
-            <div class="reader">
+        </div>
+
+        <div class="book-info">
+            <div class="header-group" style="justify-content: left;">
+                <label class="switch">
+                    <input type="checkbox" id="favBtn" onclick="submitForm(this)"/>
+                    <span class="switch-mark"></span>
+                </label>
+                <div class="title-block">
+                    <h2>{{.Name}}</h2>
+                    <h4>{{.Author}}, {{.ReleaseDate}}</h4>
+                </div>
+            </div>
+            <div class="header-group">
                 <div class="word-box" id="book-text">---</div>
                 <div class="controls">
-                    <button class="start" onclick="startReading()">▶</button>
-                    <button class="stop" onclick="stopReading()">⏸</button>
-                    <input type="number" id="speed" value="600" min="100" onchange="updateSpeed()" class="input-text qty text">
+                    <input type="number" id="speed" value="600" min="100" onchange="updateSpeed()">
+                    <label class="switch">
+                        <input type="checkbox" id="play"/>
+                        <span class="switch-play"></span>
+                    </label>
                 </div>
             </div>
             <div class="book-text">{{.Text}}</div>
         </div>
     </div>
+
+
     <script>
         const text = `{{.Text}}`;
         const words = text.split(/\s+/);
+        const play = document.getElementById('play');
         let index = 0;
         let intervalId = null;
         let speed = 600;
@@ -42,18 +118,14 @@
             }
         }
 
-        function startReading() {
-            if (!intervalId) {
+         play.addEventListener('change', (e) => {
+            if (e.target.checked) {
                 intervalId = setInterval(updateText, speed);
-            }
-        }
-
-        function stopReading() {
-            if (intervalId) {
+            } else {
                 clearInterval(intervalId);
                 intervalId = null;
             }
-        }
+        });
 
         function updateSpeed() {
             speed = parseInt(document.getElementById("speed").value, 10);
