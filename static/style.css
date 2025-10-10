@@ -87,6 +87,23 @@ p {
     font-size: var(--font-size-sm);
     margin: 0.7em 0 1em 0;
 }
+.toggle {
+    text-align: center;
+    margin-top: 1em;
+    font-size: var(--font-size-sm);
+}
+
+.toggle a {
+    color: var(--secondary-color);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.25rem;
+    text-align: left;
+}
 
 hr {
     border: none;
@@ -101,6 +118,10 @@ hr {
     --neutral-2-alpha: color-mix(in srgb, var(--neutral-2-color) 80%, transparent);
     --neutral-3-color: #000000;
 }
+
+ .hidden {
+    display: none;
+  }
 /*
 |-----------------------------------------------------------
 | || 2. LAYOUT AND CONTAINERS
@@ -108,12 +129,13 @@ hr {
 */
 
 .container {
+    top: 0;
     position: relative;
     width: 80%;
     min-height: 100vh;
     max-width: 900px;
     background: var(--neutral-2-alpha);
-    margin: var(--navbar-height) auto 0 auto;
+    margin: 0 auto;
     padding: 20px;
 }
 
@@ -226,7 +248,6 @@ button {
 | || 5. COMPONENTS: SEARCH AND FORMS
 |-----------------------------------------------------------
 */
-
 .form-select {
     padding: 10px;
     border: 1px solid var(--neutral-2-color);
@@ -236,6 +257,24 @@ button {
     width: 100%;
     margin-bottom: 10px;
     min-width: 120px;
+}
+
+.input-container {
+    position: relative;
+    width: 300px;
+    margin: 15px auto;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px 20px;
+    font-size: var(--font-size-sm);
+    border: 1px solid var(--primary-color);
+    border-radius: var(--border-radius-lg);
+}
+
+.form-input:focus {
+    outline-color: var(--primary-color);
 }
 
 /*
@@ -419,5 +458,4 @@ input:checked + .switch-track:before {
     .navbar, .container {
         width: 100%; /* Go full width on small screens */
     }
-    
 }
