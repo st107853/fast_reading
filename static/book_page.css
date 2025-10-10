@@ -1,90 +1,245 @@
-body {
-    font-family: Times, serif;
-    background-image: url(news_paperjpg.jpg);
-    color: #4d0101;
-    padding: 20px;
+/*
+|-----------------------------------------------------------
+| || 1. CSS VARIABLES
+|-----------------------------------------------------------
+*/
+:root{
+    /* Use 'component-state' naming for image variables */
+    --icon-bookmark-empty: url("bookmark_empt.svg");
+    --icon-bookmark-filled: url("bookmark_fill.svg");
+    --icon-play: url("play.svg");
+    --icon-pause: url("pause_fill.svg"); /* Use pause_fill as the checked state often means "Pause" */
+}
+
+/*
+|-----------------------------------------------------------
+| || 2. HEADER AND TITLE COMPONENTS
+|-----------------------------------------------------------
+*/
+
+.book-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    margin-bottom: 40px;
+}
+
+.title-block {
+    display: flex;
+    flex-direction: column;
+}
+
+/*
+|-----------------------------------------------------------
+| || 3. SWITCH COMPONENTS
+|-----------------------------------------------------------
+*/
+
+.switch-mark, .switch-play{
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 34px;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+/* Base properties for icon display (Overrides track size) */
+.switch-mark, 
+.switch-play {
+    display: block;
+    width: 50px;
+    height: 50px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Bookmark Icon Switch */
+.switch-mark {
+    background-image: var(--icon-bookmark-empty);
+    transition: 0.3s;
+}
+.switch input:checked + .switch-mark {
+    background-image: var(--icon-bookmark-filled);
+}
+
+/* Play/Pause Icon Switch */
+.switch-play {
+    background-image: var(--icon-play);
+}
+
+.switch input:checked + .switch-play {
+    background-image: var(--icon-pause);
+}
+
+/*
+|-----------------------------------------------------------
+| || 4. READING LAYOUT
+|-----------------------------------------------------------
+*/
+
+.reading-grid {
+    display: grid;
+    grid-template-areas: 
+        ".    word-box         controls" 
+        "nav  text-area        scroll";grid-template-columns: 40px 1fr 40px; /* Specific sizes for button columns */
+    gap: 20px 10px;
+    width: 95%;
+    margin: 0 auto;
+}
+
+/*
+|-----------------------------------------------------------
+| || 5. GRID ITEMS
+|-----------------------------------------------------------
+*/
+
+.word-box {
+    grid-area: word-box;
     display: flex;
     justify-content: center;
-}
-.container {
-    display: flex;
-    width: 100%;
+    align-items: center;
+    
+    /* Content Styling */
+    font-size: 40px;
+    font-weight: bold;
+    background: var(--neutral-1-color);
     padding: 20px;
-    background: #f5e1cba0;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    border-radius: 10px;
-}
-.book-info {
     width: 100%;
+    text-align: center;
+    border-radius: 5px;
 }
+
+.controls {
+    grid-area: controls;
+    display: flex;
+    flex-direction: column;
+    align-self: flex-start;
+    justify-content: flex-start;}
+
+
+.controls #speed {
+    background-color: var(--secondary-color);
+    color: var(--neutral-1-color);
+    font-size: 1em;
+    text-align: center;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 0;
+    width: 60px;
+}
+
+.book-nav-btn {
+    grid-area: nav;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    padding-top: 20px;
+    height: 100%;
+}
+
+.nav-control-btn {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 20px;
+    height: 60px;
+    padding: 0;
+}
+
+.nav-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    margin: 4px 0;
+}
+
+/*
+|-----------------------------------------------------------
+| || 6. BOOK TEXT AND SCROLL
+|-----------------------------------------------------------
+*/
+
+.book-text-area {
+    grid-area: text-area;
+}
+
 .book-text {
     white-space: pre-line;
     font-size: 30px;
-    margin-top: 10px;
-    background: #f5e1cb;
+    background: var(--neutral-1-color);
     border-radius: 5px;
-    min-height: 150px;
-}
-.reader {
-    /* Убираем фиксированную ширину */
-    /* width: 40%; */
-    justify-content: center; 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: 1; /* добавляем flex: 1, чтобы занимал доступное пространство */
-}
-.word-box {
-    font-size: 40px;
-    font-weight: bold;
-    background: #f5e1cb;
+    min-height: 250px;
+    max-height: 400px;
     padding: 20px;
-    width: 200px;
-    text-align: center;
-    border-radius: 5px;
-    margin: 0px;
-}
-.controls {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-button {
-    padding: 10px;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
+    width: 100%;
+    
+    overflow-y: scroll;
+    scroll-behavior: auto;
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
+.book-scroll-control {
+    grid-area: scroll;
+}
+
+input[type="range"].scroll-slider{
+    transform: rotate(90deg); 
     -webkit-appearance: none;
+    width: auto;
+    margin: 160% -40px;
 }
 
-input[type='number'],
-input[type="number"]:hover,
-input[type="number"]:focus {
-    appearance: none;
-    -moz-appearance: textfield;
-    width: 70px;
-    height: 35px;
-    background-color: rgb(1, 65, 1);
-    border-color: rgb(1, 65, 1);
-    border-radius: 5px;
-    color: rgb(233, 235, 185);
-    font-size: 15;
-    text-align-last: center;
+/*
+|-----------------------------------------------------------
+| || 7. MODAL/OVERLAY (Positioned relative to viewport/container)
+|-----------------------------------------------------------
+*/
 
+.chapter-nav-overlay {
+    position: absolute;
+    top: 30%;
+    left: 85px;
+
+    width: 200px;
+    padding: 15px;
+    background-color: var(--neutral-1-color);
+    border-radius: var(--border-radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-20px);
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out, visibility 0.3s;
 }
-.start {
-    width: 40px;
-    height: 40px;
-    background: rgb(1, 65, 1);
-    color: rgb(233, 235, 185);
+
+.chapter-nav-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
-.stop {
-    width: 40px;
-    height: 40px;
-    background: rgb(114, 4, 4);
-    color: rgb(233, 235, 185);
+
+.chapter-nav-overlay ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.chapter-nav-overlay li {
+    font-size: var(--font-size-sm);
+    padding: 5px 0;
+    cursor: pointer;
+    color: var(--primary-color);
+}
+
+.chapter-nav-overlay li:hover {
+    color: var(--secondary-color);
 }

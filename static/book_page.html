@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Reader</title>
     <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <link rel="stylesheet" type="text/css" href="/static/book_page.css">
 </head>
 <body>
     <div class="container">
@@ -14,7 +15,7 @@
             <a href="/library/">
             <button class="logo-btn icon-btn" aria-label="Go to home page" action="/library/"></button>
             </a>
-            <button class="avatar-btn icon-btn" id="avatarBtn" aria-label="User profile or login"></button>
+            <button class="avatar-btn icon-btn" id="avatarBtn" aria-label="User profile or login" onclick="login()"></button>
         </nav>
 
         <div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
@@ -26,7 +27,8 @@
 
                 <div class="settings-grid">
                     <section class="colour-group">
-                        <h3>Colour</h3> <div class="objects" style="justify-content: left;">
+                        <h3>Colour</h3>
+                        <div class="objects" style="justify-content: left;">
                             <div class="swatch" style="background-color: #d84343;" data-color="#d84343" role="radio" aria-checked="true" tabindex="0"></div>
                             <div class="swatch" style="background-color: #4a90e2;" data-color="#4a90e2" role="radio" aria-checked="false" tabindex="0"></div>
                             <div class="swatch" style="background-color: #e0e0e0;" data-color="#e0e0e0" role="radio" aria-checked="false" tabindex="0"></div>
@@ -72,38 +74,62 @@
 
                 </div>
             </div>
+        </div>        
+        <div class="book-header" style="justify-content: left;">
+            <label class="switch">
+                <input type="checkbox" id="favBtn" onclick="submitForm(this)"/>
+                <span class="switch-mark"></span>
+            </label>
+            <div class="title-block">
+                <h2>{{.Name}}</h2>
+                <h4>{{.Author}}, {{.ReleaseDate}}</h4>
+            </div>
         </div>
+        <div class="reading-grid">
 
-        <div class="book-info">
-            <div class="header-group" style="justify-content: left;">
+            <section class="word-box" id="book-text">---</section>
+
+            <section class="controls">
+                <input type="number" id="speed" value="600" min="100" onchange="updateSpeed()">
                 <label class="switch">
-                    <input type="checkbox" id="favBtn" onclick="submitForm(this)"/>
-                    <span class="switch-mark"></span>
+                    <input type="checkbox" id="play"/>
+                    <span class="switch-play"></span>
                 </label>
-                <div class="title-block">
-                    <h2>{{.Name}}</h2>
-                    <h4>{{.Author}}, {{.ReleaseDate}}</h4>
+            </section>
+
+            <section class="book-nav-btn">
+                <button class="nav-control-btn" onclick="toggleChapterNav()" aria-label="Toggle chapter navigation">
+                    <span class="nav-dot"></span>
+                    <span class="nav-dot"></span>
+                    <span class="nav-dot"></span>
+                </button>
+                <div class="chapter-nav-overlay">
+                    <ul>
+                        <li>Chapter 1</li>
+                        <li>1.1 jsfdijsf sfjnssfaj</li>
+                        <li>Chapter 2</li>
+                        <li>Chapter 3</li>
+                    </ul>
                 </div>
-            </div>
-            <div class="header-group">
-                <div class="word-box" id="book-text">---</div>
-                <div class="controls">
-                    <input type="number" id="speed" value="600" min="100" onchange="updateSpeed()">
-                    <label class="switch">
-                        <input type="checkbox" id="play"/>
-                        <span class="switch-play"></span>
-                    </label>
-                </div>
-            </div>
-            <div class="book-text">{{.Text}}</div>
+            </section>
+
+            <section class="book-text-area">
+                <div class="book-text" id="bookText">{{.Text}}</div>
+            </section>
+
+            <section class="book-scroll-control">
+                <input type="range" id="scrollRange" class="scroll-slider" value="50" aria-label="Reading progress slider">
+            </section>
         </div>
     </div>
-
-
     <script>
         const text = `{{.Text}}`;
         const words = text.split(/\s+/);
         const play = document.getElementById('play');
+        const bookText = document.getElementById("bookText");
+        const range = document.getElementById("scrollRange");
+        const button = document.querySelector('.nav-control-btn');
+        const chapterNav = document.querySelector('.chapter-nav-overlay');
         let index = 0;
         let intervalId = null;
         let speed = 600;
@@ -118,7 +144,19 @@
             }
         }
 
-         play.addEventListener('change', (e) => {
+        function toggleChapterNav() {
+            if (chapterNav) {
+                chapterNav.classList.toggle('active');
+
+                var isExpanded = chapterNav.classList.contains('active');
+                
+                button.setAttribute('aria-expanded', isExpanded);
+            } else {
+                console.error("Chapter navigation overlay element (.chapter-nav-overlay) not found.");
+            }
+        }
+
+        play.addEventListener('change', (e) => {
             if (e.target.checked) {
                 intervalId = setInterval(updateText, speed);
             } else {
@@ -173,6 +211,16 @@
                 }
             };
         }
+
+        range.max = bookText.scrollHeight - bookText.clientHeight;
+        range.min = 0;
+
+        range.addEventListener("input", () => {
+            bookText.scrollTop = range.value;
+        });
+        bookText.addEventListener("scroll", () => {
+            range.value = bookText.scrollTop;
+        });
     </script>
 </body>
 </html>
