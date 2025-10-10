@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html lang="en"> <head>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Search</title>
     <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <link rel="stylesheet" type="text/css" href="/static/main_page.css">
 </head>
 <body>
     <div class="container">
@@ -74,14 +76,12 @@
         </div>
 
         <main>
-            <div class="search-box">
-                <form id="bookForm" action="/library/all/" method="get" onsubmit="updateAction()">
-                    <div class="search-container">
-                        <input name="name" id="name" type="text" class="search-input" placeholder="Enter the title of the book..." aria-label="Enter the title of the book">
-                        <span class="search-icon"></span>
-                    </div>
-                </form>
-            </div>
+            <form id="bookForm" action="/library/all/" method="get" onsubmit="updateAction()">
+                <div class="search-container">
+                    <input name="name" id="name" type="text" class="search-input" placeholder="Enter the title of the book..." aria-label="Enter the title of the book">
+                    <span class="search-icon"></span>
+                </div>
+            </form>
 
             <div class="objects">
                 <div class="label" tabindex="0">Self-development</div> <div class="label" tabindex="0">Biography</div>
