@@ -110,6 +110,10 @@ hr {
     border-top: 1px solid var(--primary-color);
 }
 
+.white-text {
+    color: var(--neutral-1-color);
+}
+
 .dark-theme {
     --primary-color: #f5f5f7;
     --secondary-color: #3a3a3c;
@@ -119,9 +123,9 @@ hr {
     --neutral-3-color: #000000;
 }
 
- .hidden {
+.hidden {
     display: none;
-  }
+}
 /*
 |-----------------------------------------------------------
 | || 2. LAYOUT AND CONTAINERS
@@ -137,6 +141,7 @@ hr {
     background: var(--neutral-2-alpha);
     margin: 0 auto;
     padding: 20px;
+    padding-top: calc(var(--navbar-height) + 20px); /* Account for fixed navbar */
 }
 
 .objects {
@@ -144,7 +149,7 @@ hr {
     flex-wrap: wrap;
     justify-content: center;
     gap: 15px;
-    padding: 0 15px;
+    padding:  15px;
 }
 
 /*
@@ -211,36 +216,66 @@ button {
     color: var(--primary-color);
 }
 
-/* Modifier class for big button */
 .btn--large {
     padding: 10px 30px;
     margin-top: 60px;
     font-size: 1.2em;
     border-radius: 30px;
     border: 2px solid var(--primary-color);
-}
-
-/* Label Component */
-.label {
-    display: inline;
-    padding: 6px 15px;
-    border-radius: 15px;
-    font-size: var(--font-size-sm);
-    background-color: var(--neutral-2-color);
+    background-color: transparent; /* Explicitly set base background */
     color: var(--primary-color);
-    border: 1px solid var(--primary-color);
-    cursor: default;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 
-/* Targeted hover effects */
-.label:hover, .btn--large:hover {
-    background-color: var(--primary-color);
+.btn--large.white-theme {
+    border: 2px solid var(--neutral-1-color);
     color: var(--neutral-1-color);
+    background-color: transparent;
 }
-.label:active, .btn--large:active {
+
+.btn--large:hover,
+.btn--large.white-theme:hover {
     background-color: var(--secondary-color);
     color: var(--neutral-1-color);
     border-color: var(--secondary-color);
+}
+
+.label {
+    display: inline-block;
+    padding: 6px 15px;
+    border-radius: 15px;
+    font-size: var(--font-size-sm);
+    background-color: var(--neutral-1-color);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    cursor: default;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.label:hover {
+    background-color: var(--neutral-3-color);
+    border-color: var(--secondary-color);
+    color: var(--primary-color);
+}
+
+.label:active, 
+.btn--large:active {
+    background-color: var(--secondary-color);
+    color: var(--neutral-1-color);
+    border-color: var(--secondary-color);
+}
+
+.label:active, 
+.btn--large:active {
+    background-color: var(--secondary-color);
+    color: var(--neutral-1-color);
+    border-color: var(--secondary-color);
+}
+
+.btn--large.white-theme:active {
+    background-color: var(--neutral-1-color);
+    color: var(--primary-color);
+    border: 2px solid var(--neutral-1-color);
 }
 
 /*
@@ -458,4 +493,50 @@ input:checked + .switch-track:before {
     .navbar, .container {
         width: 100%; /* Go full width on small screens */
     }
+}
+
+/*
+|-----------------------------------------------------------
+| || BOOK CARD GRID
+|-----------------------------------------------------------
+*/
+.card-grid {
+    /* Reusing .objects class name from previous code but adjusting for the 4-column layout */
+    display: flex;/* 4 columns for large screens */
+    gap: 20px;
+    padding: 0; /* Remove padding if added in .objects previously */
+}
+
+.card {
+    flex: 0 0 200px;
+    height: 300px;
+    width: 200px;
+    padding: 16px;
+    background-color: var(--neutral-1-color);
+    transition: box-shadow 0.3s;
+}
+
+.card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.card img {
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+}
+
+.card-title, .card-author {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.card-author {
+    font-size: 14px;
 }

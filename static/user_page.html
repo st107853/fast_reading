@@ -4,49 +4,116 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>User Page</title>
+  <link rel="stylesheet" type="text/css" href="/static/style.css">
   <link rel="stylesheet" type="text/css" href="/static/user_page.css">
 </head>
 <body>
-  <div class="user-container">
-    <h2 id="userName">{{.Name}}</h2>
+  <div class="container" style="background-color: var(--primary-color); padding-top: 20px;">
+    <header class="user-header">
+        <div class="header-group-left">
+            <a href="/library/">
+            <button class="logo-btn icon-btn" aria-label="Go to home page" action="/library/"></button>
+            </a>
+            <button class="customize-btn icon-btn" id="openSettingsBtn" aria-label="Open settings menu"></button>
+        </div>
 
-    <div class="section">
-      <h3>Favorite Books</h3>
-      <ul class="book-list" id="favoriteBooks">
+        <div class="header-group-center">
+            <button class="avatar-btn icon-btn" id="avatarBtn" aria-label="User avatar" style=" width: 100px; height: 100px;"></button>
+        </div>
+
+        <div class="header-group-right">
+            <div class="user-info">
+                <h3 class="user-name white-text">{{.Name}}</h3>
+                <span class="label">100 Coins</span>
+            </div>
+        </div>
+    </header>
+
+    <div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="modal-content">
+        <header class="modal-header">
+          <h2 id="settingsTitle">Settings</h2>
+          <button class="btn--large" aria-label="Close settings" id="closeSettingsBtn" style="margin-top: 0px;">&lt;/&gt;</button>
+        </header>
+
+        <div class="settings-grid">
+          <section class="colour-group">
+            <h3>Colour</h3> <div class="objects" style="justify-content: left;">
+              <div class="swatch" style="background-color: #d84343;" data-color="#d84343" role="radio" aria-checked="true" tabindex="0"></div>
+              <div class="swatch" style="background-color: #4a90e2;" data-color="#4a90e2" role="radio" aria-checked="false" tabindex="0"></div>
+              <div class="swatch" style="background-color: #e0e0e0;" data-color="#e0e0e0" role="radio" aria-checked="false" tabindex="0"></div>
+              <div class="swatch" style="background-color: #1e3d59;" data-color="#1e3d59" role="radio" aria-checked="false" tabindex="0"></div>
+              <div class="swatch" style="background-color: #3f684c;" data-color="#3f684c" role="radio" aria-checked="false" tabindex="0"></div>
+              <div class="swatch" style="background-color: #f0e6e6;" data-color="#f0e6e6" role="radio" aria-checked="false" tabindex="0"></div>
+            </div>
+          </section>
+
+          <section class="brightness-group">
+            <h3>Brightness</h3>
+            <input type="range" min="0" max="100" value="50" class="form-range" id="BrightnessRange" aria-label="Screen brightness adjustment">
+          </section>
+
+          <section class="text-group">
+            <h3>Font Style</h3>
+
+            <select class="form-select" aria-label="Font Family">
+              <option value="Montserrat">Montserrat</option>
+              <option value="Roboto">Roboto</option>
+            </select>
+
+            <select class="form-select" aria-label="Font Style">
+              <option value="500">Semi bold</option> <option value="400">Regular</option>
+            </select>
+
+            <select class="form-select" aria-label="Font Size">
+              <option value="32px">32</option> <option value="16px">16</option>
+            </select>
+          </section>
+
+          <section class="example-group">
+            <h1>Text</h1>
+            <h2>Text</h2>
+            <h3>Text</h3>
+            <p>Text</p>
+          </section>
+
+          <section class="theme-group">
+            <h3>Theme</h3>
+            <label class="switch">
+              <input type="checkbox" id="theme-toggle" aria-label="Toggle dark theme">
+              <span class="switch-track round"></span>
+            </label>
+          </section>
+
+          </div>
+      </div>
+    </div>
+
+    <nav class="user-nav-tabs">
+      <button class="btn--large white-theme">Favourite</button>
+      <button class="btn--large white-theme">Created</button>
+      <button class="btn--large white-theme" style="margin-left: auto;">Create book</button>
+    </nav>
+
+    <div class="user-nav-tabs">
+      <span class="label">Label</span>
+      <span class="label">Label</span>
+      <span class="label">Label</span>
+      <span class="label">Label</span>
+    </div>
+
+    <section class="objects card-grid">
         {{range .Favourite}}
-          <li class="book-cloud">
-            <img src="/static/edit.png" alt="Edit book" class="icon">
-
-            <div class="book-info">
-              <a href="/library/one/{{.ID | extractNumericPart}}" id="book-href" class="book-name">{{.Name}}</a>
-              <div class="book-author">{{.Author}}</div>
-            </div>
-          </li>
+          <div class="card">
+            <a href="/library/one/{{.ID | extractNumericPart}}">
+                <img src="/static/lolita-cover.jpg" alt="Book cover for {{.Name}} by {{.Author}}">
+            </a>
+            <div class="card-title">{{.Name}}</div>
+            <div class="card-author">{{.Author}}</div>
+          </div>
         {{end}}
-      </ul>
-    </div>
-
-    <div class="section">
-      <h3>Books Created</h3>
-      <form action="/library/addbook" method="get">
-        <div><button>+</button></div>
-      </form>
-      <ul class="book-list" id="createdBooks">
-        {{range .Written}}
-          <li class="book-cloud">
-            <img src="/static/edit.png" alt="Edit book" class="icon">
-
-            <div class="book-info">
-              <a href="/library/one/{{.ID | extractNumericPart}}" id="book-href" class="book-name">{{.Name}}</a>
-              <div class="book-author">{{.Author}}</div>
-            </div>
-
-            <img src="/static/trash.png" alt="Delete book" class="icon" onclick="deleteBook('{{.ID | extractNumericPart}}')">
-          </li>
-        {{end}}
-      </ul>
-    </div>
-  </div>
+    </section>
+</div>
 </body>
 <script src="/static/user_page.js"></script>
 </html>
