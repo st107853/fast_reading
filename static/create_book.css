@@ -1,62 +1,118 @@
-body {
-    font-family: Times, serif;
-    background-image: url(news_paperjpg.jpg);
-    color: #4d0101;
-    padding: 20px;
+/*
+|-----------------------------------------------------------
+| || 1. FORM GRID LAYOUT
+|-----------------------------------------------------------
+*/
+.book-editor-form {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    grid-template-areas:
+        "info photo"
+        "description description"
+        "content content"
+        "actions actions";
+    gap: 20px 40px;
+    max-width: 900px;
+    margin: 0 0;
+    padding-bottom: 50px;
+}
+
+.editor-info-grid {
+    grid-area: info;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    align-items: center;
+}
+
+.editor-photo-upload {
+    grid-area: photo;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
 }
-.container {
-    background: #f5e1cba0;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    border-radius: 10px;
-    padding: 20px;
+
+.editor-description {
+    grid-area: description;
+}
+
+.editor-content-list {
+    grid-area: content;
+}
+
+.editor-actions {
+    grid-area: actions;
+    display: flex;
+    justify-content: space-between;
+    padding-top: 20px;
+    border-top: 1px solid var(--neutral-4-color);
+}
+
+/*
+|-----------------------------------------------------------
+| || 2. INPUT AND TEXTAREA STYLES
+|-----------------------------------------------------------
+*/
+
+.year-and-labels {
+    display: inline-block;
+    align-items: center;
+    gap: 10px;
+}
+
+.textarea-description {
     width: 100%;
-}
-.form-control{
-    border-radius: 10px;
-    border: 1px solid #4d0101;
-    margin-bottom: 10px;
-    padding: 5px;
-}
-.addBookButton {
-    font-family: Arial, sans-serif;
-    position: absolute;
-    margin-bottom: 10px;
-    padding: 20px;
-    top: 35px;
-    right: -25px;
-}
-
-.label_file {
-    padding: 10px 20px;
-    background-color: rgb(114, 4, 4);
-    color: rgb(233, 235, 185);
-    border-radius: 10px;
-    cursor: pointer;
-}
-
-
-input[type="file"] {
-    display: none;
-}
-
-input[type="submit"] {
-    padding: 10px 20px;
-    background-color: rgb(1, 65, 1);
-    color: rgb(233, 235, 185);
+    min-height: 120px;
+    padding: 15px;
     border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    border-radius: 5px;
+    font-size: var(--font-size-md);
+    background-color: var(--neutral-1-color);
+    color: var(--primary-color);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    resize: vertical;
 }
 
-input[type="submit"].clicked {
-    background-color: rgb(82, 139, 82);
-}
-
-#bookText {
+/*
+|-----------------------------------------------------------
+| || 3. PHOTO UPLOAD AND CONTENT LIST
+|-----------------------------------------------------------
+*/
+.photo-placeholder {
     width: 100%;
+    max-width: 200px;
     height: 200px;
-    resize: none; 
+    background-color: var(--neutral-1-color);
+    border: 1px solid var(--neutral-4-color);
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.btn--upload {
+    background-color: var(--neutral-3-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 5px;
+    padding: 8px 20px;
+    font-size: var(--font-size-sm);
+    color: var(--primary-color);
+}
+
+.editor-content-list ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+}
+
+.editor-content-list li {
+    font-size: var(--font-size-md);
+    color: var(--primary-color);
+    padding: 5px 0;
+}
+
+
+.input-label {
+    font-size: var(--font-size-sm);
+    color: var(--primary-color);
+    font-weight: 500;
 }

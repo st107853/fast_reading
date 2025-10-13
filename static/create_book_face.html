@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add book</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <link rel="stylesheet" type="text/css" href="/static/create_book.css">
+</head>
+<body>
+    <div class="container">
+
+    <nav class="navbar">
+        <button class="customize-btn icon-btn" id="openSettingsBtn" aria-label="Open settings menu"></button>
+        <a href="/library/">
+        <button class="logo-btn icon-btn" aria-label="Go to home page" action="/library/"></button>
+        </a>
+        <button class="avatar-btn icon-btn" id="avatarBtn" aria-label="User profile or login" onclick="login()"></button>
+    </nav>
+
+    <div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2 id="settingsTitle">Settings</h2>
+                <button class="btn--large" aria-label="Close settings" id="closeSettingsBtn" style="margin-top: 0px;">&lt;/&gt;</button>
+            </header>
+
+            <div class="settings-grid">
+                <section class="colour-group">
+                    <h3>Colour</h3> <div class="objects" style="justify-content: left;">
+                        <div class="swatch" style="background-color: #d84343;" data-color="#d84343" role="radio" aria-checked="true" tabindex="0"></div>
+                        <div class="swatch" style="background-color: #4a90e2;" data-color="#4a90e2" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="swatch" style="background-color: #e0e0e0;" data-color="#e0e0e0" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="swatch" style="background-color: #1e3d59;" data-color="#1e3d59" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="swatch" style="background-color: #3f684c;" data-color="#3f684c" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="swatch" style="background-color: #f0e6e6;" data-color="#f0e6e6" role="radio" aria-checked="false" tabindex="0"></div>
+                    </div>
+                </section>
+
+                <section class="brightness-group">
+                    <h3>Brightness</h3>
+                    <input type="range" min="0" max="100" value="50" class="form-range" id="BrightnessRange" aria-label="Screen brightness adjustment">
+                </section>
+
+                <section class="text-group">
+                    <h3>Font Style</h3>
+                    <select class="form-select" aria-label="Font Family">
+                        <option value="Montserrat">Montserrat</option>
+                        <option value="Roboto">Roboto</option>
+                    </select>
+                    <select class="form-select" aria-label="Font Style">
+                        <option value="500">Semi bold</option> <option value="400">Regular</option>
+                    </select>
+                    <select class="form-select" aria-label="Font Size">
+                        <option value="32px">32</option> <option value="16px">16</option>
+                    </select>
+                </section>
+
+                <section class="example-group">
+                    <h1>Text</h1>
+                    <h2>Text</h2>
+                    <h3>Text</h3>
+                    <p>Text</p>
+                </section>
+
+                <section class="theme-group">
+                    <h3>Theme</h3>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-toggle" aria-label="Toggle dark theme">
+                        <span class="switch-track round"></span>
+                    </label>
+                </section>
+
+            </div>
+        </div>
+    </div>
+
+    <nav class="user-nav-tabs" >
+      <button class="btn--large">Book face</button>
+      <button class="btn--large" style="margin-left: auto;">Chapter</button>
+    </nav>
+    <hr>
+    
+    <form class="book-editor-form">
+        
+        <section class="editor-info-grid">
+            <div class="form-input-container">
+                <label for="book-name">Book naming</label>
+                <input type="text" id="book-name" class="form-input" value="The quick brown fox jumps over the lazy dog">
+            </div>
+
+            <div class="form-input-container">
+                <label for="author-name">Author</label>
+                <input type="text" id="author-name" class="form-input" value="The quick brown fox jumps over the lazy dog">
+            </div>
+
+            <div class="year-and-labels">
+                <div class="form-input-container">
+                    <label for="publication-year">Year</label>
+                    <input type="number" id="publication-year" class="form-input" value="1999">
+                </div>
+
+                <div class="form-input-container">
+                    <label for="book-label">
+                    <button class="icon-button">
+                        <img src="/static/add.svg" alt="add icon" class="icon">
+                        <span>Add label</span>
+                    </button>
+                    </label>
+                    <span class="label">Label</span>
+                    <span class="label">Label</span>
+                    <span class="label">Label</span>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="editor-photo-upload">
+            <div class="photo-placeholder"></div>
+            <button class="icon-button">
+                <img src="/static/upload.svg" alt="upload icon" class="icon">
+                <span>Upload image</span>
+            </button>
+        </section>
+
+        <section class="editor-description">
+            <label class="label">Short book description</label>
+            <textarea class="textarea-description">The quick brown fox jumps over the lazy dog</textarea>
+        </section>
+
+        <section class="editor-content-list">
+            <label class="label">Book's content:</label>
+            <ul>
+                <li>Chapter 1: fajfsjfjv fnsnnjfa fnjwinf</li>
+                <li>Chapter 2: 5 reasons to cry</li>
+                <li>Chapter 3: Why am i so cool</li>
+                <li>Chapter 4: How to live this life</li>
+            </ul>
+        </section>
+
+        <footer class="editor-actions">
+            <button type="submit" class="btn btn--large btn--publish">Publish</button>
+            <button type="button" class="btn btn--large btn--save">Save</button>
+            <button type="button" class="btn btn--large btn--add-chapter">Add chapter</button>
+        </footer>
+    </form>
+</div>
+</body>
+<script src="/static/create_book.js" defer></script>
+</html>

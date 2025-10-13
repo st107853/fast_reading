@@ -18,7 +18,7 @@ var mainPage = template.Must(template.New("main_page.html").Funcs(template.FuncM
 // Book reading page
 var bookPage = template.Must(template.New("book_page.html").ParseFiles("./static/book_page.html"))
 
-var addBook = template.Must(template.New("create_book.html").ParseFiles("./static/create_book.html"))
+var addBook = template.Must(template.New("create_book_face.html").ParseFiles("./static/create_book_face.html"))
 
 type BookData struct {
 	Title string
