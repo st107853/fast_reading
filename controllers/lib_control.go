@@ -20,6 +20,8 @@ var bookPage = template.Must(template.New("book_page.html").ParseFiles("./static
 
 var addBook = template.Must(template.New("create_book_face.html").ParseFiles("./static/create_book_face.html"))
 
+var addBookChapter = template.Must(template.New("create_book_chapter.html").ParseFiles("./static/create_book_chapter.html"))
+
 type BookData struct {
 	Title string
 	Books []models.Book
@@ -211,6 +213,13 @@ func (bc *BookController) DeleteAllBooks(c *gin.Context) {
 
 func (bc *BookController) AddBook(c *gin.Context) {
 	if err := addBook.Execute(c.Writer, nil); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+}
+
+func (bc *BookController) AddBookChapter(c *gin.Context) {
+	if err := addBookChapter.Execute(c.Writer, nil); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
