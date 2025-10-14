@@ -49,6 +49,54 @@
     border-top: 1px solid var(--neutral-4-color);
 }
 
+/* Create book chapter grid layout */
+
+.book-editor-form {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    grid-template-areas:
+        "info photo"
+        "description description"
+        "content content"
+        "actions actions";
+    gap: 20px 40px;
+    max-width: 900px;
+    margin: 0 0;
+    padding-bottom: 50px;
+}
+
+.chapter-name-section {
+    grid-area: name-upload;
+    display: flex;
+    /* Columns: Label, Input, Button */
+    grid-template-columns: auto 1fr auto;
+    gap: 10px 20px; /* Row gap, Column gap */
+    align-items: center; /* Vertically align items in the grid */
+    padding: 0 20px; /* Match padding of the input line */
+}
+
+.chapter-content-section {
+    grid-area: content-area;
+    display: flex; /* Use flexbox to lay out textarea and scrollbar side-by-side */
+    gap: 15px;
+    padding: 0 20px; /* Match padding to align with elements above */
+}
+
+#chapter-text-area {
+    flex-grow: 1; /* Allow textarea to take up available space */
+    min-height: 250px;
+    max-height: 400px;
+    /* Inherits from .textarea-description */
+}
+
+.chapter-editor-actions {
+    grid-area: actions;
+    display: flex;
+    justify-content: center; /* Center the 'Save' button */
+    padding-top: 20px;
+    border-top: 1px solid var(--neutral-4-color); /* Light separator line */
+}
+
 /*
 |-----------------------------------------------------------
 | || 2. INPUT AND TEXTAREA STYLES
@@ -87,15 +135,6 @@
     border: 1px solid var(--neutral-4-color);
     border-radius: 5px;
     margin-bottom: 10px;
-}
-
-.btn--upload {
-    background-color: var(--neutral-3-color);
-    border: 1px solid var(--primary-color);
-    border-radius: 5px;
-    padding: 8px 20px;
-    font-size: var(--font-size-sm);
-    color: var(--primary-color);
 }
 
 .editor-content-list ul {

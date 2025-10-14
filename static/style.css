@@ -277,7 +277,7 @@ button {
     border-color: var(--secondary-color);
 }
 
-.btn--large:active {
+.btn--large:active, .chosed {
     background-color: var(--primary-color);
     color: var(--neutral-1-color);
     border-color: var(--primary-color);
@@ -290,7 +290,7 @@ button {
 }
 
 .icon-button {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 8px;
   background-color: var(--secondary-color);
@@ -396,6 +396,16 @@ input[type="range"]::-webkit-slider-runnable-track {
     box-shadow: none;
     border: none;
     background: transparent;
+}
+
+.book-scroll-control {
+    grid-area: scroll;
+}
+
+input[type="range"].scroll-slider{
+    transform: rotate(90deg);
+    width: auto;
+    margin: 160% -40px;
 }
 
 /* Switch Component (Theme Toggle) */

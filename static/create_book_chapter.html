@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add book</title>
     <link rel="stylesheet" type="text/css" href="/static/style.css">
-    <link rel="stylesheet" type="text/css" href="/static/create_book.css">
 </head>
 <body>
     <div class="container">
@@ -76,74 +75,35 @@
     </div>
 
     <nav class="user-nav-tabs" >
-      <button class="btn--large chosed">Book face</button>
-      <a href="/library/addbook/chapter" style="margin-left: auto;">
-        <button class="btn--large">Add chapter</button>
-      </a>
+    <a href="/library/addbook/">
+      <button class="btn--large">Book face</button>
+    </a>
+      <button class="btn--large chosed" style="margin-left: auto;">Add chapter</button>
     </nav>
     <hr>
     
-    <form class="book-editor-form">
-        
-        <section class="editor-info-grid">
+    <form class="chapter-editor-form">
+        <section class="chapter-name-section">
             <div class="form-input-container">
-                <label for="book-name">Book naming</label>
-                <input type="text" id="book-name" class="form-input" value="The quick brown fox jumps over the lazy dog">
+                <label for="chapter-name">Chapter's name</label>
+                <input type="text" id="chapter-name" class="form-input" value="The quick brown fox jumps over the lazy dog">
             </div>
 
-            <div class="form-input-container">
-                <label for="author-name">Author</label>
-                <input type="text" id="author-name" class="form-input" value="The quick brown fox jumps over the lazy dog">
-            </div>
-
-            <div class="year-and-labels">
-                <div class="form-input-container">
-                    <label for="publication-year">Year</label>
-                    <input type="number" id="publication-year" class="form-input" value="1999">
-                </div>
-
-                <div class="form-input-container">
-                    <label for="book-label">
-                    <button class="icon-button">
-                        <img src="/static/add.svg" alt="add icon" class="icon">
-                        <span>Add label</span>
-                    </button>
-                    </label>
-                    <span class="label">Label</span>
-                    <span class="label">Label</span>
-                    <span class="label">Label</span>
-                </div>
-            </div>
-
-        </section>
-
-        <section class="editor-photo-upload">
-            <div class="photo-placeholder"></div>
-            <button class="icon-button">
-                <img src="/static/upload.svg" alt="upload icon" class="icon">
-                <span>Upload image</span>
+            <button class="icon-button" style="margin-left: auto;">
+                <img src="/static/upload.svg" alt="add icon" class="icon">
+                <span>Upload text</span>
             </button>
         </section>
 
-        <section class="editor-description">
-            <label>Short book description</label>
-            <textarea class="textarea-description">The quick brown fox jumps over the lazy dog</textarea>
+        <section class="chapter-content-section">
+            <textarea id="chapter-text-area" class="textarea-description">The quick brown fox jumps over the lazy dog</textarea>
+            <div class="chapter-scroll-control">
+                <input type="range" id="scrollRange" class="scroll-slider" value="50" aria-label="Reading progress slider">
+            </div>
         </section>
 
-        <section class="editor-content-list">
-            <label>Book's content:</label>
-            <ul>
-                <li>Chapter 1: fajfsjfjv fnsnnjfa fnjwinf</li>
-                <li>Chapter 2: 5 reasons to cry</li>
-                <li>Chapter 3: Why am i so cool</li>
-                <li>Chapter 4: How to live this life</li>
-            </ul>
-        </section>
-
-        <footer class="editor-actions">
-            <button type="submit" class="btn btn--large btn--publish">Publish</button>
-            <button type="button" class="btn btn--large btn--save">Save</button>
-            <button type="button" class="btn btn--large btn--add-chapter">Add chapter</button>
+        <footer class="chapter-editor-actions">
+            <button type="submit" class="btn btn--large btn--save">Save</button>
         </footer>
     </form>
 </div>
