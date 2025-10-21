@@ -1,10 +1,10 @@
-.search-container {
+.mp-search-container {
     position: relative;
     width: 80%;
     margin: 0px auto 20px auto;
 }
 
-.search-input {
+.mp-search-input {
     width: 100%;
     padding: 10px 20px;
     font-size: var(--font-size-sm);
@@ -12,7 +12,7 @@
     border-radius: var(--border-radius-lg);
 }
 
-.search-icon {
+.mp-search-icon {
     position: absolute;
     right: 20px;
     top: 50%;
@@ -26,27 +26,12 @@
     pointer-events: none;
 }
 
-.search-input:focus, .form-select:focus {
+.mp-search-input:focus {
     outline-color: var(--primary-color);
 }
 
-.card-list {
-    margin: 20px 0;
-    padding: 0 20px;
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 12px;
-
-    overflow-x: scroll;
-    scroll-behavior: auto;
-
-    /* Hide Scrollbar */
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
-
 /* Big Book Card */
-.book-card {
+.mp-book-card {
     display: flex;
     justify-content: space-between;
     align-items: stretch;
@@ -57,7 +42,7 @@
     width: 100%;
 }
 
-.book-info {
+.mp-book-info {
     flex: 2;
     padding: 20px;
     background-color: var(--neutral-2-color);
@@ -66,7 +51,7 @@
     justify-content: space-between;
 }
 
-.book-image {
+.mp-book-image {
     flex: 1;
     background-color: var(--neutral-2-color);
     display: flex;
@@ -75,7 +60,7 @@
     min-width: 200px;
 }
 
-.book-image img {
+.mp-book-image img {
     max-width: 100%;
     max-height: 250px;
     object-fit: cover;

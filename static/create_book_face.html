@@ -8,66 +8,66 @@
     <link rel="stylesheet" type="text/css" href="/static/create_book.css">
 </head>
 <body>
-    <div class="container">
+    <div class="fr-container">
 
-    <nav class="navbar">
-        <button class="customize-btn icon-btn" id="openSettingsBtn" aria-label="Open settings menu"></button>
+    <nav class="fr-navbar">
+        <button class="fr-icon-button fr-navbar__customize-btn fr-navbar-icon-btn" id="openSettingsBtn" aria-label="Open settings menu"></button>
         <a href="/library/">
-        <div class="logo-btn icon-btn" aria-label="Go to home page" action="/library/"></div>
+        <div class="fr-icon-button fr-navbar__logo-btn" aria-label="Go to home page" action="/library/"></div>
         </a>
-        <button class="avatar-btn icon-btn" id="avatarBtn" aria-label="User profile or login" onclick="login()"></button>
+        <button class="fr-icon-button fr-navbar__avatar-btn" id="avatarBtn" aria-label="User profile or login" onclick="login()"></button>
     </nav>
 
-    <div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-        <div class="modal-content">
-            <header class="modal-header">
+    <div id="settingsModal" class="fr-modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <div class="fr-modal__content">
+            <header class="fr-modal-header">
                 <h2 id="settingsTitle">Settings</h2>
-                <button class="btn--large" aria-label="Close settings" id="closeSettingsBtn" style="margin-top: 0px;">&lt;/&gt;</button>
+                <button class="fr-btn--large fr-btn-right" aria-label="Close settings" id="closeSettingsBtn">&lt;/&gt;</button>
             </header>
 
-            <div class="settings-grid">
-                <section class="colour-group">
-                    <h3>Colour</h3> <div class="objects" style="justify-content: left;">
-                        <div class="swatch" style="background-color: #d84343;" data-color="#d84343" role="radio" aria-checked="true" tabindex="0"></div>
-                        <div class="swatch" style="background-color: #4a90e2;" data-color="#4a90e2" role="radio" aria-checked="false" tabindex="0"></div>
-                        <div class="swatch" style="background-color: #e0e0e0;" data-color="#e0e0e0" role="radio" aria-checked="false" tabindex="0"></div>
-                        <div class="swatch" style="background-color: #1e3d59;" data-color="#1e3d59" role="radio" aria-checked="false" tabindex="0"></div>
-                        <div class="swatch" style="background-color: #3f684c;" data-color="#3f684c" role="radio" aria-checked="false" tabindex="0"></div>
-                        <div class="swatch" style="background-color: #f0e6e6;" data-color="#f0e6e6" role="radio" aria-checked="false" tabindex="0"></div>
+            <div class="fr-settings-grid">
+                <section class="fr-settings-group--colour">
+                    <h3>Colour</h3> <div class="fr-list" style="justify-content: left;">
+                        <div class="fr-swatch" style="background-color: #d84343;" data-color="#d84343" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #4a90e2;" data-color="#4a90e2" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #e0e0e0;" data-color="#e0e0e0" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #1e3d59;" data-color="#1e3d59" role="radio" aria-checked="true" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #3f684c;" data-color="#3f684c" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #f0e6e6;" data-color="#f0e6e6" role="radio" aria-checked="false" tabindex="0"></div>
                     </div>
                 </section>
 
-                <section class="brightness-group">
+                <section class="fr-settings-group--brightness">
                     <h3>Brightness</h3>
                     <input type="range" min="0" max="100" value="50" class="form-range" id="BrightnessRange" aria-label="Screen brightness adjustment">
                 </section>
 
-                <section class="text-group">
+                <section class="fr-settings-group--text">
                     <h3>Font Style</h3>
-                    <select class="form-select" aria-label="Font Family">
+                    <select class="fr-form-select" aria-label="Font Family">
                         <option value="Montserrat">Montserrat</option>
                         <option value="Roboto">Roboto</option>
                     </select>
-                    <select class="form-select" aria-label="Font Style">
+                    <select class="fr-form-select" aria-label="Font Style">
                         <option value="500">Semi bold</option> <option value="400">Regular</option>
                     </select>
-                    <select class="form-select" aria-label="Font Size">
+                    <select class="fr-form-select" aria-label="Font Size">
                         <option value="32px">32</option> <option value="16px">16</option>
                     </select>
                 </section>
 
-                <section class="example-group">
+                <section class="fr-settings-group--example">
                     <h1>Text</h1>
                     <h2>Text</h2>
                     <h3>Text</h3>
                     <p>Text</p>
                 </section>
 
-                <section class="theme-group">
+                <section class="fr-settings-group--theme">
                     <h3>Theme</h3>
-                    <label class="switch">
+                    <label class="fr-switch">
                         <input type="checkbox" id="theme-toggle" aria-label="Toggle dark theme">
-                        <span class="switch-track round"></span>
+                        <span class="fr-switch__track fr-switch__track--round"></span>
                     </label>
                 </section>
 
@@ -75,62 +75,63 @@
         </div>
     </div>
 
-    <nav class="user-nav-tabs" >
-      <button class="btn--large chosed">Book face</button>
-      <a href="/library/addbook/chapter" style="margin-left: auto;">
-        <button class="btn--large">Add chapter</button>
-      </a>
+    <nav class="fr-list" >
+        <button class="fr-btn--large fr-btn--chosed">Book face</button>
+      
+        <a href="/library/addbook/chapter" class="fr-a--for-btn fr-btn-right">
+        <button class="fr-btn--large">Add chapter</button>
+        </a>
     </nav>
     <hr>
     
-    <form class="book-editor-form">
+    <form class="cb-book-editor-form">
         
-        <section class="editor-info-grid">
-            <div class="form-input-container">
+        <section class="cb-editor-info-grid">
+            <div class="fr-input-container">
                 <label for="book-name">Book naming</label>
-                <input type="text" id="book-name" class="form-input" value="The quick brown fox jumps over the lazy dog">
+                <input type="text" id="book-name" class="fr-form-input" value="The quick brown fox jumps over the lazy dog">
             </div>
 
-            <div class="form-input-container">
+            <div class="fr-input-container">
                 <label for="author-name">Author</label>
-                <input type="text" id="author-name" class="form-input" value="The quick brown fox jumps over the lazy dog">
+                <input type="text" id="author-name" class="fr-form-input" value="The quick brown fox jumps over the lazy dog">
             </div>
 
-            <div class="year-and-labels">
-                <div class="form-input-container">
+            <div class="cb-year-and-labels">
+                <div class="fr-input-container">
                     <label for="publication-year">Year</label>
-                    <input type="number" id="publication-year" class="form-input" value="1999">
+                    <input type="number" id="publication-year" class="fr-form-input" value="1999">
                 </div>
 
-                <div class="form-input-container">
+                <div class="fr-input-container">
                     <label for="book-label">
-                    <button class="icon-button">
-                        <img src="/static/add.svg" alt="add icon" class="icon">
+                    <button class="fr-btn-with-icon">
+                        <img src="/static/add.svg" alt="add icon" class="fr-icon">
                         <span>Add label</span>
                     </button>
                     </label>
-                    <span class="label">Label</span>
-                    <span class="label">Label</span>
-                    <span class="label">Label</span>
+                    <span class="fr-label">Label</span>
+                    <span class="fr-label">Label</span>
+                    <span class="fr-label">Label</span>
                 </div>
             </div>
 
         </section>
 
-        <section class="editor-photo-upload">
-            <div class="photo-placeholder"></div>
-            <button class="icon-button">
-                <img src="/static/upload.svg" alt="upload icon" class="icon">
+        <section class="cb-editor-photo-upload">
+            <div class="cb-photo-placeholder"></div>
+            <button class="fr-btn-with-icon">
+                <img src="/static/upload.svg" alt="upload icon" class="fr-icon">
                 <span>Upload image</span>
             </button>
         </section>
 
-        <section class="editor-description">
+        <section class="cb-editor-description">
             <label>Short book description</label>
-            <textarea class="textarea-description">The quick brown fox jumps over the lazy dog</textarea>
+            <textarea class="cb-textarea-description">The quick brown fox jumps over the lazy dog</textarea>
         </section>
 
-        <section class="editor-content-list">
+        <section class="cb-editor-content-list">
             <label>Book's content:</label>
             <ul>
                 <li>Chapter 1: fajfsjfjv fnsnnjfa fnjwinf</li>
@@ -140,10 +141,10 @@
             </ul>
         </section>
 
-        <footer class="editor-actions">
-            <button type="submit" class="btn btn--large btn--publish">Publish</button>
-            <button type="button" class="btn btn--large btn--save">Save</button>
-            <button type="button" class="btn btn--large btn--add-chapter">Add chapter</button>
+        <footer class="cb-editor-actions">
+            <button type="submit" class="fr-btn--large">Publish</button>
+            <button type="button" class="fr-btn--large">Save</button>
+            <button type="button" class="fr-btn--large">Add chapter</button>
         </footer>
     </form>
 </div>

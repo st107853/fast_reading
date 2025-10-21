@@ -8,102 +8,102 @@
     <link rel="stylesheet" type="text/css" href="/static/book_page.css">
 </head>
 <body>
-    <div class="container">
-
-        <nav class="navbar">
-            <button class="customize-btn icon-btn" id="openSettingsBtn" aria-label="Open settings menu"></button>
+    <div class="fr-container">
+        <nav class="fr-navbar">
+            <button class="fr-icon-button fr-navbar__customize-btn fr-navbar-icon-btn" id="openSettingsBtn" aria-label="Open settings menu"></button>
             <a href="/library/">
-            <button class="logo-btn icon-btn" aria-label="Go to home page" action="/library/"></button>
+            <div class="fr-icon-button fr-navbar__logo-btn" aria-label="Go to home page" action="/library/"></div>
             </a>
-            <button class="avatar-btn icon-btn" id="avatarBtn" aria-label="User profile or login" onclick="login()"></button>
+            <button class="fr-icon-button fr-navbar__avatar-btn" id="avatarBtn" aria-label="User profile or login" onclick="login()"></button>
         </nav>
 
-        <div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-            <div class="modal-content">
-                <header class="modal-header">
+        <div id="settingsModal" class="fr-modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+            <div class="fr-modal__content">
+                <header class="fr-modal-header">
                     <h2 id="settingsTitle">Settings</h2>
-                    <button class="btn--large" aria-label="Close settings" id="closeSettingsBtn" style="margin-top: 0px;">&lt;/&gt;</button>
+                    <button class="fr-btn--large fr-btn-right" aria-label="Close settings" id="closeSettingsBtn">&lt;/&gt;</button>
                 </header>
 
-                <div class="settings-grid">
-                    <section class="colour-group">
-                        <h3>Colour</h3>
-                        <div class="objects" style="justify-content: left;">
-                            <div class="swatch" style="background-color: #d84343;" data-color="#d84343" role="radio" aria-checked="true" tabindex="0"></div>
-                            <div class="swatch" style="background-color: #4a90e2;" data-color="#4a90e2" role="radio" aria-checked="false" tabindex="0"></div>
-                            <div class="swatch" style="background-color: #e0e0e0;" data-color="#e0e0e0" role="radio" aria-checked="false" tabindex="0"></div>
-                            <div class="swatch" style="background-color: #1e3d59;" data-color="#1e3d59" role="radio" aria-checked="false" tabindex="0"></div>
-                            <div class="swatch" style="background-color: #3f684c;" data-color="#3f684c" role="radio" aria-checked="false" tabindex="0"></div>
-                            <div class="swatch" style="background-color: #f0e6e6;" data-color="#f0e6e6" role="radio" aria-checked="false" tabindex="0"></div>
+                <div class="fr-settings-grid">
+                    <section class="fr-settings-group--colour">
+                        <h3>Colour</h3> <div class="fr-list" style="justify-content: left;">
+                            <div class="fr-swatch" style="background-color: #d84343;" data-color="#d84343" role="radio" aria-checked="false" tabindex="0"></div>
+                            <div class="fr-swatch" style="background-color: #4a90e2;" data-color="#4a90e2" role="radio" aria-checked="false" tabindex="0"></div>
+                            <div class="fr-swatch" style="background-color: #e0e0e0;" data-color="#e0e0e0" role="radio" aria-checked="false" tabindex="0"></div>
+                            <div class="fr-swatch" style="background-color: #1e3d59;" data-color="#1e3d59" role="radio" aria-checked="true" tabindex="0"></div>
+                            <div class="fr-swatch" style="background-color: #3f684c;" data-color="#3f684c" role="radio" aria-checked="false" tabindex="0"></div>
+                            <div class="fr-swatch" style="background-color: #f0e6e6;" data-color="#f0e6e6" role="radio" aria-checked="false" tabindex="0"></div>
                         </div>
                     </section>
 
-                    <section class="brightness-group">
+                    <section class="fr-settings-group--brightness">
                         <h3>Brightness</h3>
                         <input type="range" min="0" max="100" value="50" class="form-range" id="BrightnessRange" aria-label="Screen brightness adjustment">
                     </section>
 
-                    <section class="text-group">
+                    <section class="fr-settings-group--text">
                         <h3>Font Style</h3>
-                        <select class="form-select" aria-label="Font Family">
+                        <select class="fr-form-select" aria-label="Font Family">
                             <option value="Montserrat">Montserrat</option>
                             <option value="Roboto">Roboto</option>
                         </select>
-                        <select class="form-select" aria-label="Font Style">
+                        <select class="fr-form-select" aria-label="Font Style">
                             <option value="500">Semi bold</option> <option value="400">Regular</option>
                         </select>
-                        <select class="form-select" aria-label="Font Size">
+                        <select class="fr-form-select" aria-label="Font Size">
                             <option value="32px">32</option> <option value="16px">16</option>
                         </select>
                     </section>
 
-                    <section class="example-group">
+                    <section class="fr-settings-group--example">
                         <h1>Text</h1>
                         <h2>Text</h2>
                         <h3>Text</h3>
                         <p>Text</p>
                     </section>
 
-                    <section class="theme-group">
+                    <section class="fr-settings-group--theme">
                         <h3>Theme</h3>
-                        <label class="switch">
+                        <label class="fr-switch">
                             <input type="checkbox" id="theme-toggle" aria-label="Toggle dark theme">
-                            <span class="switch-track round"></span>
+                            <span class="fr-switch__track fr-switch__track--round"></span>
                         </label>
                     </section>
 
                 </div>
             </div>
-        </div>        
-        <div class="book-header" style="justify-content: left;">
-            <label class="switch">
+        </div>
+
+
+        <div class="bp-book-header">
+            <label class="fr-switch">
                 <input type="checkbox" id="favBtn" onclick="submitForm(this)"/>
-                <span class="switch-mark"></span>
+                <span class="bp-switch-mark"></span>
             </label>
-            <div class="title-block">
+            <div class="bp-title-block">
                 <h2>{{.Name}}</h2>
                 <h4>{{.Author}}, {{.ReleaseDate}}</h4>
             </div>
         </div>
-        <div class="reading-grid">
+        <div class="bp-reading-grid">
 
-            <section class="word-box" id="book-text">---</section>
+            <section class="bp-word-box" id="book-text">---</section>
 
-            <section class="controls">
+            <section class="bp-controls">
                 <input type="number" id="speed" value="600" min="100" onchange="updateSpeed()">
-                <label class="switch">
+                <label class="fr-switch">
                     <input type="checkbox" id="play"/>
-                    <span class="switch-play"></span>
+                    <span class="bp-switch-play"></span>
                 </label>
             </section>
 
-            <section class="book-nav-btn">
-                <button class="nav-control-btn" onclick="toggleChapterNav()" aria-label="Toggle chapter navigation">
-                    <span class="nav-dot"></span>
-                    <span class="nav-dot"></span>
-                    <span class="nav-dot"></span>
+            <section class="bp-book-nav-btn">
+                <button class="bp-nav-control-btn" onclick="toggleChapterNav()" aria-label="Toggle chapter navigation">
+                    <span class="bp-nav-dot"></span>
+                    <span class="bp-nav-dot"></span>
+                    <span class="bp-nav-dot"></span>
                 </button>
-                <div class="chapter-nav-overlay">
+                <div class="bp-chapter-nav-overlay">
                     <ul>
                         <li>Chapter 1</li>
                         <li>1.1 jsfdijsf sfjnssfaj</li>
@@ -113,12 +113,12 @@
                 </div>
             </section>
 
-            <section class="book-text-area">
-                <div class="book-text" id="bookText">{{.Text}}</div>
+            <section class="bp-book-text-area">
+                <div class="fr-book-text" id="bookText">{{.Text}}</div>
             </section>
 
-            <section class="book-scroll-control">
-                <input type="range" id="scrollRange" class="scroll-slider" value="50" aria-label="Reading progress slider">
+            <section class="bp-book-scroll-control">
+                <input type="range" id="scrollRange" class="fr-scroll-slider--vertical" value="50" aria-label="Reading progress slider">
             </section>
         </div>
     </div>

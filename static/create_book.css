@@ -3,7 +3,7 @@
 | || 1. FORM GRID LAYOUT
 |-----------------------------------------------------------
 */
-.book-editor-form {
+.cb-book-editor-form {
     display: grid;
     grid-template-columns: 1.5fr 1fr;
     grid-template-areas:
@@ -17,7 +17,7 @@
     padding-bottom: 50px;
 }
 
-.editor-info-grid {
+.cb-editor-info-grid {
     grid-area: info;
     display: grid;
     grid-template-columns: 1fr;
@@ -25,7 +25,7 @@
     align-items: center;
 }
 
-.editor-photo-upload {
+.cb-editor-photo-upload {
     grid-area: photo;
     display: flex;
     flex-direction: column;
@@ -33,15 +33,27 @@
     justify-content: flex-start;
 }
 
-.editor-description {
+.cb-editor-description {
     grid-area: description;
 }
 
-.editor-content-list {
+.cb-editor-content-list {
     grid-area: content;
 }
 
-.editor-actions {
+.cb-editor-content-list ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+}
+
+.cb-editor-content-list li {
+    font-size: var(--font-size-md);
+    color: var(--primary-color);
+    padding: 5px 0;
+}
+
+.cb-editor-actions {
     grid-area: actions;
     display: flex;
     justify-content: space-between;
@@ -49,52 +61,28 @@
     border-top: 1px solid var(--neutral-4-color);
 }
 
-/* Create book chapter grid layout */
+/*
+|-----------------------------------------------------------
+| || CHAPTER EDITOR LAYOUT
+|-----------------------------------------------------------
+*/
 
-.book-editor-form {
+.cb-text-grid {
     display: grid;
-    grid-template-columns: 1.5fr 1fr;
     grid-template-areas:
-        "info photo"
-        "description description"
-        "content content"
-        "actions actions";
-    gap: 20px 40px;
-    max-width: 900px;
-    margin: 0 0;
-    padding-bottom: 50px;
+        "text-area scroll";
+    grid-template-columns: 1fr 40px;
+    gap: 20px 10px;
+    width: 95%;
+    margin: 0 auto;
 }
 
-.chapter-name-section {
-    grid-area: name-upload;
-    display: flex;
-    /* Columns: Label, Input, Button */
-    grid-template-columns: auto 1fr auto;
-    gap: 10px 20px; /* Row gap, Column gap */
-    align-items: center; /* Vertically align items in the grid */
-    padding: 0 20px; /* Match padding of the input line */
+.cb-book-text-area {
+    grid-area: text-area;
 }
 
-.chapter-content-section {
-    grid-area: content-area;
-    display: flex; /* Use flexbox to lay out textarea and scrollbar side-by-side */
-    gap: 15px;
-    padding: 0 20px; /* Match padding to align with elements above */
-}
-
-#chapter-text-area {
-    flex-grow: 1; /* Allow textarea to take up available space */
-    min-height: 250px;
-    max-height: 400px;
-    /* Inherits from .textarea-description */
-}
-
-.chapter-editor-actions {
-    grid-area: actions;
-    display: flex;
-    justify-content: center; /* Center the 'Save' button */
-    padding-top: 20px;
-    border-top: 1px solid var(--neutral-4-color); /* Light separator line */
+.cb-book-scroll-control {
+    grid-area: scroll;
 }
 
 /*
@@ -103,13 +91,13 @@
 |-----------------------------------------------------------
 */
 
-.year-and-labels {
+.cb-year-and-labels {
     display: inline-block;
     align-items: center;
     gap: 10px;
 }
 
-.textarea-description {
+.cb-textarea-description {
     width: 100%;
     min-height: 120px;
     padding: 15px;
@@ -127,7 +115,7 @@
 | || 3. PHOTO UPLOAD AND CONTENT LIST
 |-----------------------------------------------------------
 */
-.photo-placeholder {
+.cb-photo-placeholder {
     width: 100%;
     max-width: 200px;
     height: 200px;
@@ -137,20 +125,7 @@
     margin-bottom: 10px;
 }
 
-.editor-content-list ul {
-    list-style: none;
-    padding: 0;
-    margin-top: 10px;
-}
-
-.editor-content-list li {
-    font-size: var(--font-size-md);
-    color: var(--primary-color);
-    padding: 5px 0;
-}
-
-
-.input-label {
+.cb-input-label {
     font-size: var(--font-size-sm);
     color: var(--primary-color);
     font-weight: 500;

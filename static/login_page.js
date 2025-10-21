@@ -10,14 +10,14 @@ toggleLink.addEventListener("click", () => {
     isLogin = !isLogin;
     if (isLogin) {
     formTitle.textContent = "Log In";
-    loginForm.classList.remove("hidden");
-    registerForm.classList.add("hidden");
+    loginForm.classList.remove("fr-hidden");
+    registerForm.classList.add("fr-hidden");
     toggleText.textContent = "Don't have an account?";
     toggleLink.textContent = "Sign Up";
     } else {
     formTitle.textContent = "Sign Up";
-    loginForm.classList.add("hidden");
-    registerForm.classList.remove("hidden");
+    loginForm.classList.add("fr-hidden");
+    registerForm.classList.remove("fr-hidden");
     toggleText.textContent = "Already have an account?";
     toggleLink.textContent = "Log In";
     }

@@ -8,109 +8,107 @@
   <link rel="stylesheet" type="text/css" href="/static/user_page.css">
 </head>
 <body>
-  <div class="container" style="background-color: var(--primary-color); padding-top: 20px;">
-    <header class="user-header">
+  <div class="up-container">
+    <header class="up-user-header">
         <div class="header-group-left">
             <a href="/library/">
-            <button class="logo-btn icon-btn" aria-label="Go to home page" action="/library/"></button>
+            <div class="fr-icon-button fr-navbar__logo-btn" aria-label="Go to home page" action="/library/"></div>
             </a>
-            <button class="customize-btn icon-btn" id="openSettingsBtn" aria-label="Open settings menu"></button>
+            <button class="fr-icon-button fr-navbar__customize-btn fr-navbar-icon-btn" id="openSettingsBtn" aria-label="Open settings menu"></button>
         </div>
 
-        <div class="header-group-center">
-            <button class="avatar-btn icon-btn" id="avatarBtn" aria-label="User avatar" style=" width: 100px; height: 100px;"></button>
+        <div class="up-header-group-center">
+            <button class="fr-icon-button fr-navbar__avatar-btn up-avatar-icon--big" id="avatarBtn" aria-label="User avatar"></button>
         </div>
 
-        <div class="header-group-right">
-            <div class="user-info">
-                <h3 class="user-name white-text">{{.Name}}</h3>
-                <span class="label">100 Coins</span>
+        <div class="up-header-group-right">
+            <div class="up-user-info">
+                <h3 class="up-user-name">{{.Name}}</h3>
+                <span class="fr-label">100 Coins</span>
             </div>
         </div>
     </header>
 
-    <div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-      <div class="modal-content">
-        <header class="modal-header">
-          <h2 id="settingsTitle">Settings</h2>
-          <button class="btn--large" aria-label="Close settings" id="closeSettingsBtn" style="margin-top: 0px;">&lt;/&gt;</button>
-        </header>
+    <div id="settingsModal" class="fr-modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <div class="fr-modal__content">
+            <header class="fr-modal-header">
+                <h2 id="settingsTitle">Settings</h2>
+                <button class="fr-btn--large fr-btn-right" aria-label="Close settings" id="closeSettingsBtn">&lt;/&gt;</button>
+            </header>
 
-        <div class="settings-grid">
-          <section class="colour-group">
-            <h3>Colour</h3> <div class="objects" style="justify-content: left;">
-              <div class="swatch" style="background-color: #d84343;" data-color="#d84343" role="radio" aria-checked="true" tabindex="0"></div>
-              <div class="swatch" style="background-color: #4a90e2;" data-color="#4a90e2" role="radio" aria-checked="false" tabindex="0"></div>
-              <div class="swatch" style="background-color: #e0e0e0;" data-color="#e0e0e0" role="radio" aria-checked="false" tabindex="0"></div>
-              <div class="swatch" style="background-color: #1e3d59;" data-color="#1e3d59" role="radio" aria-checked="false" tabindex="0"></div>
-              <div class="swatch" style="background-color: #3f684c;" data-color="#3f684c" role="radio" aria-checked="false" tabindex="0"></div>
-              <div class="swatch" style="background-color: #f0e6e6;" data-color="#f0e6e6" role="radio" aria-checked="false" tabindex="0"></div>
+            <div class="fr-settings-grid">
+                <section class="fr-settings-group--colour">
+                    <h3>Colour</h3> <div class="fr-list" style="justify-content: left;">
+                        <div class="fr-swatch" style="background-color: #d84343;" data-color="#d84343" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #4a90e2;" data-color="#4a90e2" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #e0e0e0;" data-color="#e0e0e0" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #1e3d59;" data-color="#1e3d59" role="radio" aria-checked="true" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #3f684c;" data-color="#3f684c" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #f0e6e6;" data-color="#f0e6e6" role="radio" aria-checked="false" tabindex="0"></div>
+                    </div>
+                </section>
+
+                <section class="fr-settings-group--brightness">
+                    <h3>Brightness</h3>
+                    <input type="range" min="0" max="100" value="50" class="form-range" id="BrightnessRange" aria-label="Screen brightness adjustment">
+                </section>
+
+                <section class="fr-settings-group--text">
+                    <h3>Font Style</h3>
+                    <select class="fr-form-select" aria-label="Font Family">
+                        <option value="Montserrat">Montserrat</option>
+                        <option value="Roboto">Roboto</option>
+                    </select>
+                    <select class="fr-form-select" aria-label="Font Style">
+                        <option value="500">Semi bold</option> <option value="400">Regular</option>
+                    </select>
+                    <select class="fr-form-select" aria-label="Font Size">
+                        <option value="32px">32</option> <option value="16px">16</option>
+                    </select>
+                </section>
+
+                <section class="fr-settings-group--example">
+                    <h1>Text</h1>
+                    <h2>Text</h2>
+                    <h3>Text</h3>
+                    <p>Text</p>
+                </section>
+
+                <section class="fr-settings-group--theme">
+                    <h3>Theme</h3>
+                    <label class="fr-switch">
+                        <input type="checkbox" id="theme-toggle" aria-label="Toggle dark theme">
+                        <span class="fr-switch__track fr-switch__track--round"></span>
+                    </label>
+                </section>
+
             </div>
-          </section>
-
-          <section class="brightness-group">
-            <h3>Brightness</h3>
-            <input type="range" min="0" max="100" value="50" class="form-range" id="BrightnessRange" aria-label="Screen brightness adjustment">
-          </section>
-
-          <section class="text-group">
-            <h3>Font Style</h3>
-
-            <select class="form-select" aria-label="Font Family">
-              <option value="Montserrat">Montserrat</option>
-              <option value="Roboto">Roboto</option>
-            </select>
-
-            <select class="form-select" aria-label="Font Style">
-              <option value="500">Semi bold</option> <option value="400">Regular</option>
-            </select>
-
-            <select class="form-select" aria-label="Font Size">
-              <option value="32px">32</option> <option value="16px">16</option>
-            </select>
-          </section>
-
-          <section class="example-group">
-            <h1>Text</h1>
-            <h2>Text</h2>
-            <h3>Text</h3>
-            <p>Text</p>
-          </section>
-
-          <section class="theme-group">
-            <h3>Theme</h3>
-            <label class="switch">
-              <input type="checkbox" id="theme-toggle" aria-label="Toggle dark theme">
-              <span class="switch-track round"></span>
-            </label>
-          </section>
-
-          </div>
-      </div>
+        </div>
     </div>
 
-    <nav class="user-nav-tabs">
-      <button class="btn--large white-theme">Favourite</button>
-      <button class="btn--large white-theme">Created</button>
-      <button class="btn--large white-theme" style="margin-left: auto;">Create book</button>
-    </nav>
+    <div class="fr-list fr-list--left">
+        <button class="fr-btn--large fr-theme--white fr-btn--chosed">All books</button>
+        <button class="fr-btn--large fr-theme--white">Favourite books</button>
+        <button class="fr-btn--large fr-theme--white fr-btn-right">Create book</button>
+    </div>
+    <hr class="up-hr">
 
-    <div class="user-nav-tabs">
-      <span class="label">Label</span>
-      <span class="label">Label</span>
-      <span class="label">Label</span>
-      <span class="label">Label</span>
+    <div class="fr-list fr-list--left">
+      <span class="fr-label">Label</span>
+      <span class="fr-label">Label</span>
+      <span class="fr-label">Label</span>
+      <span class="fr-label">Label</span>
     </div>
 
-    <section class="objects card-grid">
+    <section class="objects fr-card-grid">
         {{range .Favourite}}
-          <div class="card">
+        <div class="fr-card">
             <a href="/library/one/{{.ID | extractNumericPart}}">
-                <img src="/static/lolita-cover.jpg" alt="Book cover for {{.Name}} by {{.Author}}">
+                <img class="fr-card__img" src="/static/lolita-cover.jpg" alt="Book cover for {{.Name}} by {{.Author}}">
             </a>
-            <div class="card-title">{{.Name}}</div>
-            <div class="card-author">{{.Author}}</div>
-          </div>
+            <div class="fr-card__title">{{.Name}}</div>
+            <div class="fr-card__author">{{.Author}}</div>
+        </div> 
         {{end}}
     </section>
 </div>

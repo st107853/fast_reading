@@ -1,7 +1,7 @@
 const modal = document.getElementById('settingsModal');
 const openBtn = document.getElementById('openSettingsBtn');
 const closeBtn = document.getElementById('closeSettingsBtn');
-const swatches = document.querySelectorAll('.swatch');
+const swatches = document.querySelectorAll('.fr-swatch');
 const body = document.body;
 const loginForm = document.getElementById("login-form");
 const themeToggle = document.getElementById('theme-toggle');
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Theme Toggle Logic
     themeToggle.addEventListener('change', (e) => {
         if (e.target.checked) {
-            body.classList.add('dark-theme');
+            body.classList.add('fr-dark-theme');
             console.log('Switched to Dark Theme');
         } else {
             body.classList.remove('dark-theme');
