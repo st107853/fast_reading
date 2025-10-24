@@ -5,12 +5,12 @@
 |-----------------------------------------------------------
 */
 :root{
-    /* Use 'component-state' naming for image variables */
     --icon-bookmark-empty: url("bookmark_empt.svg");
     --icon-bookmark-filled: url("bookmark_fill.svg");
     --icon-play: url("play.svg");
-    --icon-pause: url("pause_fill.svg"); /* Use pause_fill as the checked state often means "Pause" */
+    --icon-pause: url("pause_fill.svg");
 }
+
 
 /*
 |-----------------------------------------------------------
@@ -19,11 +19,11 @@
 */
 
 .bp-book-header {
-    display: flex;
-    justify-content: left;
     align-items: flex-start;
-    width: 100%;
+    display: flex;
     margin-bottom: 40px;
+    justify-content: left;
+    width: 100%;
 }
 
 .bp-title-block {
@@ -42,14 +42,16 @@
     background-repeat: no-repeat;
     background-position: center;
     background-color: transparent;
+
     bottom: 0;
-    cursor: pointer;
-    display: block;
-    height: 50px;
     left: 0;
-    position: absolute;
     right: 0;
     top: 0;
+
+    cursor: pointer;
+    display: block;
+    position: absolute;
+    height: 50px;
     width: 50px;
 }
 
@@ -78,14 +80,15 @@
 */
 
 .bp-reading-grid {
-    display: grid;
     grid-template-areas: 
         ".    word-box         controls" 
         "nav  text-area        scroll";
-    grid-template-columns: 40px 1fr 40px; /* Specific sizes for button columns */
+    grid-template-columns: 40px 1fr 40px;
+    
+    display: grid;
     gap: 20px 10px;
-    width: 95%;
     margin: 0 auto;
+    width: 95%;
 }
 
 /*
@@ -96,55 +99,57 @@
 
 .bp-word-box {
     grid-area: word-box;
+
+    align-items: center;
     display: flex;
     justify-content: center;
-    align-items: center;
     
     /* Content Styling */
+    background: var(--neutral-1-color);
+    border-radius: 5px;
     font-size: 40px;
     font-weight: bold;
-    background: var(--neutral-1-color);
     padding: 20px;
-    width: 100%;
     text-align: center;
-    border-radius: 5px;
+    width: 100%;
 }
 
 .bp-controls {
     grid-area: controls;
+
     display: flex;
     flex-direction: column;
-    align-self: flex-start;
-    justify-content: flex-start;}
+}
 
 
 .bp-controls #speed {
     background-color: var(--secondary-color);
-    color: var(--neutral-1-color);
-    font-size: 1em;
-    text-align: center;
     border: none;
     border-radius: 10px;
+    color: var(--neutral-1-color);
+    font-size: 1em;
     padding: 8px 0;
+    text-align: center;
     width: 60px;
 }
 
 .bp-book-nav-btn {
     grid-area: nav;
-    display: flex;
-    justify-content: flex-end;
+
     align-items: flex-start;
-    padding-top: 20px;
+    display: flex;
     height: 100%;
+    justify-content: flex-end;
+    padding-top: 20px;
 }
 
 .bp-nav-control-btn {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    width: 20px;
     height: 60px;
+    justify-content: space-between;
     padding: 0;
+    width: 20px;
 }
 
 .bp-nav-dot {
@@ -180,11 +185,11 @@
     top: 30%;
     left: 85px;
 
-    width: 200px;
-    padding: 15px;
     background-color: var(--neutral-1-color);
     border-radius: var(--border-radius-md);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    width: 200px;
+    padding: 15px;
     
     opacity: 0;
     visibility: hidden;

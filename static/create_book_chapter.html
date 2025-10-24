@@ -11,69 +11,74 @@
     <div class="fr-container">
 
     <nav class="fr-navbar">
-      <button class="fr-icon-button fr-navbar__customize-btn fr-navbar-icon-btn" id="openSettingsBtn" aria-label="Open settings menu"></button>
-      <a href="/library/">
-      <div class="fr-icon-button fr-navbar__logo-btn" aria-label="Go to home page" action="/library/"></div>
-      </a>
-      <button class="fr-icon-button fr-navbar__avatar-btn" id="avatarBtn" aria-label="User profile or login" onclick="login()"></button>
+        <button class="fr-icon-button fr-navbar__customize-btn fr-navbar-icon-btn fr-modal__opener" aria-label="Open settings menu" data-modal-target=".fr-modal--settings"></button>
+        
+        <a href="/library/">
+        <div class="fr-icon-button fr-navbar__logo-btn" aria-label="Go to home page" action="/library/"></div>
+        </a>
+        
+        <button class="fr-icon-button fr-navbar__avatar-btn" id="avatarBtn" aria-label="User profile or login" onclick="login()"></button>
     </nav>
 
-    <div id="settingsModal" class="fr-modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-            <div class="fr-modal__content">
-                <header class="fr-modal-header">
-                    <h2 id="settingsTitle">Settings</h2>
-                    <button class="fr-btn--large fr-btn-right" aria-label="Close settings" id="closeSettingsBtn">&lt;/&gt;</button>
-                </header>
+    <div id="settingsModal" class="fr-modal fr-modal--settings" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" tabindex="-1" aria-hidden="true">
+        <div class="fr-modal__content">
+            <header class="fr-modal__header">
+                <h2 id="settingsTitle">Settings</h2>
+                <button class="fr-btn--large fr-btn-right fr-modal__close-btn" 
+                        aria-label="Close settings">
+                    &lt;/&gt;
+                </button>
+            </header>
 
-                <div class="fr-settings-grid">
-                    <section class="fr-settings-group--colour">
-                        <h3>Colour</h3> <div class="fr-list" style="justify-content: left;">
-                            <div class="fr-swatch" style="background-color: #d84343;" data-color="#d84343" role="radio" aria-checked="false" tabindex="0"></div>
-                            <div class="fr-swatch" style="background-color: #4a90e2;" data-color="#4a90e2" role="radio" aria-checked="false" tabindex="0"></div>
-                            <div class="fr-swatch" style="background-color: #e0e0e0;" data-color="#e0e0e0" role="radio" aria-checked="false" tabindex="0"></div>
-                            <div class="fr-swatch" style="background-color: #1e3d59;" data-color="#1e3d59" role="radio" aria-checked="true" tabindex="0"></div>
-                            <div class="fr-swatch" style="background-color: #3f684c;" data-color="#3f684c" role="radio" aria-checked="false" tabindex="0"></div>
-                            <div class="fr-swatch" style="background-color: #f0e6e6;" data-color="#f0e6e6" role="radio" aria-checked="false" tabindex="0"></div>
-                        </div>
-                    </section>
+            <div class="fr-settings-grid">
+                <section class="fr-settings-group--colour">
+                    <h3>Colour</h3> <div class="fr-list" style="justify-content: left;">
+                        <div class="fr-swatch" style="background-color: #d84343;" data-color="#d84343" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #4a90e2;" data-color="#4a90e2" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #e0e0e0;" data-color="#e0e0e0" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #1e3d59;" data-color="#1e3d59" role="radio" aria-checked="true" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #3f684c;" data-color="#3f684c" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #f0e6e6;" data-color="#f0e6e6" role="radio" aria-checked="false" tabindex="0"></div>
+                    </div>
+                </section>
 
-                    <section class="fr-settings-group--brightness">
-                        <h3>Brightness</h3>
-                        <input type="range" min="0" max="100" value="50" class="form-range" id="BrightnessRange" aria-label="Screen brightness adjustment">
-                    </section>
+                <section class="fr-settings-group--brightness">
+                    <h3>Brightness</h3>
+                    <input type="range" min="0" max="100" value="50" class="form-range" id="BrightnessRange" aria-label="Screen brightness adjustment">
+                </section>
 
-                    <section class="fr-settings-group--text">
-                        <h3>Font Style</h3>
-                        <select class="fr-form-select" aria-label="Font Family">
-                            <option value="Montserrat">Montserrat</option>
-                            <option value="Roboto">Roboto</option>
-                        </select>
-                        <select class="fr-form-select" aria-label="Font Style">
-                            <option value="500">Semi bold</option> <option value="400">Regular</option>
-                        </select>
-                        <select class="fr-form-select" aria-label="Font Size">
-                            <option value="32px">32</option> <option value="16px">16</option>
-                        </select>
-                    </section>
+                <section class="fr-settings-group--text">
+                    <h3>Font Style</h3>
+                    <select class="fr-form-select" aria-label="Font Family">
+                        <option value="Montserrat">Montserrat</option>
+                        <option value="Roboto">Roboto</option>
+                    </select>
+                    <select class="fr-form-select" aria-label="Font Style">
+                        <option value="500">Semi bold</option> <option value="400">Regular</option>
+                    </select>
+                    <select class="fr-form-select" aria-label="Font Size">
+                        <option value="32px">32</option> <option value="16px">16</option>
+                    </select>
+                </section>
 
-                    <section class="fr-settings-group--example">
-                        <h1>Text</h1>
-                        <h2>Text</h2>
-                        <h3>Text</h3>
-                        <p>Text</p>
-                    </section>
+                <section class="fr-settings-group--example">
+                    <h1>Text</h1>
+                    <h2>Text</h2>
+                    <h3>Text</h3>
+                    <p>Text</p>
+                </section>
 
-                    <section class="fr-settings-group--theme">
-                        <h3>Theme</h3>
-                        <label class="fr-switch">
-                            <input type="checkbox" id="theme-toggle" aria-label="Toggle dark theme">
-                            <span class="fr-switch__track fr-switch__track--round"></span>
-                        </label>
-                    </section>
+                <section class="fr-settings-group--theme">
+                    <h3>Theme</h3>
+                    <label class="fr-switch">
+                        <input type="checkbox" id="theme-toggle" aria-label="Toggle dark theme">
+                        <span class="fr-switch__track fr-switch__track--round"></span>
+                    </label>
+                </section>
 
-                </div>
             </div>
         </div>
+    </div>
 
     <nav class="fr-list" >
       <a href="/library/addbook/" class="fr-a--for-btn">
@@ -105,9 +110,10 @@
         </section>
     </div>
 
-    <button type="submit" class="fr-btn--large fr-btn-centre">Save</button>
+     <button type="submit" class="fr-btn--large fr-btn-bottom">Save</button>
 
 </div>
 </body>
 <script src="/static/create_book.js" defer></script>
+<script src="/static/script.js" defer></script>
 </html>

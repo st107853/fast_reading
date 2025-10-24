@@ -1,67 +1,87 @@
+/*
+|-----------------------------------------------------------
+| || 1. SEARCH BAR COMPONENTS
+|-----------------------------------------------------------
+*/
+
 .mp-search-container {
+    margin: 0px auto 20px auto;
     position: relative;
     width: 80%;
-    margin: 0px auto 20px auto;
 }
 
 .mp-search-input {
-    width: 100%;
-    padding: 10px 20px;
-    font-size: var(--font-size-sm);
     border: 1px solid var(--primary-color);
     border-radius: var(--border-radius-lg);
+    font-size: var(--font-size-sm);
+    padding: 10px 20px;
+    width: 100%;
 }
 
 .mp-search-icon {
+    pointer-events: none;
     position: absolute;
     right: 20px;
     top: 50%;
     transform: translateY(-50%);
-    width: 20px;
+
     height: 20px;
+    width: 20px;
+
     background-image: var(--icon-search);
-    background-size: contain;
-    background-repeat: no-repeat;
     background-position: center;
-    pointer-events: none;
+    background-repeat: no-repeat;
+    background-size: contain;
 }
 
 .mp-search-input:focus {
     outline-color: var(--primary-color);
 }
 
-/* Big Book Card */
+/*
+|-----------------------------------------------------------
+| || 2. FEATURED BOOK CARD (Big Card)
+|-----------------------------------------------------------
+*/
+
 .mp-book-card {
+    align-items: stretch;
     display: flex;
     justify-content: space-between;
-    align-items: stretch;
+
+    margin: 40px auto;
+    overflow: hidden;
+    width: 100%;
+
     background-color: var(--neutral-1-color);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    overflow: hidden;
-    margin: 40px auto;
-    width: 100%;
 }
 
 .mp-book-info {
-    flex: 2;
-    padding: 20px;
-    background-color: var(--neutral-2-color);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+
+    padding: 20px;
+    flex: 2;
+
+    background-color: var(--neutral-2-color);
 }
 
 .mp-book-image {
-    flex: 1;
-    background-color: var(--neutral-2-color);
+    align-items: center;
     display: flex;
     justify-content: center;
-    align-items: center;
+
     min-width: 200px;
+    flex: 1;
+
+    background-color: var(--neutral-2-color);
 }
 
 .mp-book-image img {
-    max-width: 100%;
-    max-height: 250px;
     object-fit: cover;
+
+    max-height: 250px;
+    max-width: 100%;
 }

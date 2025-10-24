@@ -9,19 +9,25 @@
 </head>
 <body>
     <div class="fr-container">
+
         <nav class="fr-navbar">
-            <button class="fr-icon-button fr-navbar__customize-btn fr-navbar-icon-btn" id="openSettingsBtn" aria-label="Open settings menu"></button>
+            <button class="fr-icon-button fr-navbar__customize-btn fr-navbar-icon-btn fr-modal__opener" aria-label="Open settings menu" data-modal-target=".fr-modal--settings"></button>
+            
             <a href="/library/">
             <div class="fr-icon-button fr-navbar__logo-btn" aria-label="Go to home page" action="/library/"></div>
             </a>
+            
             <button class="fr-icon-button fr-navbar__avatar-btn" id="avatarBtn" aria-label="User profile or login" onclick="login()"></button>
         </nav>
 
-        <div id="settingsModal" class="fr-modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <div id="settingsModal" class="fr-modal fr-modal--settings" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" tabindex="-1" aria-hidden="true">
             <div class="fr-modal__content">
-                <header class="fr-modal-header">
+                <header class="fr-modal__header">
                     <h2 id="settingsTitle">Settings</h2>
-                    <button class="fr-btn--large fr-btn-right" aria-label="Close settings" id="closeSettingsBtn">&lt;/&gt;</button>
+                    <button class="fr-btn--large fr-btn-right fr-modal__close-btn" 
+                            aria-label="Close settings">
+                        &lt;/&gt;
+                    </button>
                 </header>
 
                 <div class="fr-settings-grid">
@@ -137,5 +143,6 @@
         </main>
     </div>
     <script src="/static/main_page.js"></script>
+    <script src="/static/script.js" defer></script>
 </body>
 </html>

@@ -4,32 +4,35 @@
 |-----------------------------------------------------------
 */
 .cb-book-editor-form {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr;
     grid-template-areas:
         "info photo"
         "description description"
         "content content"
         "actions actions";
+    grid-template-columns: 1.5fr 1fr;
+    
+    display: grid;
     gap: 20px 40px;
-    max-width: 900px;
     margin: 0 0;
+    max-width: 900px;
     padding-bottom: 50px;
 }
 
 .cb-editor-info-grid {
     grid-area: info;
-    display: grid;
     grid-template-columns: 1fr;
-    gap: 10px;
+
     align-items: center;
+    display: grid;
+    gap: 10px;
 }
 
 .cb-editor-photo-upload {
     grid-area: photo;
+
+    align-items: center;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: flex-start;
 }
 
@@ -43,38 +46,40 @@
 
 .cb-editor-content-list ul {
     list-style: none;
-    padding: 0;
     margin-top: 10px;
+    padding: 0;
 }
 
 .cb-editor-content-list li {
-    font-size: var(--font-size-md);
     color: var(--primary-color);
+    font-size: var(--font-size-md);
     padding: 5px 0;
 }
 
 .cb-editor-actions {
     grid-area: actions;
+
+    border-top: 1px solid var(--neutral-4-color);
     display: flex;
     justify-content: space-between;
     padding-top: 20px;
-    border-top: 1px solid var(--neutral-4-color);
 }
 
 /*
 |-----------------------------------------------------------
-| || CHAPTER EDITOR LAYOUT
+| || 2. CHAPTER EDITOR LAYOUT
 |-----------------------------------------------------------
 */
 
 .cb-text-grid {
-    display: grid;
     grid-template-areas:
         "text-area scroll";
     grid-template-columns: 1fr 40px;
+
+    display: grid;
     gap: 20px 10px;
-    width: 95%;
     margin: 0 auto;
+    width: 95%;
 }
 
 .cb-book-text-area {
@@ -87,46 +92,46 @@
 
 /*
 |-----------------------------------------------------------
-| || 2. INPUT AND TEXTAREA STYLES
+| || 3. INPUT AND TEXTAREA STYLES
 |-----------------------------------------------------------
 */
 
 .cb-year-and-labels {
-    display: inline-block;
     align-items: center;
+    display: inline-block;
     gap: 10px;
 }
 
 .cb-textarea-description {
-    width: 100%;
-    min-height: 120px;
-    padding: 15px;
+    background-color: var(--neutral-1-color);
     border: none;
     border-radius: 5px;
-    font-size: var(--font-size-md);
-    background-color: var(--neutral-1-color);
-    color: var(--primary-color);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    color: var(--primary-color);
+    font-size: var(--font-size-md);
+    min-height: 120px;
+    padding: 15px;
     resize: vertical;
+    width: 100%;
 }
 
 /*
 |-----------------------------------------------------------
-| || 3. PHOTO UPLOAD AND CONTENT LIST
+| || 4. PHOTO UPLOAD AND CONTENT LIST
 |-----------------------------------------------------------
 */
 .cb-photo-placeholder {
-    width: 100%;
-    max-width: 200px;
-    height: 200px;
     background-color: var(--neutral-1-color);
     border: 1px solid var(--neutral-4-color);
     border-radius: 5px;
+    height: 200px;
     margin-bottom: 10px;
+    max-width: 200px;
+    width: 100%;
 }
 
 .cb-input-label {
-    font-size: var(--font-size-sm);
     color: var(--primary-color);
+    font-size: var(--font-size-sm);
     font-weight: 500;
 }
