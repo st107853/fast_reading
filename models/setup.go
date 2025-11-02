@@ -1,58 +1,75 @@
 package models
 
 import (
-	"context"
+	"fmt"
 	"log"
 
-	"github.com/go-redis/redis"
-	"github.com/st107853/fast_reading/config"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+
+	_ "github.com/jinzhu/gorm/dialects/mysql"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
+
+	"os"
 )
 
-const DBName = "library"
-const CollName = "books"
-
-var conf, _ = config.LoadConfig(".")
-
-type Logger struct {
-	*mongo.Client // The database access interface
+type Database struct {
+	*gorm.DB
 }
 
-var DB Logger
+var DB *gorm.DB
 
-func ConnectToMongoDB() error {
-	ctx := context.TODO()
-	mongoconn := options.Client().ApplyURI(conf.DBUri)
-	mongoclient, err := mongo.Connect(ctx, mongoconn)
-	if err != nil {
-		return err
-	}
+// Opening a database and save the reference to `Database` struct.
+func OpenDbConnection() (*gorm.DB, error) {
 
-	// Check the connection
-	err = mongoclient.Ping(ctx, nil)
-	if err != nil {
-		return err
-	}
+	dsn := fmt.Sprintf("host=%s dbname=%s user=%s password=%s",
+		os.Getenv("HOST"), os.Getenv("DBNAME"), os.Getenv("DBUSER"), os.Getenv("DBPASS"))
 
-	DB = Logger{mongoclient}
-	log.Println("Connected to MongoDB!")
-	return nil
-}
+	// 2. Настраиваем GORM Logger (лучше, чем fmt.Println)
+	// newLogger := logger.New(
+	// 	log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+	// 	logger.Config{
+	// 		SlowThreshold: time.Second, // Порог медленного SQL-запроса
+	// 		LogLevel:      logger.Info, // Уровень логгирования
+	// 		Colorful:      true,
+	// 	},
+	// )
 
-func ConnectToRedis() error {
-	redisclient := redis.NewClient(&redis.Options{
-		Addr:     conf.RedisUri,
-		Password: "", // no password set
-		DB:       0,  // use default DB
+	// 3. Открываем соединение
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: nil, // Используем настроенный логгер
 	})
-	if _, err := redisclient.Ping().Result(); err != nil {
-		panic(err)
-	}
-	err := redisclient.Set("key", "value", 0).Err()
+
 	if err != nil {
-		panic(err)
+		// Ошибка подключения - возвращаем ее
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
-	log.Println("Redis client connected successfully...")
-	return nil
+
+	// 4. Запускаем AutoMigrate
+	// (Используем новую модель User)
+
+	log.Println("Database connection successful and migrated.")
+	DB = db
+
+	// 5. Возвращаем 'db', а не ошибку
+	return db, nil
+}
+
+// Delete the database after running testing cases.
+func RemoveDb(db *gorm.DB) error {
+	sqlDB, err := db.DB() // Получаем *sql.DB из *gorm.DB
+	if err != nil {
+		fmt.Println("Error getting sql.DB from gorm.DB:", err)
+		return err
+	}
+
+	// Закрываем соединение с базой
+	err = sqlDB.Close()
+	return err
+}
+
+// Using this function to get a connection, you can create your connection pool here.
+func GetDB() *gorm.DB {
+	return DB
 }

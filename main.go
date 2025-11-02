@@ -4,100 +4,82 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/gin-contrib/cors"
-	"github.com/go-redis/redis"
 	"github.com/st107853/fast_reading/config"
 	"github.com/st107853/fast_reading/controllers"
 	"github.com/st107853/fast_reading/models"
 	"github.com/st107853/fast_reading/routes"
 	"github.com/st107853/fast_reading/services"
-	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 var (
-	server      *gin.Engine
-	ctx         context.Context
-	mongoclient *mongo.Client
-	redisclient *redis.Client
+	server *gin.Engine
+	ctx    context.Context
 
 	userService         services.UserService
 	UserController      controllers.UserController
 	UserRouteController routes.UserRouteController
 
-	authCollection      *mongo.Collection
 	authService         services.AuthService
 	AuthController      controllers.AuthController
 	AuthRouteController routes.AuthRouteController
 
-	booksCollection     *mongo.Collection
 	bookService         services.BookService
-	BookController      controllers.BookController
+	db                  *gorm.DB
 	BookRouteController routes.BookRouteController
 )
 
 func init() {
-	gin.SetMode(gin.ReleaseMode) // Set Gin to release mode for production
-
 	ctx = context.TODO()
 
-	err := models.ConnectToMongoDB()
+	// Initialize GORM via models helper (returns *gorm.DB)
+	gdb, err := models.OpenDbConnection()
 	if err != nil {
-		log.Fatal("Could not connect to MongoDB", err)
+		log.Fatalf("models.OpenDbConnection failed: %v", err)
+	}
+	if gdb == nil {
+		log.Fatal("models.OpenDbConnection returned nil *gorm.DB")
 	}
 
-	err = models.ConnectToRedis() // Assign Redis client to redisclient
-	if err != nil {
-		log.Fatal("Could not connect to Redis")
+	// Auto-migrate core models (safe no-op if tables exist)
+	if err := gdb.AutoMigrate(&models.Book{}, &models.User{}); err != nil {
+		log.Fatalf("Failed to migrate models: %v", err)
 	}
 
-	// Collections
-	authCollection = models.DB.Database("golang_mongodb").Collection("users")
-	booksCollection = models.DB.Database("golang_mongodb").Collection("books")
-	userService = services.NewUserServiceImpl(authCollection, ctx)
-	authService = services.NewAuthService(authCollection, ctx)
-	bookService = services.NewBookService(booksCollection, ctx)
+	// Wire services with GORM-backed implementations
+	userService = services.NewUserServiceImpl(gdb, ctx)
+	authService = services.NewAuthService(gdb, ctx)
+	bookService = services.NewBookService(gdb, ctx)
 
+	// Create controllers and route controllers
 	AuthController = controllers.NewAuthController(authService, userService)
 	AuthRouteController = routes.NewAuthRouteController(AuthController)
 
 	UserController = controllers.NewUserController(userService)
 	UserRouteController = routes.NewRouteUserController(UserController)
 
-	BookController = controllers.NewBookController(bookService, userService)
+	BookController := controllers.NewBookController(bookService, userService)
 	BookRouteController = routes.NewBookRouteController(BookController)
 
-	server = gin.New()         // Create a new Gin engine without default middleware
-	server.Use(gin.Logger())   // Add Logger middleware explicitly
+	server = gin.New()
+	//	server.Use(gin.Logger())   // Add Logger middleware explicitly
 	server.Use(gin.Recovery()) // Add Recovery middleware explicitly
 }
 
 func main() {
+	fmt.Println("Starting Fast Reading API...")
 	config, err := config.LoadConfig(".")
 	if err != nil {
 		log.Fatal("Could not load config", err)
 	}
 
-	defer func() {
-		if mongoclient != nil {
-			mongoclient.Disconnect(ctx)
-		}
-	}()
+	fmt.Println("config loaded")
 
-	value := ""
-	if redisclient != nil {
-		value, err = redisclient.Get("key").Result()
-		if err == redis.Nil {
-			fmt.Println("key: test does not exist")
-		} else if err != nil {
-			panic(err)
-		}
-	} else {
-		log.Println("Redis client is nil, skipping key retrieval")
-	}
+	defer models.RemoveDb(db)
 
 	server.Static("/static", "./static")
 
@@ -108,10 +90,7 @@ func main() {
 	server.Use(cors.New(corsConfig))
 
 	router := server.Group("/library")
-	router.GET("/healthchecker", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": value})
-	})
-
+	// No need to close pgDB as it is a *gorm.DB instance
 	AuthRouteController.AuthRoute(router, userService)
 	UserRouteController.UserRoute(router, userService)
 	BookRouteController.BookRoute(router, bookService)

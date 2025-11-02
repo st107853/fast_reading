@@ -1,9 +1,12 @@
 package controllers
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -11,7 +14,6 @@ import (
 	"github.com/st107853/fast_reading/models"
 	"github.com/st107853/fast_reading/services"
 	"github.com/st107853/fast_reading/utils"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // Book reading page
@@ -73,7 +75,7 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 
 	user, err := ac.userService.FindUserByEmail(credentials.Email)
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
+		if errors.Is(err, sql.ErrNoRows) {
 			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
 			return
 		}
@@ -101,10 +103,13 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 		return
 	}
 
+	id_string := strconv.Itoa(int(user.ID))
+
 	ctx.SetCookie("access_token", access_token, config.AccessTokenMaxAge*60, "/", "localhost", false, true)
 	ctx.SetCookie("refresh_token", refresh_token, config.RefreshTokenMaxAge*60, "/", "localhost", false, true)
 	ctx.SetCookie("logged_in", "true", config.AccessTokenMaxAge*60, "/", "localhost", false, false)
 	ctx.SetCookie("email", credentials.Email, config.AccessTokenMaxAge*60, "/", "localhost", false, false)
+	ctx.SetCookie("user_id", id_string, config.AccessTokenMaxAge*60, "/", "localhost", false, false)
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "access_token": access_token})
 }

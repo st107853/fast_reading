@@ -3,6 +3,7 @@ package controllers
 import (
 	"html/template"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/st107853/fast_reading/models"
@@ -82,25 +83,26 @@ func (bc *BookController) CreateBook(c *gin.Context) {
 		return
 	}
 
-	err, id := bc.bookService.InsertBook(book)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	cookie, err := c.Cookie("email")
+	cookie, err := c.Cookie("user_id")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found " + err.Error()})
 		return
 	}
 
-	// Call the function to add the book to created books
-	err = bc.userService.AddBookToCreatedBooks(cookie, id, book.Name, book.Author)
+	userid, err := strconv.ParseUint(cookie, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add book to created books " + err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	book.CreatorUserID = uint(userid)
+
+	_, err = bc.bookService.InsertBook(book)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
+	// Call the function to add the book to created books
 	c.JSON(http.StatusCreated, book.Name)
 }
 
@@ -118,7 +120,7 @@ func (bc *BookController) BookFavourite(c *gin.Context) {
 	}
 
 	// Call the function to add the book to favorite books
-	err = bc.userService.AddBookToFavoriteBooks(cookie, book.ID, book.Name, book.Author)
+	err = bc.userService.AddBookToFavoriteBooks(cookie, book.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add book to favorite books " + err.Error()})
 		return
@@ -175,7 +177,8 @@ func (bc *BookController) UpdateBook(c *gin.Context) {
 		return
 	}
 
-	if err := bc.bookService.UpdateBook(book.ID, book); err != nil {
+	id := book.Model.ID
+	if err := bc.bookService.UpdateBook(id, book); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Book not found " + err.Error()})
 		return
 	}
@@ -184,20 +187,19 @@ func (bc *BookController) UpdateBook(c *gin.Context) {
 
 // DeleteBook deletes a book by its ID
 func (bc *BookController) DeleteBook(c *gin.Context) {
-	id := c.Param("id")
-	email, err := c.Cookie("email")
+	cookie, err := c.Cookie("id")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found " + err.Error()})
 		return
 	}
-
-	if err := bc.bookService.DeleteBook(id); err != nil {
+	id, err := strconv.ParseUint(cookie, 10, 32)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := bc.userService.DeleteBookFromCreatedBooks(email, id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove book from created books " + err.Error()})
+	if err := bc.bookService.DeleteBook(uint(id)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Book deleted"})

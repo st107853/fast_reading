@@ -2,72 +2,79 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/st107853/fast_reading/models"
 	"github.com/st107853/fast_reading/utils"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"gorm.io/gorm"
 )
 
 // AuthServiceImpl is the implementation of the AuthService interface.
 type AuthServiceImpl struct {
-	collection *mongo.Collection
+	collection *gorm.DB
 	ctx        context.Context
 }
 
 // NewAuthService creates a new instance of AuthServiceImpl.
-func NewAuthService(collection *mongo.Collection, ctx context.Context) AuthService {
+func NewAuthService(collection *gorm.DB, ctx context.Context) AuthService {
 	return &AuthServiceImpl{collection, ctx}
 }
 
 // SignUpUser registers a new user in the database.
 // It hashes the user's password, sets default values, and ensures the email is unique.
 func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBResponse, error) {
-	// Set default values for the user.
-	user.CreatedAt = time.Now()
-	user.UpdatedAt = user.CreatedAt
-	user.Email = strings.ToLower(user.Email) // Normalize email to lowercase.
+	// 1️⃣ Normalize and prepare data
+	user.Email = strings.ToLower(user.Email)
 	user.PasswordConfirm = ""
-	user.Favourite = []models.BookResponse{}
-	user.Written = []models.BookResponse{}
 	user.Verified = true
 	user.Role = "user"
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = user.CreatedAt
 
-	// Hash the user's password.
-	hashedPassword, _ := utils.HashPassword(user.Password)
+	// 2️⃣ Hash password
+	hashedPassword, err := utils.HashPassword(user.Password)
+	if err != nil {
+		return nil, fmt.Errorf("failed to hash password: %w", err)
+	}
 	user.Password = hashedPassword
 
-	// Add the new user to the database.
-	res, err := uc.collection.InsertOne(uc.ctx, &user)
-	if err != nil {
-		// Handle duplicate email error.
-		if er, ok := err.(mongo.WriteException); ok && er.WriteErrors[0].Code == 11000 {
-			return nil, fmt.Errorf("asi: user with that email already exist")
-		}
-		return nil, err
+	// 3️⃣ Check for existing user (email must be unique)
+	var existing models.User
+	if err := uc.collection.WithContext(uc.ctx).
+		Where("email = ?", user.Email).
+		First(&existing).Error; err == nil {
+		return nil, fmt.Errorf("user with that email already exists")
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("failed to check existing user: %w", err)
 	}
 
-	// Create a unique index for the email field.
-	opt := options.Index()
-	opt.SetUnique(true)
-	index := mongo.IndexModel{Keys: bson.M{"email": 1}, Options: opt}
-	if _, err := uc.collection.Indexes().CreateOne(uc.ctx, index); err != nil {
-		return nil, fmt.Errorf("asi: could not create index for email. error: %w", err)
+	// 4️⃣ Create user
+	newUser := models.User{
+		Name:     user.Name,
+		Email:    user.Email,
+		Password: user.Password,
+		Role:     user.Role,
+		Verified: user.Verified,
 	}
 
-	// Retrieve the newly created user from the database.
-	var newUser *models.DBResponse
-	query := bson.M{"_id": res.InsertedID}
-	err = uc.collection.FindOne(uc.ctx, query).Decode(&newUser)
-	if err != nil {
-		return nil, fmt.Errorf("asi: %w", err)
+	if err := uc.collection.WithContext(uc.ctx).Create(&newUser).Error; err != nil {
+		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
 
-	return newUser, nil
+	// 5️⃣ Prepare response (no password)
+	dbResponse := &models.DBResponse{
+		ID:        newUser.ID,
+		Name:      newUser.Name,
+		Email:     newUser.Email,
+		Role:      newUser.Role,
+		Verified:  newUser.Verified,
+		CreatedAt: newUser.CreatedAt,
+	}
+
+	return dbResponse, nil
 }
 
 // SignInUser authenticates a user based on their credentials.
