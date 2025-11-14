@@ -107,7 +107,7 @@
             <button class="fr-btn--large">Начать читать</button>
 
             <label class="bp-switch fr-switch">
-                <input type="checkbox" id="favBtn" onclick="addToFavorites(this)" />
+                <input type="checkbox" id="favBtn" onclick="addToFavorites(this)" {{if .IsFavorited}}checked{{end}} />
                 <span class="bp-switch-mark"></span>
             </label>
         </div>

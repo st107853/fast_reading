@@ -284,8 +284,36 @@ func (bc *BookController) GetBook(c *gin.Context) {
 	}
 	book.Chapters = chapters
 
+	cookie, err := c.Cookie("user_id")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found " + err.Error()})
+		return
+	}
+	userid, err := strconv.ParseUint(cookie, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Check if book is favorited by current user (if authenticated)
+	isFavorited, err := bc.userService.IsBookFavorited(uint(userid), book.Model.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Pass both book and isFavorited to template
+	templateData := gin.H{
+		"Name":        book.Name,
+		"Author":      book.Author,
+		"ID":          book.Model.ID,
+		"Description": book.Description,
+		"Chapters":    book.Chapters,
+		"IsFavorited": isFavorited,
+	}
+
 	// Execute the bookPage template and write the output to the response writer
-	if err := bookPage.Execute(c.Writer, book); err != nil {
+	if err := bookPage.Execute(c.Writer, templateData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

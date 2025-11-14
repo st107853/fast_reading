@@ -52,3 +52,13 @@ func (us *UserServiceImpl) AddBookToFavoriteBooks(email string, bookID string) e
 	// Otherwise, add
 	return us.collection.Model(&user).Association("FavoriteBooks").Append(&book)
 }
+
+func (us *UserServiceImpl) IsBookFavorited(userID uint, bookID uint) (bool, error) {
+	var user models.User
+	if err := us.collection.WithContext(us.ctx).First(&user, userID).Error; err != nil {
+		return false, err
+	}
+
+	count := us.collection.Model(&user).Where("id = ?", bookID).Association("FavoriteBooks").Count()
+	return count > 0, nil
+}
