@@ -51,7 +51,7 @@
     cursor: pointer;
     display: block;
     position: absolute;
-    height: 50px;
+    height: 100%; 
     width: 50px;
 }
 
@@ -219,3 +219,135 @@
 .bp-chapter-nav-overlay li:hover {
     color: var(--secondary-color);
 }
+
+/*
+|-----------------------------------------------------------
+| || 8. FEATURED BOOK CARD (Big Card)
+|-----------------------------------------------------------
+*/
+
+.bp-book-card {
+    align-items: stretch;
+    display: flex;
+    justify-content: space-between;
+
+    margin: 40px auto;
+    overflow: hidden;
+    width: 100%;
+
+    background-color: var(--neutral-1-color);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.bp-book-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    padding: 20px;
+    flex: 2;
+
+    background-color: var(--neutral-2-color);
+}
+
+.bp-book-image {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+
+    min-width: 200px;
+    flex: 1;
+
+    background-color: var(--neutral-2-color);
+}
+
+.bp-book-image img {
+    object-fit: cover;
+
+    max-height: 250px;
+    max-width: 100%;
+}
+
+.book-card-container {
+    display: flex;
+    max-width: 100%; /* Ограничиваем ширину карточки */
+    padding: 20px;
+}
+
+.book-cover-wrapper {
+    flex-shrink: 0; /* Обложка не сжимается */
+    width: 40%; /* Обложка занимает 40% ширины */
+    max-width: 300px;
+    margin-right: 30px;
+}
+
+.book-cover-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+.book-info-wrapper {
+    flex-grow: 1;
+    flex-direction: column;
+    justify-content: space-between; /* Распределение элементов по вертикали */
+}
+
+.book-description {
+    align-items: stretch;
+
+    margin: 40px auto;
+    width: 80%;
+
+}
+
+/* ------------------------------------------------ */
+/* 2. Название и Автор */
+/* ------------------------------------------------ */
+
+.book-title {
+    font-size: 2em;
+    font-weight: bold;
+    color: var(--text-color);
+    margin: 0 0 10px 0;
+}
+
+.book-author {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    color: var(--secondary-text-color);
+    font-size: 1.1em;
+}
+
+
+.author-name {
+    color: var(--secondary-text-color);
+}
+
+/* ------------------------------------------------ */
+/* 3. Жанр и Теги (Лейблы) */
+/* ------------------------------------------------ */
+
+.book-section {
+    margin: 15px;
+}
+
+.section-title {
+    font-size: 0.9em;
+    color: var(--secondary-text-color);
+    margin: 0 0 5px 0;
+}
+
+/* ------------------------------------------------ */
+/* 4. Кнопки и Закладка */
+/* ------------------------------------------------ */
+
+.action-buttons-wrapper {
+    display: flex;
+    align-items: center;
+    margin-top: 20px; /* Отступ от тегов */
+}
+

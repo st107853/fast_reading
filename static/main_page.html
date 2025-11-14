@@ -6,17 +6,19 @@
     <title>Book Search</title>
     <link rel="stylesheet" type="text/css" href="/static/style.css">
     <link rel="stylesheet" type="text/css" href="/static/main_page.css">
+    <script src="/static/main_page.js"></script>
+    <script src="/static/script.js" defer></script>
 </head>
 <body>
     <div class="fr-container">
 
         <nav class="fr-navbar">
             <button class="fr-icon-button fr-navbar__customize-btn fr-navbar-icon-btn fr-modal__opener" aria-label="Open settings menu" data-modal-target=".fr-modal--settings"></button>
-            
+
             <a href="/library/">
             <div class="fr-icon-button fr-navbar__logo-btn" aria-label="Go to home page" action="/library/"></div>
             </a>
-            
+
             <button class="fr-icon-button fr-navbar__avatar-btn" id="avatarBtn" aria-label="User profile or login" onclick="login()"></button>
         </nav>
 
@@ -98,19 +100,18 @@
                 <div class="fr-label" tabindex="0">Fiction</div>
             </div>
 
-
             <div class="fr-list fr-list--left">
                 <button class="fr-btn--large fr-btn--chosed">All books</button>
                 <button class="fr-btn--large">Favourite books</button>
             </div>
             <hr>
-            
+
             <h1>Popular books</h1>
 
             <div class="fr-card-list" id="cardList">
                 {{range .Books}}
                     <div class="fr-card">
-                    <a href="/library/one/{{.ID | extractNumericPart}}">
+                    <a href="/library/one/{{.ID}}">
                         <img class="fr-card__img" src="/static/lolita-cover.jpg" alt="Book cover for {{.Name}} by {{.Author}}">
                     </a>
                     <div class="fr-card__title">{{.Name}}</div>
@@ -142,7 +143,5 @@
             </div>
         </main>
     </div>
-    <script src="/static/main_page.js"></script>
-    <script src="/static/script.js" defer></script>
 </body>
 </html>

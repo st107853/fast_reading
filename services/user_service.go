@@ -7,5 +7,5 @@ import (
 type UserService interface {
 	FindUserById(string) (*models.User, error)
 	FindUserByEmail(string) (*models.User, error)
-	AddBookToFavoriteBooks(email string, bookID uint) error
+	AddBookToFavoriteBooks(email string, bookID string) error
 }

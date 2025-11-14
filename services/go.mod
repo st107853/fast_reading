@@ -11,7 +11,6 @@ replace github.com/st107853/fast_reading/config => ../config
 require (
 	github.com/st107853/fast_reading/models v0.0.0-00010101000000-000000000000
 	github.com/st107853/fast_reading/utils v0.0.0-00010101000000-000000000000
-	go.mongodb.org/mongo-driver v1.17.3
 	gorm.io/gorm v1.31.0
 )
 

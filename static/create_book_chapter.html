@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add chapter</title>
-  <link rel="stylesheet" type="text/css" href="/static/style.css">
-  <link rel="stylesheet" type="text/css" href="/static/create_book.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add chapter</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <link rel="stylesheet" type="text/css" href="/static/create_book.css">
+    <script src="/static/create_book.js" defer></script>
+    <script src="/static/script.js" defer></script>
 </head>
 <body>
     <div class="fr-container">
@@ -110,10 +112,8 @@
         </section>
     </div>
 
-     <button type="submit" class="fr-btn--large fr-btn-bottom">Save</button>
+    <button type="button" class="fr-btn--large fr-btn-bottom" onclick="submitChapter(this)">Save</button>
 
 </div>
 </body>
-<script src="/static/create_book.js" defer></script>
-<script src="/static/script.js" defer></script>
 </html>

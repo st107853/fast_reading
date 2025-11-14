@@ -6,6 +6,8 @@
     <title>Add book</title>
     <link rel="stylesheet" type="text/css" href="/static/style.css">
     <link rel="stylesheet" type="text/css" href="/static/create_book.css">
+    <script src="/static/create_book.js" defer></script>
+    <script src="/static/script.js" defer></script>
 </head>
 <body>
     <div class="fr-container">
@@ -94,12 +96,12 @@
         <section class="cb-editor-info-grid">
             <div class="fr-input-container">
                 <label for="book-name">Book naming</label>
-                <input type="text" id="book-name" class="fr-form-input" value="The quick brown fox jumps over the lazy dog">
+                <input type="text" class="fr-form-input" id="book-name" placeholder="Book name here *" required>
             </div>
 
             <div class="fr-input-container">
                 <label for="author-name">Author</label>
-                <input type="text" id="author-name" class="fr-form-input" value="The quick brown fox jumps over the lazy dog">
+                <input type="text" class="fr-form-input" id="author-name" placeholder="Author name here*" required>
             </div>
 
             <div class="cb-year-and-labels">
@@ -110,7 +112,7 @@
 
                 <div class="fr-input-container">
                     <label for="book-label">
-                    <button class="fr-btn-with-icon">
+                    <button class="fr-btn-with-icon" id="book-label">
                         <img src="/static/add.svg" alt="add icon" class="fr-icon">
                         <span>Add label</span>
                     </button>
@@ -132,8 +134,8 @@
         </section>
 
         <section class="cb-editor-description">
-            <label>Short book description</label>
-            <textarea class="cb-textarea-description">The quick brown fox jumps over the lazy dog</textarea>
+            <label for="book-description">Short book description</label>
+            <textarea class="cb-textarea-description" id="book-description">The quick brown fox jumps over the lazy dog</textarea>
         </section>
 
         <section class="cb-editor-content-list">
@@ -148,12 +150,10 @@
 
         <footer class="cb-editor-actions">
             <button type="submit" class="fr-btn--large">Publish</button>
-            <button type="button" class="fr-btn--large">Save</button>
+            <button type="submit" class="fr-btn--large" id="save-button" onclick="submitForm(this)">Save</button>
             <button type="button" class="fr-btn--large">Add chapter</button>
         </footer>
     </form>
 </div>
 </body>
-<script src="/static/create_book.js" defer></script>
-<script src="/static/script.js" defer></script>
 </html>

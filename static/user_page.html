@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>User Page</title>
-  <link rel="stylesheet" type="text/css" href="/static/style.css">
-  <link rel="stylesheet" type="text/css" href="/static/user_page.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>User Page</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <link rel="stylesheet" type="text/css" href="/static/user_page.css">
+    <script src="/static/user_page.js"></script>
+    <script src="/static/script.js" defer></script>
 </head>
 <body>
   <div class="up-container">
@@ -14,7 +16,7 @@
             <a href="/library/">
             <div class="fr-icon-button fr-navbar__logo-btn" aria-label="Go to home page" action="/library/"></div>
             </a>
-            
+
             <button class="fr-icon-button fr-navbar__customize-btn fr-navbar-icon-btn fr-modal__opener" aria-label="Open settings menu" data-modal-target=".fr-modal--settings"></button>
         </div>
 
@@ -90,10 +92,10 @@
         </div>
     </div>
 
-    <div class="fr-list fr-list--left">
-        <button class="fr-btn--large fr-theme--white fr-btn--chosed">All books</button>
-        <button class="fr-btn--large fr-theme--white">Favourite books</button>
-        
+    <div class="fr-list fr-list--left fr-user-nav-tabs">
+        <button class="fr-btn--large fr-theme--white fr-btn--chosed" data-target="#favBooks" aria-pressed="true">Favourite books</button>
+        <button class="fr-btn--large fr-theme--white" data-target="#createdBooks" aria-pressed="false">Created books</button>
+
         <a href="/library/addbook/" class="fr-btn-right fr-a--for-btn">
             <button class="fr-btn--large fr-theme--white">Create book</button>
         </a>
@@ -107,19 +109,36 @@
       <span class="fr-label">Label</span>
     </div>
 
-    <section class="objects fr-card-grid">
-        {{range .Favourite}}
+    <div id="favBooks">
+      <section class="objects fr-card-grid">
+        {{range .FavouriteBooks}}
         <div class="fr-card">
-            <a href="/library/one/{{.ID | extractNumericPart}}">
+            <a href="/library/one/{{.ID}}">
                 <img class="fr-card__img" src="/static/lolita-cover.jpg" alt="Book cover for {{.Name}} by {{.Author}}">
             </a>
             <div class="fr-card__title">{{.Name}}</div>
             <div class="fr-card__author">{{.Author}}</div>
         </div> 
         {{end}}
-    </section>
+      </section>
+    </div>
+
+    <div id="createdBooks" class="fr-hidden">
+      <h2 class="fr-section-title">Created books</h2>
+      <section class="objects fr-card-grid">
+        {{range .CreatedBooks}}
+        <div class="fr-card">
+            <a href="/library/one/{{.ID}}">
+                <img class="fr-card__img" src="/static/lolita-cover.jpg" alt="Book cover for {{.Name}} by {{.Author}}">
+            </a>
+            <div class="fr-card__title">{{.Name}}</div>
+            <div class="fr-card__author">{{.Author}}</div>
+        </div>
+        {{else}}
+        <div class="fr-empty">You haven't create any books yet.</div>
+        {{end}}
+      </section>
+    </div>
 </div>
 </body>
-<script src="/static/user_page.js"></script>
-<script src="/static/script.js" defer></script>
 </html>

@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/st107853/fast_reading/config"
 	"github.com/st107853/fast_reading/models"
 	"github.com/st107853/fast_reading/services"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -18,9 +20,8 @@ var mainPage = template.Must(template.New("main_page.html").Funcs(template.FuncM
 
 // Book reading page
 var bookPage = template.Must(template.New("book_page.html").ParseFiles("./static/book_page.html"))
-
+var bookChapter = template.Must(template.New("book_chapter.html").ParseFiles("./static/book_chapter.html"))
 var addBook = template.Must(template.New("create_book_face.html").ParseFiles("./static/create_book_face.html"))
-
 var addBookChapter = template.Must(template.New("create_book_chapter.html").ParseFiles("./static/create_book_chapter.html"))
 
 type BookData struct {
@@ -68,6 +69,7 @@ func (bc *BookController) AllBooks(c *gin.Context) {
 func (bc *BookController) CreateBook(c *gin.Context) {
 	var book models.Book
 	if err := c.ShouldBindJSON(&book); err != nil {
+		fmt.Println("Error binding JSON 1:", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -75,35 +77,115 @@ func (bc *BookController) CreateBook(c *gin.Context) {
 	// Check if the book already exists
 	existingBook, err := bc.bookService.BookExist(book.Name, book.Author)
 	if err != nil {
+		fmt.Println("Error binding JSON 2:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	if existingBook {
+		fmt.Println("Error binding JSON 3:", err)
 		c.JSON(http.StatusConflict, gin.H{"error": "Book already exists"})
 		return
 	}
 
+	// Add creator user ID from cookie
 	cookie, err := c.Cookie("user_id")
 	if err != nil {
+		fmt.Println("Error binding JSON 4:", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found " + err.Error()})
 		return
 	}
 
 	userid, err := strconv.ParseUint(cookie, 10, 32)
 	if err != nil {
+		fmt.Println("Error binding JSON 5:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	book.CreatorUserID = uint(userid)
 
-	_, err = bc.bookService.InsertBook(book)
+	book_id, err := bc.bookService.InsertBook(book)
+	if err != nil {
+		fmt.Println("Error binding JSON 6:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	config, err := config.LoadConfig(".")
+	if err != nil {
+		fmt.Println("Error binding JSON 7:", err)
+		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "error": "Could not load config " + err.Error()})
+		return
+	}
+
+	c.SetCookie("book_id", strconv.Itoa(int(book_id)), config.AccessTokenMaxAge*60, "/", "localhost", false, false)
+
+	// Return created book ID and name so client can navigate to chapter creation
+	c.JSON(http.StatusCreated, gin.H{"book_id": book_id, "name": book.Name})
+}
+
+func (bc *BookController) CreateChapter(c *gin.Context) {
+	var chapter models.Chapter
+	if err := c.ShouldBindJSON(&chapter); err != nil {
+		fmt.Println("err binding JSON create chapter 129:", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Try to get book id from the URL param first, fallback to cookie
+	var bookIdUint uint64
+	var err error
+	if param := c.Param("book_id"); param != "" {
+		bookIdUint, err = strconv.ParseUint(param, 10, 32)
+		if err != nil {
+			fmt.Println("err binding JSON create chapter 140:", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Book ID param " + err.Error()})
+			return
+		}
+	} else {
+		cookie, err := c.Cookie("book_id")
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Book ID cookie not found " + err.Error()})
+			return
+		}
+		bookIdUint, err = strconv.ParseUint(cookie, 10, 32)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Book ID " + err.Error()})
+			return
+		}
+	}
+	chapter.BookID = uint(bookIdUint)
+	// Persist chapter via service
+	if bc.bookService == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "book service not available"})
+		return
+	}
+
+	id, err := bc.bookService.InsertChapter(chapter)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save chapter: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"chapter_id": id})
+}
+
+func (bc *BookController) ReleaseBook(c *gin.Context) {
+	bookId := c.Param("book_id")
+	var book models.Book
+	book, err := bc.bookService.FindBookByID(bookId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	book.Released = true
+	err = bc.bookService.UpdateBook(book.Model.ID, book)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Call the function to add the book to created books
-	c.JSON(http.StatusCreated, book.Name)
+	c.JSON(http.StatusOK, gin.H{"message": "Book released successfully"})
 }
 
 func (bc *BookController) BookFavourite(c *gin.Context) {
@@ -152,9 +234,42 @@ func (bc *BookController) GetBooksByName(c *gin.Context) {
 	}
 }
 
+// GetCreatedBooks retrieves all books created by the user
+func (bc *BookController) GetCreatedBooks(c *gin.Context) {
+	var books []models.Book
+	cookie, err := c.Cookie("user_id")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found " + err.Error()})
+		return
+	}
+	userid, err := strconv.ParseUint(cookie, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	books, err = bc.bookService.FindBooksByCreatorID(uint(userid))
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	data := BookData{
+		Title: "All what we have",
+		Books: books,
+	}
+
+	// Execute the template and write the output to the response writer
+	if err := mainPage.Execute(c.Writer, data); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+}
+
 // GetBook retrieves a book by its ID
 func (bc *BookController) GetBook(c *gin.Context) {
-	id := c.Param("id")
+	id := c.Param("book_id")
 	var book models.Book
 	book, err := bc.bookService.FindBookByID(id)
 	if err != nil {
@@ -162,8 +277,38 @@ func (bc *BookController) GetBook(c *gin.Context) {
 		return
 	}
 
+	chapters, err := bc.bookService.FindChaptersByBookID(book.Model.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	book.Chapters = chapters
+
 	// Execute the bookPage template and write the output to the response writer
 	if err := bookPage.Execute(c.Writer, book); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+}
+
+// GetChapter retrieves a chapter by its ID
+func (bc *BookController) GetChapter(c *gin.Context) {
+	id := c.Param("chapter_id")
+	var chapter models.ChapterResponse
+
+	chapterId, err := strconv.ParseUint(id, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	chapter, err = bc.bookService.FindChapterByID(uint(chapterId))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Execute the bookPage template and write the output to the response writer
+	if err := bookChapter.Execute(c.Writer, chapter); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

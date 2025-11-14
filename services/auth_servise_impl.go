@@ -26,7 +26,7 @@ func NewAuthService(collection *gorm.DB, ctx context.Context) AuthService {
 // SignUpUser registers a new user in the database.
 // It hashes the user's password, sets default values, and ensures the email is unique.
 func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBResponse, error) {
-	// 1️⃣ Normalize and prepare data
+	// Normalize and prepare data
 	user.Email = strings.ToLower(user.Email)
 	user.PasswordConfirm = ""
 	user.Verified = true
@@ -34,14 +34,14 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = user.CreatedAt
 
-	// 2️⃣ Hash password
+	// Hash password
 	hashedPassword, err := utils.HashPassword(user.Password)
 	if err != nil {
 		return nil, fmt.Errorf("failed to hash password: %w", err)
 	}
 	user.Password = hashedPassword
 
-	// 3️⃣ Check for existing user (email must be unique)
+	// Check for existing user (email must be unique)
 	var existing models.User
 	if err := uc.collection.WithContext(uc.ctx).
 		Where("email = ?", user.Email).
@@ -51,7 +51,7 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 		return nil, fmt.Errorf("failed to check existing user: %w", err)
 	}
 
-	// 4️⃣ Create user
+	// Create user
 	newUser := models.User{
 		Name:     user.Name,
 		Email:    user.Email,
@@ -64,7 +64,7 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
 
-	// 5️⃣ Prepare response (no password)
+	// Prepare response (no password)
 	dbResponse := &models.DBResponse{
 		ID:        newUser.ID,
 		Name:      newUser.Name,

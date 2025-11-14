@@ -38,13 +38,80 @@ func (bs *BookServiseImpl) BookExist(bookName, bookAuthor string) (bool, error) 
 func (bs *BookServiseImpl) FindBookByID(bookID string) (models.Book, error) {
 	var book models.Book
 
-	// Convert the string ID to a primitive.ObjectID
 	err := bs.collection.First(&book, bookID).Error
 	if err != nil {
 		return book, fmt.Errorf("bsi: failed to find book by ID: %w", err)
 	}
 
 	return book, nil
+}
+
+func (bs *BookServiseImpl) FindBooksByCreatorID(creatorID uint) ([]models.Book, error) {
+	var books []models.Book
+
+	err := bs.collection.Where("creator_user_id = ?", creatorID).Find(&books).Error
+	if err != nil {
+		return nil, fmt.Errorf("bsi: failed to find books by creator ID: %w", err)
+	}
+
+	return books, nil
+}
+
+func (bs *BookServiseImpl) FindFavoriteBooksByUserEmail(userID uint) ([]models.Book, error) {
+	var books []models.Book
+
+	err := bs.collection.Joins("JOIN user_favorites ON user_favorites.book_id = books.id").
+		Where("user_favorites.user_id = ?", userID).
+		Find(&books).Error
+	if err != nil {
+		return nil, fmt.Errorf("bsi: failed to find favorite books by user ID: %w", err)
+	}
+
+	return books, nil
+}
+
+// InsertChapter inserts a new chapter into the database and assigns an order if not set.
+func (bs *BookServiseImpl) InsertChapter(chapter models.Chapter) (uint, error) {
+	// If no order provided, calculate next order for the book
+	if chapter.ChapterOrder == 0 {
+		var count int64
+		if err := bs.collection.Model(&models.Chapter{}).Where("book_id = ?", chapter.BookID).Count(&count).Error; err == nil {
+			chapter.ChapterOrder = int(count) + 1
+		}
+	}
+
+	if err := bs.collection.Create(&chapter).Error; err != nil {
+		return 0, fmt.Errorf("bsi: failed to insert chapter: %w", err)
+	}
+
+	return chapter.ID, nil
+}
+
+func (bs *BookServiseImpl) FindChapterByID(id uint) (models.ChapterResponse, error) {
+	var chapterResponse models.ChapterResponse
+
+	err := bs.collection.First(&chapterResponse.Chapter, id).Error
+	if err != nil {
+		return chapterResponse, fmt.Errorf("bsi: failed to find chapter by ID: %w", err)
+	}
+
+	err = bs.collection.First(&chapterResponse.Book, chapterResponse.Chapter.BookID).Error
+	if err != nil {
+		return chapterResponse, fmt.Errorf("bsi: failed to find chapter by ID: %w", err)
+	}
+
+	return chapterResponse, nil
+}
+
+func (bs *BookServiseImpl) FindChaptersByBookID(bookID uint) ([]models.Chapter, error) {
+	var chapters []models.Chapter
+
+	err := bs.collection.Where("book_id = ?", bookID).Order("chapter_order ASC").Find(&chapters).Error
+	if err != nil {
+		return nil, fmt.Errorf("bsi: failed to find chapters by book ID: %w", err)
+	}
+
+	return chapters, nil
 }
 
 // DeleteAll implements BookService.

@@ -59,14 +59,14 @@ func init() {
 	AuthController = controllers.NewAuthController(authService, userService)
 	AuthRouteController = routes.NewAuthRouteController(AuthController)
 
-	UserController = controllers.NewUserController(userService)
+	UserController = controllers.NewUserController(userService, bookService)
 	UserRouteController = routes.NewRouteUserController(UserController)
 
 	BookController := controllers.NewBookController(bookService, userService)
 	BookRouteController = routes.NewBookRouteController(BookController)
 
 	server = gin.New()
-	//	server.Use(gin.Logger())   // Add Logger middleware explicitly
+	server.Use(gin.Logger())   // Add Logger middleware explicitly
 	server.Use(gin.Recovery()) // Add Recovery middleware explicitly
 }
 
@@ -90,7 +90,7 @@ func main() {
 	server.Use(cors.New(corsConfig))
 
 	router := server.Group("/library")
-	// No need to close pgDB as it is a *gorm.DB instance
+
 	AuthRouteController.AuthRoute(router, userService)
 	UserRouteController.UserRoute(router, userService)
 	BookRouteController.BookRoute(router, bookService)

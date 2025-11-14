@@ -43,6 +43,7 @@ body {
     --neutral-4-color: #6C7A89;
     --primary-color: #022B3A;
     --secondary-color: #1F7A8C;
+    --button-height: 50px;
     --spacing-lg: 20px;
     --spacing-md: 16px;
     --spacing-sm: 8px;
@@ -130,8 +131,6 @@ label {
     text-align: left;
 
     font-size: var(--font-size-sm);
-
-    margin-bottom: 0.25rem;
 }
 
 
@@ -307,8 +306,10 @@ button {
 .fr-btn--large {
     transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 
+    align-items: center;
     font-size: 1.2rem;
-    padding: 10px 30px;
+    height: var(--button-height);
+    padding: 0px 30px;
 
     background-color: transparent;
     border: 2px solid var(--primary-color);
@@ -526,9 +527,8 @@ input[type="range"]::-webkit-slider-runnable-track {
     position: relative;
     display: inline-block;
 
-    height: 34px;
-    margin-top: 10px;
-    width: 60px;
+    height: var(--button-height);
+    width: 50px;
 }
 
 

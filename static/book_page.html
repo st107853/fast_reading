@@ -3,231 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Reader</title>
+    <title>{{.Name}}</title>
     <link rel="stylesheet" type="text/css" href="/static/style.css">
     <link rel="stylesheet" type="text/css" href="/static/book_page.css">
+    <script src="/static/script.js" defer></script>
 </head>
 <body>
     <div class="fr-container">
 
-        <nav class="fr-navbar">
-            <button class="fr-icon-button fr-navbar__customize-btn fr-navbar-icon-btn fr-modal__opener" aria-label="Open settings menu" data-modal-target=".fr-modal--settings"></button>
-            
-            <a href="/library/">
-            <div class="fr-icon-button fr-navbar__logo-btn" aria-label="Go to home page" action="/library/"></div>
-            </a>
-            
-            <button class="fr-icon-button fr-navbar__avatar-btn" id="avatarBtn" aria-label="User profile or login" onclick="login()"></button>
-        </nav>
+    <nav class="fr-navbar">
+        <button class="fr-icon-button fr-navbar__customize-btn fr-navbar-icon-btn fr-modal__opener" aria-label="Open settings menu" data-modal-target=".fr-modal--settings"></button>
+        
+        <a href="/library/">
+        <div class="fr-icon-button fr-navbar__logo-btn" aria-label="Go to home page" action="/library/"></div>
+        </a>
+        
+        <button class="fr-icon-button fr-navbar__avatar-btn" id="avatarBtn" aria-label="User profile or login" onclick="login()"></button>
+    </nav>
 
-        <div id="settingsModal" class="fr-modal fr-modal--settings" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" tabindex="-1" aria-hidden="true">
-            <div class="fr-modal__content">
-                <header class="fr-modal__header">
-                    <h2 id="settingsTitle">Settings</h2>
-                    <button class="fr-btn--large fr-btn-right fr-modal__close-btn" 
-                            aria-label="Close settings">
-                        &lt;/&gt;
-                    </button>
-                </header>
-
-                <div class="fr-settings-grid">
-                    <section class="fr-settings-group--colour">
-                        <h3>Colour</h3> <div class="fr-list" style="justify-content: left;">
-                            <div class="fr-swatch" style="background-color: #d84343;" data-color="#d84343" role="radio" aria-checked="false" tabindex="0"></div>
-                            <div class="fr-swatch" style="background-color: #4a90e2;" data-color="#4a90e2" role="radio" aria-checked="false" tabindex="0"></div>
-                            <div class="fr-swatch" style="background-color: #e0e0e0;" data-color="#e0e0e0" role="radio" aria-checked="false" tabindex="0"></div>
-                            <div class="fr-swatch" style="background-color: #1e3d59;" data-color="#1e3d59" role="radio" aria-checked="true" tabindex="0"></div>
-                            <div class="fr-swatch" style="background-color: #3f684c;" data-color="#3f684c" role="radio" aria-checked="false" tabindex="0"></div>
-                            <div class="fr-swatch" style="background-color: #f0e6e6;" data-color="#f0e6e6" role="radio" aria-checked="false" tabindex="0"></div>
-                        </div>
-                    </section>
-
-                    <section class="fr-settings-group--brightness">
-                        <h3>Brightness</h3>
-                        <input type="range" min="0" max="100" value="50" class="form-range" id="BrightnessRange" aria-label="Screen brightness adjustment">
-                    </section>
-
-                    <section class="fr-settings-group--text">
-                        <h3>Font Style</h3>
-                        <select class="fr-form-select" aria-label="Font Family">
-                            <option value="Montserrat">Montserrat</option>
-                            <option value="Roboto">Roboto</option>
-                        </select>
-                        <select class="fr-form-select" aria-label="Font Style">
-                            <option value="500">Semi bold</option> <option value="400">Regular</option>
-                        </select>
-                        <select class="fr-form-select" aria-label="Font Size">
-                            <option value="32px">32</option> <option value="16px">16</option>
-                        </select>
-                    </section>
-
-                    <section class="fr-settings-group--example">
-                        <h1>Text</h1>
-                        <h2>Text</h2>
-                        <h3>Text</h3>
-                        <p>Text</p>
-                    </section>
-
-                    <section class="fr-settings-group--theme">
-                        <h3>Theme</h3>
-                        <label class="fr-switch">
-                            <input type="checkbox" id="theme-toggle" aria-label="Toggle dark theme">
-                            <span class="fr-switch__track fr-switch__track--round"></span>
-                        </label>
-                    </section>
-
-                </div>
-            </div>
-        </div>
-
-
-        <div class="bp-book-header">
-            <label class="bp-switch fr-switch">
-                <input type="checkbox" id="favBtn" onclick="submitForm(this)"/>
-                <span class="bp-switch-mark"></span>
-            </label>
-            <div class="bp-title-block">
-                <h2>{{.Name}}</h2>
-                <h4>{{.Author}}, {{.ReleaseDate}}</h4>
-            </div>
-        </div>
-        <div class="bp-reading-grid">
-
-            <section class="bp-word-box" id="book-text">---</section>
-
-            <section class="bp-controls">
-                <input type="number" id="speed" value="600" min="100" onchange="updateSpeed()">
-                <label class="bp-switch fr-switch">
-                    <input type="checkbox" id="play"/>
-                    <span class="bp-switch-play"></span>
-                </label>
-            </section>
-
-            <section class="bp-book-nav-btn">
-                <button class="bp-nav-control-btn" onclick="toggleChapterNav()" aria-label="Toggle chapter navigation">
-                    <span class="bp-nav-dot"></span>
-                    <span class="bp-nav-dot"></span>
-                    <span class="bp-nav-dot"></span>
+    <div id="settingsModal" class="fr-modal fr-modal--settings" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" tabindex="-1" aria-hidden="true">
+        <div class="fr-modal__content">
+            <header class="fr-modal__header">
+                <h2 id="settingsTitle">Settings</h2>
+                <button class="fr-btn--large fr-btn-right fr-modal__close-btn" 
+                        aria-label="Close settings">
+                    &lt;/&gt;
                 </button>
-                <div class="bp-chapter-nav-overlay">
-                    <ul>
-                        <li>Chapter 1</li>
-                        <li>1.1 jsfdijsf sfjnssfaj</li>
-                        <li>Chapter 2</li>
-                        <li>Chapter 3</li>
-                    </ul>
-                </div>
-            </section>
+            </header>
 
-            <section class="bp-book-text-area">
-                <div class="fr-book-text" id="bookText">{{.Text}}</div>
-            </section>
+            <div class="fr-settings-grid">
+                <section class="fr-settings-group--colour">
+                    <h3>Colour</h3> <div class="fr-list" style="justify-content: left;">
+                        <div class="fr-swatch" style="background-color: #d84343;" data-color="#d84343" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #4a90e2;" data-color="#4a90e2" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #e0e0e0;" data-color="#e0e0e0" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #1e3d59;" data-color="#1e3d59" role="radio" aria-checked="true" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #3f684c;" data-color="#3f684c" role="radio" aria-checked="false" tabindex="0"></div>
+                        <div class="fr-swatch" style="background-color: #f0e6e6;" data-color="#f0e6e6" role="radio" aria-checked="false" tabindex="0"></div>
+                    </div>
+                </section>
 
-            <section class="bp-book-scroll-control">
-                <input type="range" id="scrollRange" class="fr-scroll-slider--vertical" value="50" aria-label="Reading progress slider">
-            </section>
+                <section class="fr-settings-group--brightness">
+                    <h3>Brightness</h3>
+                    <input type="range" min="0" max="100" value="50" class="form-range" id="BrightnessRange" aria-label="Screen brightness adjustment">
+                </section>
+
+                <section class="fr-settings-group--text">
+                    <h3>Font Style</h3>
+                    <select class="fr-form-select" aria-label="Font Family">
+                        <option value="Montserrat">Montserrat</option>
+                        <option value="Roboto">Roboto</option>
+                    </select>
+                    <select class="fr-form-select" aria-label="Font Style">
+                        <option value="500">Semi bold</option> <option value="400">Regular</option>
+                    </select>
+                    <select class="fr-form-select" aria-label="Font Size">
+                        <option value="32px">32</option> <option value="16px">16</option>
+                    </select>
+                </section>
+
+                <section class="fr-settings-group--example">
+                    <h1>Text</h1>
+                    <h2>Text</h2>
+                    <h3>Text</h3>
+                    <p>Text</p>
+                </section>
+
+                <section class="fr-settings-group--theme">
+                    <h3>Theme</h3>
+                    <label class="fr-switch">
+                        <input type="checkbox" id="theme-toggle" aria-label="Toggle dark theme">
+                        <span class="fr-switch__track fr-switch__track--round"></span>
+                    </label>
+                </section>
+
+            </div>
         </div>
     </div>
-    <script>
-        const text = `{{.Text}}`;
-        const words = text.split(/\s+/);
-        const play = document.getElementById('play');
-        const bookText = document.getElementById("bookText");
-        const range = document.getElementById("scrollRange");
-        const button = document.querySelector('.nav-control-btn');
-        const chapterNav = document.querySelector('.chapter-nav-overlay');
-        let index = 0;
-        let intervalId = null;
-        let speed = 600;
+<div class="book-card-container">
+    <div class="book-cover-wrapper">
+        <img src="/static/lolita-cover.jpg" alt="Обложка книги Мой любимый сосед" class="book-cover-image">
+    </div>
+    
+    <div class="book-info-wrapper">
+        
+        <h2>{{.Name}}</h2>
+        <h3>{{.Author}}</h3>
 
-        function updateText() {
-            if (index < words.length) {
-                document.getElementById("book-text").innerText = words[index];
-                index++;
-            } else {
-                clearInterval(intervalId);
-                intervalId = null;
-            }
-        }
+        <div class="book-section">
+            <label for="labels">Labels</label>
+            <div class="fr-list fr-list--left" id="labels" role="group" aria-label="Book tags">
+                <div class="fr-label">любовь</div>
+                <div class="fr-label">страсть</div>
+                <div class="fr-label">ненависть</div>
+                <div class="fr-label">новаяжизнь</div>
+                <div class="fr-label">wattys2016</div>
+                <div class="fr-label">невыносимаясоседка</div>
+                <div class="fr-label">невыносимыйсосед</div>
+            </div>
+        </div>
 
-        function toggleChapterNav() {
-            if (chapterNav) {
-                chapterNav.classList.toggle('active');
+        <div class="action-buttons-wrapper">
+            <button class="fr-btn--large">Начать читать</button>
 
-                var isExpanded = chapterNav.classList.contains('active');
-                
-                button.setAttribute('aria-expanded', isExpanded);
-            } else {
-                console.error("Chapter navigation overlay element (.chapter-nav-overlay) not found.");
-            }
-        }
+            <label class="bp-switch fr-switch">
+                <input type="checkbox" id="favBtn" onclick="addToFavorites(this)" />
+                <span class="bp-switch-mark"></span>
+            </label>
+        </div>
+    </div>
+    </div>
+    <div class="book-description">
+        <h3>Book description</h3>
+        <p>
+            {{.Description}}
+        </p>
+    </div>
 
-        play.addEventListener('change', (e) => {
-            if (e.target.checked) {
-                intervalId = setInterval(updateText, speed);
-            } else {
-                clearInterval(intervalId);
-                intervalId = null;
-            }
-        });
-
-        function updateSpeed() {
-            speed = parseInt(document.getElementById("speed").value, 10);
-            if (intervalId) {
-                stopReading();
-                startReading();
-            }
-        }
-
-        function submitForm(button) {
-            var bookNameElement = `{{.Name}}`;
-            var bookAuthorElement = `{{.Author}}`;
-            // Извлекаем числовую часть ID из строки
-            var idRaw = `{{.ID}}`;
-            var match = idRaw.match(/ObjectID\(["']?([a-fA-F0-9]+)["']?\)/);
-            var bookId = match ? match[1] : "";
-
-            if (!bookNameElement || !bookAuthorElement || !bookId) {
-                console.log(!bookNameElement)
-                console.log(!bookAuthorElement)
-                console.log(!bookId)
-                console.error("Ошибка: один из элементов не найден!");
-                return;
-            }
-
-            var dict = {
-                "name": bookNameElement,
-                "author": bookAuthorElement,
-                "id": bookId
-            };
-
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "/library/one/"+bookId+"/favourite", true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.send(JSON.stringify(dict));
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 201) {
-                        console.log("Ответ сервера:", xhr.responseText);
-                        button.classList.add("clicked");
-                        // window.location.href = "/library/";
-                    } else {
-                        console.error("Ошибка при отправке запроса:", xhr.status, xhr.responseText);
-                    }
-                }
-            };
-        }
-
-        range.max = bookText.scrollHeight - bookText.clientHeight;
-        range.min = 0;
-
-        range.addEventListener("input", () => {
-            bookText.scrollTop = range.value;
-        });
-        bookText.addEventListener("scroll", () => {
-            range.value = bookText.scrollTop;
-        });
-    </script>
-    <script src="/static/script.js" defer></script>
+    <div class="chapters-section">
+        <h3>Chapters</h3>
+        <ul class="chapters-list">
+            {{range .Chapters}}
+            <li class="chapter-item">
+                <a href="/library/one/chapter/{{.ID}}" class="chapter-link">{{.Title}}</a>
+            </li>
+            {{end}}
+        </ul>
+    </div>
 </body>
+<script>
+    function addToFavorites(button) {
+        var bookNameElement = `{{.Name}}`;
+        var bookAuthorElement = `{{.Author}}`;
+        var bookId = `{{.ID}}`;
+
+        if (!bookNameElement || !bookAuthorElement || !bookId) {
+            console.log(bookNameElement)
+            console.log(bookAuthorElement)
+            console.log(bookId)
+            console.error("Ошибка: один из элементов не найден!");
+            return;
+        }
+
+        var dict = {
+            "name": bookNameElement,
+            "author": bookAuthorElement,
+            "id": bookId
+        };
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/library/one/"+bookId+"/favourite", true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify(dict));
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 201) {
+                    console.log("Ответ сервера:", xhr.responseText);
+                    button.classList.add("clicked");
+                    // window.location.href = "/library/";
+                } else {
+                    console.error("Ошибка при отправке запроса:", xhr.status, xhr.responseText);
+                }
+            }
+        };
+    }
+</script>
 </html>

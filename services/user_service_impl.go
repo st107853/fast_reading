@@ -32,7 +32,7 @@ func (us *UserServiceImpl) FindUserByEmail(email string) (*models.User, error) {
 	return user, nil
 }
 
-func (us *UserServiceImpl) AddBookToFavoriteBooks(email string, bookID uint) error {
+func (us *UserServiceImpl) AddBookToFavoriteBooks(email string, bookID string) error {
 	var user models.User
 	var book models.Book
 
