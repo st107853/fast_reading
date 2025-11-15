@@ -96,12 +96,12 @@
         <section class="cb-editor-info-grid">
             <div class="fr-input-container">
                 <label for="book-name">Book naming</label>
-                <input type="text" class="fr-form-input" id="book-name" placeholder="Book name here *" required>
+                <input type="text" class="fr-form-input" id="book-name" value="{{.Name}}" required>
             </div>
 
             <div class="fr-input-container">
                 <label for="author-name">Author</label>
-                <input type="text" class="fr-form-input" id="author-name" placeholder="Author name here*" required>
+                <input type="text" class="fr-form-input" id="author-name" value="{{.Author}}" required>
             </div>
 
             <div class="cb-year-and-labels">
@@ -135,7 +135,7 @@
 
         <section class="cb-editor-description">
             <label for="book-description">Short book description</label>
-            <textarea class="cb-textarea-description" id="book-description">The quick brown fox jumps over the lazy dog</textarea>
+            <textarea class="cb-textarea-description" id="book-description">{{.Description}}</textarea>
         </section>
 
         <section class="cb-editor-content-list">
@@ -151,7 +151,7 @@
         <footer class="cb-editor-actions">
             <button type="submit" class="fr-btn--large">Publish</button>
             <button type="submit" class="fr-btn--large" id="save-button" onclick="submitForm(this)">Save</button>
-            <button type="button" class="fr-btn--large">Add chapter</button>
+            <button type="button" class="fr-btn--large" id="delete-button" onclick="deleteBook(`{{.ID}}`)">Delete</button>
         </footer>
     </form>
 </div>

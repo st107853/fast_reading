@@ -270,7 +270,9 @@ func (bc *BookController) GetCreatedBooks(c *gin.Context) {
 // GetBook retrieves a book by its ID
 func (bc *BookController) GetBook(c *gin.Context) {
 	id := c.Param("book_id")
+	isFavorited := false
 	var book models.Book
+
 	book, err := bc.bookService.FindBookByID(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -285,21 +287,19 @@ func (bc *BookController) GetBook(c *gin.Context) {
 	book.Chapters = chapters
 
 	cookie, err := c.Cookie("user_id")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found " + err.Error()})
-		return
-	}
-	userid, err := strconv.ParseUint(cookie, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+	if err == nil {
+		userid, err := strconv.ParseUint(cookie, 10, 32)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 
-	// Check if book is favorited by current user (if authenticated)
-	isFavorited, err := bc.userService.IsBookFavorited(uint(userid), book.Model.ID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		// Check if book is favorited by current user (if authenticated)
+		isFavorited, err = bc.userService.IsBookFavorited(uint(userid), book.Model.ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	}
 
 	// Pass both book and isFavorited to template
@@ -360,19 +360,18 @@ func (bc *BookController) UpdateBook(c *gin.Context) {
 
 // DeleteBook deletes a book by its ID
 func (bc *BookController) DeleteBook(c *gin.Context) {
-	cookie, err := c.Cookie("id")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found " + err.Error()})
-		return
-	}
-	id, err := strconv.ParseUint(cookie, 10, 32)
+	id := c.Param("id")
+
+	idParsed, err := strconv.ParseUint(id, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		fmt.Println("Error parsing book ID 386:", err)
 		return
 	}
 
-	if err := bc.bookService.DeleteBook(uint(id)); err != nil {
+	if err := bc.bookService.DeleteBook(uint(idParsed)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		fmt.Println("Error deleting book ID 374:", err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Book deleted"})
@@ -387,7 +386,15 @@ func (bc *BookController) DeleteAllBooks(c *gin.Context) {
 }
 
 func (bc *BookController) AddBook(c *gin.Context) {
-	if err := addBook.Execute(c.Writer, nil); err != nil {
+
+	templateData := gin.H{
+		"Name":        "Book title*",
+		"Author":      "Book author*",
+		"Description": "Book description*",
+		"Chapters":    nil,
+	}
+
+	if err := addBook.Execute(c.Writer, templateData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -395,6 +402,23 @@ func (bc *BookController) AddBook(c *gin.Context) {
 
 func (bc *BookController) AddBookChapter(c *gin.Context) {
 	if err := addBookChapter.Execute(c.Writer, nil); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+}
+
+func (bc *BookController) EditBook(c *gin.Context) {
+	id := c.Param("book_id")
+	var book models.Book
+
+	book, err := bc.bookService.FindBookByID(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Execute the bookPage template and write the output to the response writer
+	if err := addBook.Execute(c.Writer, book); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

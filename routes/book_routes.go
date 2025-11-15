@@ -27,4 +27,5 @@ func (bc *BookRouteController) BookRoute(rg *gin.RouterGroup, bookService servic
 	rg.GET("/addbook", bc.bookController.AddBook)
 	rg.GET("/one/:book_id/chapter", bc.bookController.AddBookChapter)
 	rg.POST("/one/:book_id/chapter", bc.bookController.CreateChapter)
+	rg.GET("/edit/:book_id", bc.bookController.EditBook)
 }

@@ -122,7 +122,7 @@ func (bs *BookServiseImpl) DeleteAll() error {
 // DeleteBook implements BookService.
 func (bs *BookServiseImpl) DeleteBook(bookId uint) error {
 	var book models.Book
-	if err := bs.collection.First(&book, bookId).Error; err != nil {
+	if err := bs.collection.Where("id = ?", bookId).First(&book).Error; err != nil {
 		return fmt.Errorf("bsi: failed to find book by ID: %w", err)
 	}
 
