@@ -111,7 +111,7 @@
                 <span class="bp-switch-mark"></span>
             </label>
         </div>
-        <div {{if not .IsFavorited}}style="display: none;"{{end}}>
+        <div {{if not .IsCreator}}style="display: none;"{{end}}>
             <a href="/library/edit/{{.ID}}"><button class="fr-btn-with-icon" id="edit-btn">
                 <img src="/static/edit.svg" alt="edit icon" class="fr-icon">
                 <span>Edit</span>

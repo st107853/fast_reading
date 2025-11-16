@@ -17,9 +17,8 @@ type Book struct {
 
 	CreatorUserID uint `json:"creator_user_id"`
 
-	Chapters    []Chapter `json:"chapters" gorm:"foreignKey:BookID;constraint:OnDelete:CASCADE;"`
-	Labels      []*Label  `json:"labels" gorm:"many2many:book_labels;"`
-	FavoritedBy []*User   `json:"favorited_by" gorm:"many2many:user_favorites;"`
+	Labels      []*Label `json:"labels" gorm:"many2many:book_labels;"`
+	FavoritedBy []*User  `json:"favorited_by" gorm:"many2many:user_favorites;"`
 }
 
 type Chapter struct {
