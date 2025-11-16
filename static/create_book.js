@@ -27,20 +27,7 @@ function submitForm(button) {
         console.log("Ответ сервера:", xhr.responseText);
         if (xhr.readyState === 4 && xhr.status === 201) {
             console.log("Ответ сервера:", xhr.responseText);
-            button.classList.add("clicked"); // Если всё ок, кнопка меняет цвет
-            // try to parse returned book id and redirect to chapter add page
-            // try {
-            //     var resp = JSON.parse(xhr.responseText || '{}');
-            //     alert("book id: "+resp.book_id)
-            //     if (resp.book_id) {
-            //         window.location.href = '/library/one/' + encodeURIComponent(resp.book_id) + '/chapter';
-            //     } else {
-            //         // fallback: redirect to add-chapter generic page
-            //         window.location.href = '/library/addbook/chapter';
-            //     }
-            // } catch (e) {
-            //     window.location.href = '/library/addbook/chapter';
-            // }
+            button.classList.add("clicked");
         }
     };
 }
@@ -82,9 +69,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 break;
             }
         }
-        var addChapterAnchor = document.querySelector('a[href="/library/addbook/chapter"]');
+        var addChapterAnchor = document.querySelector('a[href="/library/addbook/' + encodeURIComponent(bookId) + '/chapter"]');
         if (addChapterAnchor && bookId) {
-            addChapterAnchor.setAttribute('href', '/library/one/' + encodeURIComponent(bookId) + '/chapter');
+            addChapterAnchor.setAttribute('href', '/library/book/' + encodeURIComponent(bookId) + '/chapter');
         }
     } catch (e) {
         console.error('failed to update add chapter link', e);
@@ -92,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // Submit chapter for the current book
-function submitChapter(button) {
+function submitChapter(button, bookId) {
     var chapterNameElement = document.getElementById('chapter-name');
     var bookTextElement = document.getElementById('bookText');
 
@@ -101,17 +88,7 @@ function submitChapter(button) {
         return;
     }
 
-    // Try to read book_id from cookie
-    var bookId = null;
-    var cookies = document.cookie.split(';').map(c => c.trim());
-    for (var i = 0; i < cookies.length; i++) {
-        if (cookies[i].startsWith('book_id=')) {
-            bookId = cookies[i].substring('book_id='.length);
-            break;
-        }
-    }
-
-    var url = bookId ? ('/library/one/' + encodeURIComponent(bookId) + '/chapter') : '/library/addbook/chapter';
+    var url = '/library/addbook/' + bookId + '/chapter';
 
     var payload = {
         title: chapterNameElement.value.trim(),
@@ -126,7 +103,7 @@ function submitChapter(button) {
             if (xhr.status === 201) {
                 // optional: visually indicate success
                 button.classList.add('clicked');
-                try { if (bookId) { window.location.href = '/library/one/' + encodeURIComponent(bookId); } } catch (e) {}
+                try { if (bookId) { window.location.href = '/library/book/' + encodeURIComponent(bookId); } } catch (e) {}
             } else {
                 console.error('Failed to save chapter', xhr.status, xhr.responseText);
                 alert('Failed to save chapter: ' + xhr.responseText);

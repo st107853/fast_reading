@@ -12,12 +12,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Initialize the template with the custom function
-var mainPage = template.Must(template.New("main_page.html").Funcs(template.FuncMap{
-	"extractNumericPart": extractNumericPart,
-}).ParseFiles("./static/main_page.html"))
-
-// Book reading page
+// Pages html
+var mainPage = template.Must(template.New("main_page.html").ParseFiles("./static/main_page.html"))
 var bookPage = template.Must(template.New("book_page.html").ParseFiles("./static/book_page.html"))
 var bookChapter = template.Must(template.New("book_chapter.html").ParseFiles("./static/book_chapter.html"))
 var addBook = template.Must(template.New("create_book_face.html").ParseFiles("./static/create_book_face.html"))
@@ -392,7 +388,10 @@ func (bc *BookController) AddBook(c *gin.Context) {
 }
 
 func (bc *BookController) AddBookChapter(c *gin.Context) {
-	if err := addBookChapter.Execute(c.Writer, nil); err != nil {
+	templateData := gin.H{
+		"BookID": c.Param("book_id"),
+	}
+	if err := addBookChapter.Execute(c.Writer, templateData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
