@@ -103,7 +103,7 @@
            
 
             <section class="bp-book-text-area">
-                <div class="fr-book-text" id="bookText">{{.Chapter.Text}}</div>
+                <div class="fr-book-text" id="chapter-text">{{.Chapter.Text}}</div>
             </section>
 
             <section class="bp-book-scroll-control">
@@ -115,7 +115,7 @@
         const text = `{{.Chapter.Text}}`;
         const words = text.split(/\s+/);
         const play = document.getElementById('play');
-        const bookText = document.getElementById("bookText");
+        const bookText = document.getElementById("chapter-text");
         const range = document.getElementById("scrollRange");
         const button = document.querySelector('.nav-control-btn');
         const chapterNav = document.querySelector('.chapter-nav-overlay');

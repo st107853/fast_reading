@@ -344,7 +344,7 @@ func (bc *BookController) UpdateBook(c *gin.Context) {
 
 // DeleteBook deletes a book by its ID
 func (bc *BookController) DeleteBook(c *gin.Context) {
-	id := c.Param("id")
+	id := c.Param("book_id")
 
 	idParsed, err := strconv.ParseUint(id, 10, 32)
 	if err != nil {
