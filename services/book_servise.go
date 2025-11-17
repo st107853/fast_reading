@@ -18,5 +18,5 @@ type BookService interface {
 	ListAllBooks() ([]models.Book, error)
 	FindAll(bookName string) ([]models.Book, error)
 	FindBook(bookName string) (models.Book, error)
-	UpdateBook(bookId uint, book models.Book) error
+	UpdateBook(bookId uint, book models.Book) (models.Book, error)
 }

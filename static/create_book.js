@@ -1,4 +1,4 @@
-function submitForm(button) {
+function submitForm(button, bookId) {
 
     var bookNameElement = document.getElementById('book-name');
     var bookAuthorElement = document.getElementById('author-name');
@@ -18,16 +18,25 @@ function submitForm(button) {
     };
 
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/library/", true);
+
+    if (bookId) {
+        xhr.open("PUT", "/library/" + bookId, true);
+    } else {
+        xhr.open("POST", "/library/", true);
+    }
     xhr.setRequestHeader('Content-Type', 'application/json');
     // allow cookies to be set on the response (same-origin)
     xhr.withCredentials = true;
     xhr.send(JSON.stringify(dict));
     xhr.onreadystatechange = function() {
         console.log("Ответ сервера:", xhr.responseText);
-        if (xhr.readyState === 4 && xhr.status === 201) {
-            console.log("Ответ сервера:", xhr.responseText);
+        // Ожидайте 200 (OK) для PUT или 201 (Created) для POST
+        if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 201)) {
+            console.log("Успех:", xhr.responseText);
             button.classList.add("clicked");
+        } else if (xhr.readyState === 4) {
+            // Обработка ошибок
+            console.error("Ошибка обновления:", xhr.responseText);
         }
     };
 }

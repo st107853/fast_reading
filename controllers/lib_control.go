@@ -9,7 +9,6 @@ import (
 	"github.com/st107853/fast_reading/config"
 	"github.com/st107853/fast_reading/models"
 	"github.com/st107853/fast_reading/services"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Pages html
@@ -31,13 +30,6 @@ type BookController struct {
 
 func NewBookController(bookService services.BookService, userService services.UserService) BookController {
 	return BookController{bookService, userService}
-}
-
-// Custom function to extract the numeric part of the ObjectID
-func extractNumericPart(id primitive.ObjectID) string {
-	// Assuming the numeric part is the last part of the ObjectID
-	new := id.Hex()
-	return new
 }
 
 func (bc *BookController) AllBooks(c *gin.Context) {
@@ -127,18 +119,8 @@ func (bc *BookController) CreateChapter(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Book ID param " + err.Error()})
 			return
 		}
-	} else {
-		cookie, err := c.Cookie("book_id")
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Book ID cookie not found " + err.Error()})
-			return
-		}
-		bookIdUint, err = strconv.ParseUint(cookie, 10, 32)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Book ID " + err.Error()})
-			return
-		}
 	}
+
 	chapter.BookID = uint(bookIdUint)
 	// Persist chapter via service
 	if bc.bookService == nil {
@@ -156,22 +138,27 @@ func (bc *BookController) CreateChapter(c *gin.Context) {
 }
 
 func (bc *BookController) ReleaseBook(c *gin.Context) {
-	bookId := c.Param("book_id")
-	var book models.Book
-	book, err := bc.bookService.FindBookByID(bookId)
+	idParam := c.Param("book_id")
+	bookId, err := strconv.ParseUint(idParam, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
+		return
+	}
+
+	book, err := bc.bookService.FindBookByID(idParam)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
 	book.Released = true
-	err = bc.bookService.UpdateBook(book.Model.ID, book)
+	updatedBook, err := bc.bookService.UpdateBook(uint(bookId), book)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Book released successfully"})
+	c.JSON(http.StatusOK, updatedBook)
 }
 
 func (bc *BookController) BookFavourite(c *gin.Context) {
@@ -333,18 +320,26 @@ func (bc *BookController) GetChapter(c *gin.Context) {
 
 // UpdateBook updates an existing book
 func (bc *BookController) UpdateBook(c *gin.Context) {
-	var book models.Book
-	if err := c.ShouldBindJSON(&book); err != nil {
+	idParam := c.Param("book_id")
+	bookId, err := strconv.ParseUint(idParam, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
+		return
+	}
+
+	var inputData models.Book
+	if err := c.ShouldBindJSON(&inputData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	id := book.Model.ID
-	if err := bc.bookService.UpdateBook(id, book); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Book not found " + err.Error()})
+	updatedBook, err := bc.bookService.UpdateBook(uint(bookId), inputData)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, book)
+
+	c.JSON(http.StatusOK, updatedBook)
 }
 
 // DeleteBook deletes a book by its ID
@@ -400,6 +395,7 @@ func (bc *BookController) AddBookChapter(c *gin.Context) {
 func (bc *BookController) EditBook(c *gin.Context) {
 	id := c.Param("book_id")
 	var book models.Book
+	var chapters []models.Chapter
 
 	book, err := bc.bookService.FindBookByID(id)
 	if err != nil {
@@ -407,8 +403,22 @@ func (bc *BookController) EditBook(c *gin.Context) {
 		return
 	}
 
+	chapters, err = bc.bookService.FindChaptersByBookID(book.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	templateData := gin.H{
+		"Name":        book.Name,
+		"Author":      book.Author,
+		"Description": book.Description,
+		"Chapters":    chapters,
+		"ID":          book.ID,
+	}
+
 	// Execute the bookPage template and write the output to the response writer
-	if err := addBook.Execute(c.Writer, book); err != nil {
+	if err := addBook.Execute(c.Writer, templateData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

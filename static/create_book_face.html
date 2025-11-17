@@ -140,17 +140,18 @@
 
         <section class="cb-editor-content-list">
             <label>Book's content:</label>
-            <ul>
-                <li>Chapter 1: fajfsjfjv fnsnnjfa fnjwinf</li>
-                <li>Chapter 2: 5 reasons to cry</li>
-                <li>Chapter 3: Why am i so cool</li>
-                <li>Chapter 4: How to live this life</li>
-            </ul>
+            <ul class="chapters-list">
+            {{range .Chapters}}
+            <li class="chapter-item">
+                <a href="/library/book/{{.BookID}}/{{.ID}}" class="chapter-link">{{.Title}}</a>
+            </li>
+            {{end}}
+        </ul>
         </section>
 
         <footer class="cb-editor-actions">
             <button type="submit" class="fr-btn--large">Publish</button>
-            <button type="submit" class="fr-btn--large" id="save-button" onclick="submitForm(this)">Save</button>
+            <button type="submit" class="fr-btn--large" id="save-button" onclick="submitForm(this, `{{.ID}}`)">Save</button>
             <button type="button" class="fr-btn--large" id="delete-button" onclick="deleteBook(`{{.ID}}`)">Delete</button>
         </footer>
     </form>

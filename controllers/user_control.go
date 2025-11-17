@@ -9,9 +9,7 @@ import (
 	"github.com/st107853/fast_reading/services"
 )
 
-var userPage = template.Must(template.New("user_page.html").Funcs(template.FuncMap{
-	"extractNumericPart": extractNumericPart,
-}).ParseFiles("./static/user_page.html"))
+var userPage = template.Must(template.New("user_page.html").ParseFiles("./static/user_page.html"))
 
 type UserController struct {
 	userService services.UserService

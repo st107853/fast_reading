@@ -19,7 +19,12 @@ func NewBookService(collection *gorm.DB, ctx context.Context) *BookServiseImpl {
 
 // InsertBook inserts a new book into the database.
 func (bs *BookServiseImpl) InsertBook(book models.Book) (uint, error) {
-	// Generate a new unique ObjectID for the book
+	// Validate creator user id to avoid foreign key constraint violation
+	if book.CreatorUserID == 0 {
+		return 0, fmt.Errorf("bsi: missing CreatorUserID")
+	}
+
+	// Insert the book
 	err := bs.collection.Create(&book).Error
 	return book.ID, err
 }
@@ -162,12 +167,24 @@ func (bs *BookServiseImpl) FindBook(bookName string) (models.Book, error) {
 	return book, nil
 }
 
-// UpdateBook implements BookService.
-func (bs *BookServiseImpl) UpdateBook(bookId uint, book models.Book) error {
-
-	if err := bs.collection.Model(&models.Book{}).Where("id = ?", bookId).Updates(book).Error; err != nil {
-		return fmt.Errorf("bsi: failed to update book: %w", err)
+// UpdateBook find and updates a book's fields.
+func (bs *BookServiseImpl) UpdateBook(bookId uint, input models.Book) (models.Book, error) {
+	var existingBook models.Book
+	if err := bs.collection.First(&existingBook, bookId).Error; err != nil {
+		return models.Book{}, fmt.Errorf("bsi: book with id %d not found: %w", bookId, err)
 	}
 
-	return nil
+	updateData := map[string]interface{}{
+		"name":         input.Name,
+		"author":       input.Author,
+		"release_date": input.ReleaseDate,
+		"description":  input.Description,
+		"released":     input.Released,
+	}
+
+	if err := bs.collection.Model(&existingBook).Updates(updateData).Error; err != nil {
+		return models.Book{}, fmt.Errorf("bsi: failed to update book: %w", err)
+	}
+
+	return existingBook, nil
 }
