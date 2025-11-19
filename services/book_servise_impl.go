@@ -29,6 +29,7 @@ func (bs *BookServiseImpl) InsertBook(book models.Book) (uint, error) {
 	return book.ID, err
 }
 
+// BookExist checks if a book exist and return bool.
 func (bs *BookServiseImpl) BookExist(bookName, bookAuthor string) (bool, error) {
 	var count int64
 
@@ -40,6 +41,7 @@ func (bs *BookServiseImpl) BookExist(bookName, bookAuthor string) (bool, error) 
 	return count > 0, nil
 }
 
+// FindBookByID finds and returns book by its ID.
 func (bs *BookServiseImpl) FindBookByID(bookID string) (models.Book, error) {
 	var book models.Book
 
@@ -51,6 +53,7 @@ func (bs *BookServiseImpl) FindBookByID(bookID string) (models.Book, error) {
 	return book, nil
 }
 
+// FindBooksByCreatorID finds and returns books by the creator's ID.
 func (bs *BookServiseImpl) FindBooksByCreatorID(creatorID uint) ([]models.Book, error) {
 	var books []models.Book
 
@@ -62,6 +65,7 @@ func (bs *BookServiseImpl) FindBooksByCreatorID(creatorID uint) ([]models.Book, 
 	return books, nil
 }
 
+// FindFavoriteBooksByUserEmail finds and returns favorite books by user ID.
 func (bs *BookServiseImpl) FindFavoriteBooksByUserEmail(userID uint) ([]models.Book, error) {
 	var books []models.Book
 
@@ -92,6 +96,7 @@ func (bs *BookServiseImpl) InsertChapter(chapter models.Chapter) (uint, error) {
 	return chapter.ID, nil
 }
 
+// FindChapterByID finds and returns chapter by its ID.
 func (bs *BookServiseImpl) FindChapterByID(id uint) (models.ChapterResponse, error) {
 	var chapterResponse models.ChapterResponse
 
@@ -108,6 +113,7 @@ func (bs *BookServiseImpl) FindChapterByID(id uint) (models.ChapterResponse, err
 	return chapterResponse, nil
 }
 
+// FindChaptersByBookID finds and returns chapters by book ID.
 func (bs *BookServiseImpl) FindChaptersByBookID(bookID uint) ([]models.Chapter, error) {
 	var chapters []models.Chapter
 
@@ -126,14 +132,14 @@ func (bs *BookServiseImpl) DeleteAll() error {
 
 // DeleteBook implements BookService.
 func (bs *BookServiseImpl) DeleteBook(bookId uint) error {
-	var book models.Book
-	if err := bs.collection.Where("id = ?", bookId).First(&book).Error; err != nil {
-		return fmt.Errorf("bsi: failed to find book by ID: %w", err)
+	if err := bs.collection.Unscoped().Delete(&models.Book{}, bookId).Error; err != nil {
+		return fmt.Errorf("bsi: failed to hard delete book: %w", err)
 	}
 
-	return bs.collection.Delete(&book).Error
+	return nil
 }
 
+// ListAllBooks finds and returns all books.
 func (bs *BookServiseImpl) ListAllBooks() ([]models.Book, error) {
 	var books []models.Book
 
@@ -145,6 +151,7 @@ func (bs *BookServiseImpl) ListAllBooks() ([]models.Book, error) {
 	return books, nil
 }
 
+// FindAll finds and returns books by its name.
 func (bs *BookServiseImpl) FindAll(bookName string) ([]models.Book, error) {
 	var books []models.Book
 
@@ -156,6 +163,7 @@ func (bs *BookServiseImpl) FindAll(bookName string) ([]models.Book, error) {
 	return books, nil
 }
 
+// FindBook finds and returns book by its name.
 func (bs *BookServiseImpl) FindBook(bookName string) (models.Book, error) {
 	var book models.Book
 

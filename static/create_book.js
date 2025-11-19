@@ -1,49 +1,55 @@
-function submitForm(button, bookId) {
+async function saveUpdates(button, bookId) {
+    const bookName = document.getElementById('book-name');
+    const bookAuthor = document.getElementById('author-name');
+    const releaseDate = document.getElementById('publication-year');
+    const bookText = document.getElementById('book-description');
 
-    var bookNameElement = document.getElementById('book-name');
-    var bookAuthorElement = document.getElementById('author-name');
-    var releaseDateElement = document.getElementById('publication-year');
-    var bookTextElement = document.getElementById('book-description');
-
-    if (!bookNameElement || !bookAuthorElement || !releaseDateElement) {
-        console.error("Ошибка: один из элементов не найден!");
+    if (!bookName || !bookAuthor || !releaseDate || !bookText) {
+        alert("Error: Cannot find one of the required elements.");
         return;
     }
 
-    var dict = {
-        "name": bookNameElement.value.trim(),
-        "author": bookAuthorElement.value.trim(),
-        "release_date": releaseDateElement.value.trim()+"-01-02T15:04:05Z",
-        "description": bookTextElement.value.trim()
+    const data = {
+        name: bookName.value.trim(),
+        author: bookAuthor.value.trim(),
+        release_date: releaseDate.value.trim() + "-01-02T00:00:00Z",
+        description: bookText.value.trim()
     };
 
-    var xhr = new XMLHttpRequest();
+    const method = bookId ? "PUT" : "POST";
+    const url = bookId ? `/library/${bookId}` : `/library/`;
 
-    if (bookId) {
-        xhr.open("PUT", "/library/" + bookId, true);
-    } else {
-        xhr.open("POST", "/library/", true);
-    }
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    // allow cookies to be set on the response (same-origin)
-    xhr.withCredentials = true;
-    xhr.send(JSON.stringify(dict));
-    xhr.onreadystatechange = function() {
-        console.log("Ответ сервера:", xhr.responseText);
-        // Ожидайте 200 (OK) для PUT или 201 (Created) для POST
-        if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 201)) {
-            console.log("Успех:", xhr.responseText);
+    try {
+        const response = await fetch(url, {
+            method,
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify(data)
+        });
+
+        if (response.status === 201) {
+            const result = await response.json();
             button.classList.add("clicked");
-        } else if (xhr.readyState === 4) {
-            // Обработка ошибок
-            console.error("Ошибка обновления:", xhr.responseText);
+            window.location.href = `/library/addbook/${result.book_id}`;
+        } 
+        else if (response.status === 200) {
+            button.classList.add("clicked");
+        } 
+        else {
+            const errorText = await response.text();
+            throw new Error(errorText);
         }
-    };
+
+    } catch (err) {
+        console.error("Error:", err);
+    }
 }
+
+
 
 function updateText() {
     const fileInput = document.getElementById("file");
-    const bookTextArea = document.getElementById("bookText");
+    const bookTextArea = document.getElementById("chapter-text");
 
     // Проверяем, выбран ли файл
     if (fileInput.files.length === 0) {
@@ -80,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         var addChapterAnchor = document.querySelector('a[href="/library/addbook/' + encodeURIComponent(bookId) + '/chapter"]');
         if (addChapterAnchor && bookId) {
-            addChapterAnchor.setAttribute('href', '/library/book/' + encodeURIComponent(bookId) + '/chapter');
+            addChapterAnchor.setAttribute('href', '/library/addbook/' + encodeURIComponent(bookId) + '/chapter');
         }
     } catch (e) {
         console.error('failed to update add chapter link', e);
@@ -89,8 +95,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Submit chapter for the current book
 function submitChapter(button, bookId) {
-    var chapterNameElement = document.getElementById('chapter-name');
-    var bookTextElement = document.getElementById('bookText');
+    var chapterNameElement = document.getElementById('chapter-name'); 
+    var bookTextElement = document.getElementById('chapter-text');
+    console.log("Chapter name:", chapterNameElement, "Chapter text:", bookTextElement)
 
     if (!chapterNameElement || !bookTextElement) {
         console.error('Chapter elements not found');
@@ -101,7 +108,7 @@ function submitChapter(button, bookId) {
 
     var payload = {
         title: chapterNameElement.value.trim(),
-        text: bookTextElement.innerText || bookTextElement.textContent || ''
+        text: bookTextElement.value
     };
 
     var xhr = new XMLHttpRequest();
@@ -110,9 +117,12 @@ function submitChapter(button, bookId) {
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             if (xhr.status === 201) {
-                // optional: visually indicate success
                 button.classList.add('clicked');
-                try { if (bookId) { window.location.href = '/library/book/' + encodeURIComponent(bookId); } } catch (e) {}
+                try { 
+                    if (bookId) { 
+                        window.location.href = '/library/book/' + encodeURIComponent(bookId); 
+                    } 
+                } catch (e) {}
             } else {
                 console.error('Failed to save chapter', xhr.status, xhr.responseText);
                 alert('Failed to save chapter: ' + xhr.responseText);

@@ -82,13 +82,15 @@
         </div>
     </div>
 
-    <nav class="fr-list" >
-        <button class="fr-btn--large fr-btn--chosed">Book face</button>
-      
-        <a href="/library/addbook/{{.ID}}/chapter" class="fr-a--for-btn fr-btn-right">
-        <button class="fr-btn--large">Add chapter</button>
+    <div class="book-action-bar fr-list">
+
+        <button type="button" class="fr-btn--large fr-btn--chosed">Book face</button>
+    
+        <a href="/library/addbook/{{.ID}}/chapter" class="fr-btn--large fr-btn-right">
+        Add Chapter
         </a>
-    </nav>
+
+    </div>
     <hr>
     
     <form class="cb-book-editor-form">
@@ -150,8 +152,8 @@
         </section>
 
         <footer class="cb-editor-actions">
-            <button type="submit" class="fr-btn--large">Publish</button>
-            <button type="submit" class="fr-btn--large" id="save-button" onclick="submitForm(this, `{{.ID}}`)">Save</button>
+            <button type="button" class="fr-btn--large">Publish</button>
+            <button type="button" class="fr-btn--large" id="save-button" onclick="saveUpdates(this, `{{.ID}}`)">Save</button>
             <button type="button" class="fr-btn--large" id="delete-button" onclick="deleteBook(`{{.ID}}`)">Delete</button>
         </footer>
     </form>
