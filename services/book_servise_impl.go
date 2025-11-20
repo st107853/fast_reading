@@ -125,6 +125,23 @@ func (bs *BookServiseImpl) FindChapterByIDStr(id string) (models.Chapter, error)
 	return chapter, nil
 }
 
+// FindBooksChapterByIDs finds n'th book's chapter.
+func (bs *BookServiseImpl) FindBooksChapterByIDs(bookId, chapterId string) (models.ChapterResponse, error) {
+	var chapterResponse models.ChapterResponse
+
+	err := bs.collection.Where("book_id = ? AND chapter_order = ?", bookId, chapterId).First(&chapterResponse.Chapter).Error
+	if err != nil {
+		return chapterResponse, fmt.Errorf("bsi: failed to find chapter by ID: %w", err)
+	}
+
+	err = bs.collection.First(&chapterResponse.Book, chapterResponse.Chapter.BookID).Error
+	if err != nil {
+		return chapterResponse, fmt.Errorf("bsi: failed to find chapter by ID: %w", err)
+	}
+
+	return chapterResponse, nil
+}
+
 // FindChaptersByBookID finds and returns chapters by book ID.
 func (bs *BookServiseImpl) FindChaptersByBookID(bookID uint) ([]models.Chapter, error) {
 	var chapters []models.Chapter

@@ -337,22 +337,18 @@ func (bc *BookController) GetBook(c *gin.Context) {
 
 // GetChapter retrieves a chapter by its ID
 func (bc *BookController) GetChapter(c *gin.Context) {
-	id := c.Param("chapter_id")
-	var chapter models.ChapterResponse
+	chapterId := c.Param("chapter_id")
+	bookId := c.Param("book_id")
+	var book models.ChapterResponse
 
-	chapterId, err := strconv.ParseUint(id, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	chapter, err = bc.bookService.FindChapterByID(uint(chapterId))
+	book, err := bc.bookService.FindBooksChapterByIDs(bookId, chapterId)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
 	// Execute the bookPage template and write the output to the response writer
-	if err := bookChapter.Execute(c.Writer, chapter); err != nil {
+	if err := bookChapter.Execute(c.Writer, book); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

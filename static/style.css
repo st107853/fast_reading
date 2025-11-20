@@ -119,10 +119,7 @@ p {
 a {
     color: var(--secondary-color);
     cursor: pointer;
-    text-decoration: underline;
-}
-
-.fr-a--for-btn{
+    text-decoration: none;
     color: transparent;
 }
 
@@ -288,7 +285,7 @@ hr {
 */
 
 
-button {
+button, .fr-btn {
     display: flex;
     
     cursor: pointer;

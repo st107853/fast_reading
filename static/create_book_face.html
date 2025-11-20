@@ -86,7 +86,7 @@
 
         <button type="button" class="fr-btn--large fr-btn--chosed">Book face</button>
     
-        <a href="/library/addbook/{{.ID}}/chapter" class="fr-btn--large fr-btn-right">
+        <a href="/library/addbook/{{.ID}}/chapter" class="fr-btn fr-btn--large fr-btn-right">
         Add Chapter
         </a>
 
@@ -145,7 +145,7 @@
             <ul class="chapters-list">
             {{range .Chapters}}
             <li class="chapter-item">
-                <a href="/library/addbook/{{.BookID}}/chapter/{{.ID}}" class="chapter-link">{{.Title}}</a>
+                <a href="/library/addbook/{{.BookID}}/chapter/{{.ID}}">{{.Title}}</a>
             </li>
             {{end}}
         </ul>

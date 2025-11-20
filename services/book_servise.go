@@ -13,6 +13,7 @@ type BookService interface {
 	InsertChapter(chapter models.Chapter) (uint, error)
 	FindChapterByID(id uint) (models.ChapterResponse, error)
 	FindChapterByIDStr(id string) (models.Chapter, error)
+	FindBooksChapterByIDs(bookId, chapterId string) (models.ChapterResponse, error)
 	FindChaptersByBookID(bookID uint) ([]models.Chapter, error)
 	DeleteAll() error
 	DeleteBook(bookId uint) error
