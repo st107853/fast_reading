@@ -51,7 +51,7 @@ function updateText() {
     const fileInput = document.getElementById("file");
     const bookTextArea = document.getElementById("chapter-text");
 
-    // Проверяем, выбран ли файл
+    // Check if a file is selected
     if (fileInput.files.length === 0) {
         alert("Please select a file.");
         return;
@@ -60,17 +60,17 @@ function updateText() {
     const file = fileInput.files[0];
     const reader = new FileReader();
 
-    // Читаем содержимое файла
+    // Read the file content
     reader.onload = function(event) {
         const fileContent = event.target.result;
-        bookTextArea.value = fileContent; // Записываем содержимое файла в textarea
+        bookTextArea.value = fileContent; // Write the file content to the textarea
     };
 
     reader.onerror = function() {
         alert("Error reading file.");
     };
 
-    reader.readAsText(file); // Читаем файл как текст
+    reader.readAsText(file); // Read the file as text
 }
 
 // Update the "Add chapter" anchor to point to the current book (if cookie exists)
@@ -94,43 +94,59 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // Submit chapter for the current book
-function submitChapter(button, bookId) {
-    var chapterNameElement = document.getElementById('chapter-name'); 
-    var bookTextElement = document.getElementById('chapter-text');
-    console.log("Chapter name:", chapterNameElement, "Chapter text:", bookTextElement)
+async function submitChapter(button, bookId, chapterId) {
+    const chapterNameElement = document.getElementById('chapter-name');
+    const bookTextElement = document.getElementById('chapter-text');
 
     if (!chapterNameElement || !bookTextElement) {
-        console.error('Chapter elements not found');
+        alert("Ошибка: не найдены элементы формы главы");
         return;
     }
 
-    var url = '/library/addbook/' + bookId + '/chapter';
+    // Set URL and method
+    const method = chapterId ? "PUT" : "POST";
+    const url = chapterId
+        ? `/library/addbook/${encodeURIComponent(bookId)}/chapter/${encodeURIComponent(chapterId)}`
+        : `/library/addbook/${encodeURIComponent(bookId)}/chapter`;
 
-    var payload = {
+    // Assemble request body
+    const payload = {
         title: chapterNameElement.value.trim(),
         text: bookTextElement.value
     };
 
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', url, true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 201) {
-                button.classList.add('clicked');
-                try { 
-                    if (bookId) { 
-                        window.location.href = '/library/book/' + encodeURIComponent(bookId); 
-                    } 
-                } catch (e) {}
-            } else {
-                console.error('Failed to save chapter', xhr.status, xhr.responseText);
-                alert('Failed to save chapter: ' + xhr.responseText);
-            }
+    try {
+        const response = await fetch(url, {
+            method,
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify(payload)
+        });
+
+        // Create chapter
+        if (!chapterId && response.status === 201) {
+            button.classList.add('clicked');
+            alert("Chapter successfully created");
+            window.location.href = `/library/addbook/${encodeURIComponent(bookId)}`;
+            return;
         }
-    };
-    xhr.send(JSON.stringify(payload));
+
+        // Update chapter
+        if (chapterId && response.status === 200) {
+            button.classList.add('clicked');
+            alert("Chapter successfully updated");
+            return;
+        }
+
+        // Errors
+        const errorText = await response.text();
+        throw new Error(errorText || "Unknown error");
+
+    } catch (err) {
+        console.error("Error of saving chapter:", err);
+    }
 }
+
 
 // Handle book deletion
 function deleteBook(id) {

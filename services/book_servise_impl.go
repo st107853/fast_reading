@@ -113,6 +113,18 @@ func (bs *BookServiseImpl) FindChapterByID(id uint) (models.ChapterResponse, err
 	return chapterResponse, nil
 }
 
+// FindChapterByID finds and returns chapter by its ID.
+func (bs *BookServiseImpl) FindChapterByIDStr(id string) (models.Chapter, error) {
+	var chapter models.Chapter
+
+	err := bs.collection.First(&chapter, id).Error
+	if err != nil {
+		return chapter, fmt.Errorf("bsi: failed to find chapter by ID: %w", err)
+	}
+
+	return chapter, nil
+}
+
 // FindChaptersByBookID finds and returns chapters by book ID.
 func (bs *BookServiseImpl) FindChaptersByBookID(bookID uint) ([]models.Chapter, error) {
 	var chapters []models.Chapter
@@ -195,4 +207,27 @@ func (bs *BookServiseImpl) UpdateBook(bookId uint, input models.Book) (models.Bo
 	}
 
 	return existingBook, nil
+}
+
+// UpdateChapter find and updates a chapter's fields.
+func (bs *BookServiseImpl) UpdateChapter(chapterId uint, chapter models.Chapter) (models.Chapter, error) {
+	var existingChapter models.Chapter
+	if err := bs.collection.First(&existingChapter, chapterId).Error; err != nil {
+		return models.Chapter{}, fmt.Errorf("bsi: chapter with id %d not found: %w", chapterId, err)
+	}
+
+	updateData := map[string]interface{}{
+		"title": chapter.Title,
+		"text":  chapter.Text,
+	}
+
+	if chapter.ChapterOrder != 0 {
+		updateData["chapter_order"] = chapter.ChapterOrder
+	}
+
+	if err := bs.collection.Model(&existingChapter).Updates(updateData).Error; err != nil {
+		return models.Chapter{}, fmt.Errorf("bsi: failed to update chapter: %w", err)
+	}
+
+	return existingChapter, nil
 }

@@ -93,7 +93,7 @@
     <div class="fr-list">
         <div class="fr-input-container">
             <label for="chapter-name">Chapter's name</label>
-            <input type="text" id="chapter-name" class="fr-form-input" value="The quick brown fox jumps over the lazy dog">
+            <input type="text" id="chapter-name" class="fr-form-input" value='{{.Title}}'>
         </div>
 
         <button class="fr-btn-with-icon fr-btn-right">
@@ -105,7 +105,7 @@
     <div class="cb-text-grid">
         <section class="cb-book-text-area">
             <label for="chapter-text">Chapter text</label>
-            <textarea class="cb-textarea-description" id="chapter-text">{{.Text}}</textarea>
+            <textarea class="cb-textarea-description" id="chapter-text" >'{{.Text}}'</textarea>
         </section>
 
         <section class="cb-book-scroll-control">
@@ -113,7 +113,7 @@
         </section>
     </div>
 
-    <button type="button" class="fr-btn--large fr-btn-bottom" onclick="submitChapter(this,`{{.BookID}}`)">Save</button>
+    <button type="button" class="fr-btn--large fr-btn-bottom" onclick="submitChapter(this,`{{.BookID}}`,`{{.ID}}`)">Save</button>
 
 </div>
 </body>

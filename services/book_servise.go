@@ -12,6 +12,7 @@ type BookService interface {
 	FindFavoriteBooksByUserEmail(userID uint) ([]models.Book, error)
 	InsertChapter(chapter models.Chapter) (uint, error)
 	FindChapterByID(id uint) (models.ChapterResponse, error)
+	FindChapterByIDStr(id string) (models.Chapter, error)
 	FindChaptersByBookID(bookID uint) ([]models.Chapter, error)
 	DeleteAll() error
 	DeleteBook(bookId uint) error
@@ -19,4 +20,5 @@ type BookService interface {
 	FindAll(bookName string) ([]models.Book, error)
 	FindBook(bookName string) (models.Book, error)
 	UpdateBook(bookId uint, book models.Book) (models.Book, error)
+	UpdateChapter(chapterId uint, chapter models.Chapter) (models.Chapter, error)
 }

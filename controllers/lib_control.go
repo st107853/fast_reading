@@ -137,6 +137,46 @@ func (bc *BookController) CreateChapter(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"chapter_id": id})
 }
 
+func (bc *BookController) EditBookChapter(c *gin.Context) {
+	id := c.Param("chapter_id")
+	var chapter models.Chapter
+
+	chapter, err := bc.bookService.FindChapterByIDStr(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Execute the bookPage template and write the output to the response writer
+	if err := addBookChapter.Execute(c.Writer, chapter); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+}
+
+func (bc *BookController) UpdateBookChapter(c *gin.Context) {
+	idParam := c.Param("chapter_id")
+	id, err := strconv.ParseUint(idParam, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid chapter ID"})
+		return
+	}
+
+	var inputData models.Chapter
+	if err := c.ShouldBindJSON(&inputData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	updatedChapter, err := bc.bookService.UpdateChapter(uint(id), inputData)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, updatedChapter)
+}
+
 func (bc *BookController) ReleaseBook(c *gin.Context) {
 	idParam := c.Param("book_id")
 	bookId, err := strconv.ParseUint(idParam, 10, 64)
