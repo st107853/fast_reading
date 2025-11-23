@@ -18,8 +18,11 @@ type BookService interface {
 	DeleteAll() error
 	DeleteBook(bookId uint) error
 	ListAllBooks() ([]models.Book, error)
+	ListAllLabels() ([]models.Label, error)
 	FindAll(bookName string) ([]models.Book, error)
 	FindBook(bookName string) (models.Book, error)
 	UpdateBook(bookId uint, book models.Book) (models.Book, error)
 	UpdateChapter(chapterId uint, chapter models.Chapter) (models.Chapter, error)
+	AddLabel(bookId, LabelId uint) error
+	ListAllBooksLabels(bookId string) ([]models.Label, error)
 }

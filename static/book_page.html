@@ -93,18 +93,14 @@
         <div class="book-section">
             <label for="labels">Labels</label>
             <div class="fr-list fr-list--left" id="labels" role="group" aria-label="Book tags">
-                <div class="fr-label">любовь</div>
-                <div class="fr-label">страсть</div>
-                <div class="fr-label">ненависть</div>
-                <div class="fr-label">новаяжизнь</div>
-                <div class="fr-label">wattys2016</div>
-                <div class="fr-label">невыносимаясоседка</div>
-                <div class="fr-label">невыносимыйсосед</div>
+                {{range .BookLabels}}
+                    <div class="fr-label">{{.Name}}</div>
+                {{end}}
             </div>
         </div>
 
         <div class="action-buttons-wrapper">
-            <button class="fr-btn--large">Начать читать</button>
+            <a href="/library/book/{{.ID}}/1" class="fr-btn fr-btn--large">Start Reading</a>
 
             <label class="bp-switch fr-switch">
                 <input type="checkbox" id="favBtn" onclick="addToFavorites(this)" {{if .IsFavorited}}checked{{end}} />
@@ -131,7 +127,7 @@
         <ul class="chapters-list">
             {{range .Chapters}}
             <li class="chapter-item">
-                <a href="/library/book/{{.BookID}}/{{.ID}}" class="chapter-link">{{.Title}}</a>
+                <a href="/library/book/{{.BookID}}/{{.ChapterOrder}}" class="fr-btn">{{.Title}}</a>
             </li>
             {{end}}
         </ul>
@@ -141,7 +137,7 @@
     function addToFavorites(button) {
         var bookNameElement = `{{.Name}}`;
         var bookAuthorElement = `{{.Author}}`;
-        var bookId = `{{.ID}}`;
+        var bookId = `{{.BookID}}`;
 
         if (!bookNameElement || !bookAuthorElement || !bookId) {
             console.log(bookNameElement)
@@ -164,11 +160,10 @@
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4) {
                 if (xhr.status === 201) {
-                    console.log("Ответ сервера:", xhr.responseText);
+                    console.log("Server response:", xhr.responseText);
                     button.classList.add("clicked");
-                    // window.location.href = "/library/";
                 } else {
-                    console.error("Ошибка при отправке запроса:", xhr.status, xhr.responseText);
+                    console.error("Error sending request:", xhr.status, xhr.responseText);
                 }
             }
         };

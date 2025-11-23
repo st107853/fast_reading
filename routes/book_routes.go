@@ -30,4 +30,5 @@ func (bc *BookRouteController) BookRoute(rg *gin.RouterGroup, bookService servic
 	rg.POST("/addbook/:book_id/chapter", bc.bookController.CreateChapter)
 	rg.GET("/addbook/:book_id/chapter/:chapter_id", bc.bookController.EditBookChapter)
 	rg.PUT("/addbook/:book_id/chapter/:chapter_id", bc.bookController.UpdateBookChapter)
+	rg.POST("/addbook/:book_id/label/:label_id", bc.bookController.AddLabel)
 }

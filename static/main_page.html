@@ -91,13 +91,9 @@
             </form>
 
             <div class="fr-list">
-                <div class="fr-label" tabindex="0">Self-development</div>
-                <div class="fr-label" tabindex="0">Biography</div>
-                <div class="fr-label" tabindex="0">Philosophy</div>
-                <div class="fr-label" tabindex="0">History</div>
-                <div class="fr-label" tabindex="0">Novel</div>
-                <div class="fr-label" tabindex="0">Detective</div>
-                <div class="fr-label" tabindex="0">Fiction</div>
+                {{range .Labels}}
+                    <div class="fr-label" tabindex="0">{{.Name}}</div>
+                {{end}}
             </div>
 
             <div class="fr-list fr-list--left">

@@ -86,7 +86,7 @@
 
         <button type="button" class="fr-btn--large fr-btn--chosed">Book face</button>
     
-        <a href="/library/addbook/{{.ID}}/chapter" class="fr-btn fr-btn--large fr-btn-right">
+        <a href="/library/addbook/{{.BookID}}/chapter" class="fr-btn fr-btn--large fr-btn-right">
         Add Chapter
         </a>
 
@@ -112,17 +112,24 @@
                     <input type="number" id="publication-year" class="fr-form-input" value="1999">
                 </div>
 
-                <div class="fr-input-container">
-                    <label for="book-label">
-                    <button class="fr-btn-with-icon" id="book-label">
-                        <img src="/static/add.svg" alt="add icon" class="fr-icon">
-                        <span>Add label</span>
+                <div class="label-dropdown">
+                    <button type="button" class="add-label-btn" onclick="toggleDropdown()">
+                        <span class="icon">+</span> Add label
                     </button>
-                    </label>
-                    <span class="fr-label">Label</span>
-                    <span class="fr-label">Label</span>
-                    <span class="fr-label">Label</span>
+
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        {{range .AllLabels}}
+                            <div class="dropdown-item" onclick="submitNewLabel('{{$.BookID}}','{{.ID}}')">{{.Name}}</div>
+                        {{end}}
+                    </div>
+
+                    <div class="label-list">
+                        {{range .BookLabels}}
+                            <div class="label-item">{{.Name}}</div>
+                        {{end}}
+                    </div>
                 </div>
+
             </div>
 
         </section>
@@ -153,8 +160,8 @@
 
         <footer class="cb-editor-actions">
             <button type="button" class="fr-btn--large">Publish</button>
-            <button type="button" class="fr-btn--large" id="save-button" onclick="saveUpdates(this, `{{.ID}}`)">Save</button>
-            <button type="button" class="fr-btn--large" id="delete-button" onclick="deleteBook(`{{.ID}}`)">Delete</button>
+            <button type="button" class="fr-btn--large" id="save-button" onclick="saveUpdates(this, `{{.BookID}}`)">Save</button>
+            <button type="button" class="fr-btn--large" id="delete-button" onclick="deleteBook(`{{.BookID}}`)">Delete</button>
         </footer>
     </form>
 </div>

@@ -166,3 +166,41 @@ function deleteBook(id) {
     };
     xhr.send();
 }
+
+function toggleDropdown(event) {
+    // stops form submission & page reload
+    if (event) event.preventDefault();
+
+    const menu = document.getElementById("dropdownMenu");
+    menu.classList.toggle("open");
+}
+
+async function submitNewLabel(bookId, labelId) {
+    const url = `/library/addbook/${bookId}/label/${labelId}`;
+
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include"
+        });
+
+        if (response.status === 201) {
+            return;
+        }
+
+        const responseText = await response.text();
+        let errorData = {};
+        try {
+            errorData = JSON.parse(responseText);
+        } catch (e) {
+            errorData = { error: responseText };
+        }
+
+        throw new Error(errorData.error || `Server error (Status: ${response.status})`);
+
+    } catch (err) {
+        console.error("Error adding label:", err);
+        alert("Failed to add label: " + err.message);
+    }
+}

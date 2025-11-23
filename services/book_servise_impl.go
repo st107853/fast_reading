@@ -180,6 +180,34 @@ func (bs *BookServiseImpl) ListAllBooks() ([]models.Book, error) {
 	return books, nil
 }
 
+// ListAllLabels finds and returns all labels.
+func (bs *BookServiseImpl) ListAllLabels() ([]models.Label, error) {
+	var labels []models.Label
+
+	err := bs.collection.Find(&labels).Error
+	if err != nil {
+		return nil, fmt.Errorf("bsi: failed to find all labels: %w", err)
+	}
+
+	return labels, nil
+}
+
+// ListAllLabels finds and returns all labels.
+func (bs *BookServiseImpl) ListAllBooksLabels(bookId string) ([]models.Label, error) {
+	var labels []models.Label
+
+	err := bs.collection.Joins("JOIN book_labels ON book_labels.label_id = labels.id").
+		// ИСПРАВЛЕНО: Явно указываем таблицу book_labels
+		Where("book_labels.book_id = ?", bookId).
+		Find(&labels).Error
+
+	if err != nil {
+		return nil, fmt.Errorf("bsi: failed to find all labels: %w", err)
+	}
+
+	return labels, nil
+}
+
 // FindAll finds and returns books by its name.
 func (bs *BookServiseImpl) FindAll(bookName string) ([]models.Book, error) {
 	var books []models.Book
@@ -247,4 +275,32 @@ func (bs *BookServiseImpl) UpdateChapter(chapterId uint, chapter models.Chapter)
 	}
 
 	return existingChapter, nil
+}
+
+// AddLabel adds a label to a book.
+func (bs *BookServiseImpl) AddLabel(bookId, labelId uint) error {
+	var book models.Book
+	if err := bs.collection.Preload("Labels").First(&book, bookId).Error; err != nil {
+		return fmt.Errorf("bsi: book with id %d not found: %w", bookId, err)
+	}
+
+	var label models.Label
+	if err := bs.collection.First(&label, labelId).Error; err != nil {
+		return fmt.Errorf("bsi: label with id %d not found: %w", labelId, err)
+	}
+
+	// Check if the label is already associated with the book
+	for _, lbl := range book.Labels {
+		if lbl.ID == label.ID {
+			bs.collection.Model(&book).Association("Labels").Delete(&label)
+			return nil // Label already associated, no action needed
+		}
+	}
+
+	// Append the label to the book's Labels slice
+	if err := bs.collection.Model(&book).Association("Labels").Append(&label); err != nil {
+		return fmt.Errorf("bsi: failed to add label to book: %w", err)
+	}
+
+	return nil
 }

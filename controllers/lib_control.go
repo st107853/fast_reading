@@ -19,8 +19,9 @@ var addBook = template.Must(template.New("create_book_face.html").ParseFiles("./
 var addBookChapter = template.Must(template.New("create_book_chapter.html").ParseFiles("./static/create_book_chapter.html"))
 
 type BookData struct {
-	Title string
-	Books []models.Book
+	Title  string
+	Books  []models.Book
+	Labels []models.Label
 }
 
 type BookController struct {
@@ -41,9 +42,16 @@ func (bc *BookController) AllBooks(c *gin.Context) {
 		return
 	}
 
+	labels, err := bc.bookService.ListAllLabels()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	data := BookData{
-		Title: "All what we have",
-		Books: books,
+		Title:  "All what we have",
+		Books:  books,
+		Labels: labels,
 	}
 
 	// Execute the template and write the output to the response writer
@@ -235,9 +243,16 @@ func (bc *BookController) GetBooksByName(c *gin.Context) {
 		return
 	}
 
+	labels, err := bc.bookService.ListAllLabels()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	data := BookData{
-		Title: "All what we have",
-		Books: books,
+		Title:  "All what we have",
+		Books:  books,
+		Labels: labels,
 	}
 
 	// Execute the template and write the output to the response writer
@@ -268,9 +283,16 @@ func (bc *BookController) GetCreatedBooks(c *gin.Context) {
 		return
 	}
 
+	labels, err := bc.bookService.ListAllLabels()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	data := BookData{
-		Title: "All what we have",
-		Books: books,
+		Title:  "All what we have",
+		Books:  books,
+		Labels: labels,
 	}
 
 	// Execute the template and write the output to the response writer
@@ -317,6 +339,12 @@ func (bc *BookController) GetBook(c *gin.Context) {
 		isCreator = userid == uint64(book.CreatorUserID)
 	}
 
+	labels, err := bc.bookService.ListAllBooksLabels(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	// Pass both book and isFavorited to template
 	templateData := gin.H{
 		"Name":        book.Name,
@@ -326,6 +354,7 @@ func (bc *BookController) GetBook(c *gin.Context) {
 		"Chapters":    chapters,
 		"IsFavorited": isFavorited,
 		"IsCreator":   isCreator,
+		"BookLabels":  labels,
 	}
 
 	// Execute the bookPage template and write the output to the response writer
@@ -404,12 +433,18 @@ func (bc *BookController) DeleteAllBooks(c *gin.Context) {
 }
 
 func (bc *BookController) AddBook(c *gin.Context) {
+	labels, err := bc.bookService.ListAllLabels()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	templateData := gin.H{
 		"Name":        "Book title*",
 		"Author":      "Book author*",
 		"Description": "Book description*",
 		"Chapters":    nil,
+		"Labels":      labels,
 	}
 
 	if err := addBook.Execute(c.Writer, templateData); err != nil {
@@ -445,12 +480,26 @@ func (bc *BookController) EditBook(c *gin.Context) {
 		return
 	}
 
+	bookLabels, err := bc.bookService.ListAllBooksLabels(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	labels, err := bc.bookService.ListAllLabels()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	templateData := gin.H{
 		"Name":        book.Name,
 		"Author":      book.Author,
 		"Description": book.Description,
 		"Chapters":    chapters,
-		"ID":          book.ID,
+		"BookID":      book.ID,
+		"BookLabels":  bookLabels,
+		"AllLabels":   labels,
 	}
 
 	// Execute the bookPage template and write the output to the response writer
@@ -458,4 +507,30 @@ func (bc *BookController) EditBook(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+}
+
+func (bc *BookController) AddLabel(c *gin.Context) {
+	idParam := c.Param("book_id")
+	labelIdParam := c.Param("label_id")
+
+	// Convert idParam and labelIdParam to uint
+	bookId, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
+		return
+	}
+
+	labelId, err := strconv.ParseUint(labelIdParam, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid label ID"})
+		return
+	}
+
+	err = bc.bookService.AddLabel(uint(bookId), uint(labelId))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "Label added to book"})
 }
