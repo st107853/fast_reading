@@ -6,6 +6,7 @@
     <title>Add book</title>
     <link rel="stylesheet" type="text/css" href="/static/style.css">
     <link rel="stylesheet" type="text/css" href="/static/create_book.css">
+    <link rel="stylesheet" type="text/css" href="/static/book_page.css">
     <script src="/static/create_book.js" defer></script>
     <script src="/static/script.js" defer></script>
 </head>
@@ -112,24 +113,24 @@
                     <input type="number" id="publication-year" class="fr-form-input" value="1999">
                 </div>
 
-                <div class="label-dropdown">
-                    <button type="button" class="add-label-btn" onclick="toggleDropdown()">
-                        <span class="icon">+</span> Add label
+                <div class="fr-label-dropdown">
+                    <button type="button" class="fr-btn-with-icon" onclick="toggleDropdown()">
+                        <img src="/static/add.svg" alt="add icon" class="fr-icon">
+                        <span>Add label</span>
                     </button>
 
-                    <div class="dropdown-menu" id="dropdownMenu">
+                    <div class="fr-dropdown-menu" id="dropdownMenu">
                         {{range .AllLabels}}
-                            <div class="dropdown-item" onclick="submitNewLabel('{{$.BookID}}','{{.ID}}')">{{.Name}}</div>
-                        {{end}}
-                    </div>
-
-                    <div class="label-list">
-                        {{range .BookLabels}}
-                            <div class="label-item">{{.Name}}</div>
+                            <div class="fr-dropdown-item" onclick="submitNewLabel('{{$.BookID}}','{{.ID}}')">{{.Name}}</div>
                         {{end}}
                     </div>
                 </div>
 
+                    <div class="fr-label-list">
+                        {{range .BookLabels}}
+                            <div class="fr-label-item">{{.Name}}</div>
+                        {{end}}
+                    </div>
             </div>
 
         </section>
@@ -148,14 +149,16 @@
         </section>
 
         <section class="cb-editor-content-list">
-            <label>Book's content:</label>
-            <ul class="chapters-list">
-            {{range .Chapters}}
-            <li class="chapter-item">
-                <a href="/library/addbook/{{.BookID}}/chapter/{{.ID}}">{{.Title}}</a>
-            </li>
-            {{end}}
-        </ul>
+            <div class="fr-chapters-section">
+                <h3>Chapters</h3>
+                <ul class="fr-chapters-list">
+                    {{range .Chapters}}
+                    <li class="fr-chapter-item">
+                        <a href="/library/addbook/{{.BookID}}/chapter/{{.ID}}" class="fr-btn">{{.Title}}</a>
+                    </li>
+                    {{end}}
+                </ul>
+            </div>
         </section>
 
         <footer class="cb-editor-actions">

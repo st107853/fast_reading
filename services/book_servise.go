@@ -17,6 +17,7 @@ type BookService interface {
 	FindChaptersByBookID(bookID uint) ([]models.Chapter, error)
 	DeleteAll() error
 	DeleteBook(bookId uint) error
+	DeleteChapter(chapterId uint) error
 	ListAllBooks() ([]models.Book, error)
 	ListAllLabels() ([]models.Label, error)
 	FindAll(bookName string) ([]models.Book, error)

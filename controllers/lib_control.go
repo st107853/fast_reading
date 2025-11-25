@@ -424,6 +424,23 @@ func (bc *BookController) DeleteBook(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Book deleted"})
 }
 
+// DeleteBook deletes a book by its ID
+func (bc *BookController) DeleteChapter(c *gin.Context) {
+	id := c.Param("chapter_id")
+
+	idParsed, err := strconv.ParseUint(id, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := bc.bookService.DeleteChapter(uint(idParsed)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Chapter deleted"})
+}
+
 func (bc *BookController) DeleteAllBooks(c *gin.Context) {
 	if err := bc.bookService.DeleteAll(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

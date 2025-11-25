@@ -167,6 +167,25 @@ function deleteBook(id) {
     xhr.send();
 }
 
+// Handle book deletion
+function deleteChapter(id) {
+    console.log("Sended to server data:", id);
+    if (!id) {
+        alert("Please select a chapter to delete.");
+        return;
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("DELETE", "/library/chapter/" + id, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 201)) {
+            window.location.href = "/library/users/me";
+        }
+    };
+    xhr.send();
+}
+
 function toggleDropdown(event) {
     // stops form submission & page reload
     if (event) event.preventDefault();

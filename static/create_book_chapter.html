@@ -111,8 +111,10 @@
         </section>
     </div>
 
-    <button type="button" class="fr-btn--large fr-btn-bottom" onclick="submitChapter(this,`{{.BookID}}`,`{{.ID}}`)">Save</button>
-
+    <footer class="cb-editor-actions">
+        <button type="button" class="fr-btn--large" onclick="submitChapter(this,`{{.BookID}}`,`{{.ID}}`)">Save</button>
+        <button type="button" class="fr-btn--large" id="delete-button" onclick="deleteChapter(`{{.ID}}`)">Delete</button>
+    </footer>
 </div>
 </body>
 </html>

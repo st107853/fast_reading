@@ -154,15 +154,24 @@ func (bs *BookServiseImpl) FindChaptersByBookID(bookID uint) ([]models.Chapter, 
 	return chapters, nil
 }
 
-// DeleteAll implements BookService.
+// DeleteAll deletes all books.
 func (bs *BookServiseImpl) DeleteAll() error {
 	return bs.collection.Exec("DELETE FROM books").Error
 }
 
-// DeleteBook implements BookService.
+// DeleteBook delete one book by its ID.
 func (bs *BookServiseImpl) DeleteBook(bookId uint) error {
 	if err := bs.collection.Unscoped().Delete(&models.Book{}, bookId).Error; err != nil {
 		return fmt.Errorf("bsi: failed to hard delete book: %w", err)
+	}
+
+	return nil
+}
+
+// DeleteChapter deletes one chapter by its ID.
+func (bs *BookServiseImpl) DeleteChapter(chapterId uint) error {
+	if err := bs.collection.Unscoped().Delete(&models.Chapter{}, chapterId).Error; err != nil {
+		return fmt.Errorf("bsi: failed to hard delete chapter: %w", err)
 	}
 
 	return nil

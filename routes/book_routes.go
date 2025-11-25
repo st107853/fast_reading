@@ -19,6 +19,7 @@ func (bc *BookRouteController) BookRoute(rg *gin.RouterGroup, bookService servic
 	rg.PUT("/:book_id", bc.bookController.UpdateBook)
 	rg.DELETE("/:book_id", bc.bookController.DeleteBook)
 	rg.DELETE("/", bc.bookController.DeleteAllBooks)
+	rg.DELETE("/chapter/:chapter_id", bc.bookController.DeleteChapter)
 	rg.GET("/", bc.bookController.AllBooks)
 	rg.GET("/book/:book_id", bc.bookController.GetBook)
 	rg.GET("/book/:book_id/:chapter_id", bc.bookController.GetChapter)
