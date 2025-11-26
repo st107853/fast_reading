@@ -6,6 +6,7 @@ import (
 
 	"github.com/st107853/fast_reading/models"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type BookServiseImpl struct {
@@ -44,6 +45,8 @@ func (bs *BookServiseImpl) BookExist(bookName, bookAuthor string) (bool, error) 
 // FindBookByID finds and returns book by its ID.
 func (bs *BookServiseImpl) FindBookByID(bookID string) (models.Book, error) {
 	var book models.Book
+
+	fmt.Println("I'm at bsi 48 bookID:", bookID) // Debugging line
 
 	err := bs.collection.First(&book, bookID).Error
 	if err != nil {
@@ -312,4 +315,43 @@ func (bs *BookServiseImpl) AddLabel(bookId, labelId uint) error {
 	}
 
 	return nil
+}
+
+func SearchScope(keyword string, labelIDs []uint) func(db *gorm.DB) *gorm.DB {
+
+	return func(db *gorm.DB) *gorm.DB {
+
+		if keyword != "" {
+			db = db.Where("name ILIKE ?", "%"+keyword+"%")
+		}
+
+		if len(labelIDs) > 0 {
+
+			cleanDB := db.
+				Session(&gorm.Session{NewDB: true, SkipDefaultTransaction: true}).
+				Omit(clause.Associations)
+
+			subQuery := cleanDB.
+				Table("book_labels").
+				Select("book_id").
+				Where("label_id IN (?)", labelIDs).
+				Group("book_id")
+
+			db = db.Where("id IN (?)", subQuery)
+		}
+
+		return db
+	}
+}
+
+func (bs *BookServiseImpl) SearchBooks(keyword string, labelIDs []uint) ([]models.Book, error) {
+	var books []models.Book
+
+	err := bs.collection.Scopes(SearchScope(keyword, labelIDs)).Find(&books).Error
+
+	if err != nil {
+		return nil, fmt.Errorf("bsi: failed to search books: %w", err)
+	}
+
+	return books, nil
 }

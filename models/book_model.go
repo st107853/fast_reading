@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"time"
 
 	"gorm.io/gorm"
@@ -24,7 +25,7 @@ type Book struct {
 type Chapter struct {
 	gorm.Model
 
-	BookID       uint   `json:"book_id" gorm:"column:book_id"` // Foreign Key
+	BookID       uint   `json:"book_id" gorm:"column:book_id"`
 	Title        string `json:"title" gorm:"column:title"`
 	Text         string `json:"text" gorm:"column:text"`
 	ChapterOrder int    `json:"chapter_order" gorm:"column:chapter_order"`
@@ -45,4 +46,32 @@ type Label struct {
 	gorm.Model
 
 	Name string `json:"name" gorm:"unique;not null"`
+}
+
+// STRUCTURE FOR JSON OUTPUT
+type BookListItem struct {
+	ID     uint   `json:"id"`
+	Name   string `json:"name"`
+	Author string `json:"author"`
+}
+
+// MarshalBookList converts a slice of Book models into a JSON byte slice,
+// containing only the ID, Name, and Author fields.
+func MarshalBookList(books []Book) ([]byte, error) {
+	items := make([]BookListItem, len(books))
+
+	for i, book := range books {
+		items[i] = BookListItem{
+			ID:     book.ID,
+			Name:   book.Name,
+			Author: book.Author,
+		}
+	}
+
+	jsonData, err := json.Marshal(items)
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonData, nil
 }

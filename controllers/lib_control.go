@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/st107853/fast_reading/config"
@@ -31,6 +32,37 @@ type BookController struct {
 
 func NewBookController(bookService services.BookService, userService services.UserService) BookController {
 	return BookController{bookService, userService}
+}
+
+func (bc *BookController) ListAllBooks(c *gin.Context) {
+	keyword := c.Query("keyword")
+	labelIDsString := c.Query("labels")
+
+	// Transform labelIDsString into []uint
+	var labelIDs []uint
+	if labelIDsString != "" {
+		idStrings := strings.Split(labelIDsString, ",")
+		for _, s := range idStrings {
+			if id, err := strconv.ParseUint(s, 10, 32); err == nil {
+				labelIDs = append(labelIDs, uint(id))
+			}
+		}
+	}
+
+	books, err := bc.bookService.SearchBooks(keyword, labelIDs)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Search failed: " + err.Error()})
+		return
+	}
+
+	// Return marshaled JSON data
+	jsonData, err := models.MarshalBookList(books)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to marshal books: " + err.Error()})
+		return
+	}
+
+	c.Data(http.StatusOK, "application/json", jsonData)
 }
 
 func (bc *BookController) AllBooks(c *gin.Context) {

@@ -26,4 +26,5 @@ type BookService interface {
 	UpdateChapter(chapterId uint, chapter models.Chapter) (models.Chapter, error)
 	AddLabel(bookId, LabelId uint) error
 	ListAllBooksLabels(bookId string) ([]models.Label, error)
+	SearchBooks(keyword string, labelIDs []uint) ([]models.Book, error)
 }

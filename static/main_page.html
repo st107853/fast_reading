@@ -83,27 +83,32 @@
         </div>
 
         <main>
-            <form id="bookForm" action="/library/all/" method="get" onsubmit="updateAction()">
+            <form id="bookForm" action="/library/all/" method="get" onsubmit="event.preventDefault(); applyFilters();">
                 <div class="mp-search-container">
-                    <input name="name" id="name" type="text" class="mp-search-input" placeholder="Enter the title of the book..." aria-label="Enter the title of the book">
+                    <input name="name" id="keyword-input" type="text" class="mp-search-input" placeholder="Enter the title of the book..." aria-label="Enter the title of the book">
                     <span class="mp-search-icon"></span>
                 </div>
             </form>
 
-            <div class="fr-list">
+            <div class="fr-list" id="labels-container">
                 {{range .Labels}}
-                    <div class="fr-label" tabindex="0">{{.Name}}</div>
+                    <div class="fr-label" data-id="{{.ID}}" tabindex="0">{{.Name}}</div>
                 {{end}}
             </div>
 
             <div class="fr-list fr-list--left">
                 <button class="fr-btn--large fr-btn--chosed">All books</button>
                 <button class="fr-btn--large">Favourite books</button>
+                <button onclick="applyFilters()" class="fr-btn--large fr-btn-right">Apply Filters</button>
             </div>
             <hr>
 
-            <h1>Popular books</h1>
+            <h2>Search Results</h2>
+            <div id="results-container" class="fr-card-list" id="cardList">
+                <p >Start searching or apply filters.</p>
+            </div>
 
+            <h1>Popular books</h1>
             <div class="fr-card-list" id="cardList">
                 {{range .Books}}
                     <div class="fr-card">
