@@ -112,7 +112,9 @@
         {{range .FavouriteBooks}}
         <div class="fr-card">
             <a href="/library/book/{{.ID}}">
-                <img class="fr-card__img" src="/static/lolita-cover.jpg" alt="Book cover for {{.Name}} by {{.Author}}">
+                <div class="fr-blue-box">
+                    {{.Name}}
+                </div>
             </a>
             <div class="fr-card__title">{{.Name}}</div>
             <div class="fr-card__author">{{.Author}}</div>
@@ -127,7 +129,9 @@
         {{range .CreatedBooks}}
         <div class="fr-card">
             <a href="/library/book/{{.ID}}">
-                <img class="fr-card__img" src="/static/lolita-cover.jpg" alt="Book cover for {{.Name}} by {{.Author}}">
+                <div class="fr-blue-box">
+                    {{.Name}}
+                </div>
             </a>
             <div class="fr-card__title">{{.Name}}</div>
             <div class="fr-card__author">{{.Author}}</div>

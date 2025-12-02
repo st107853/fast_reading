@@ -127,9 +127,9 @@ function renderResults(books) {
         bookElement.innerHTML = `
             <a href="/library/book/${book.id}">
                 <!-- Using placeholder image as cover is not provided in DTO -->
-                <img class="fr-card__img" 
-                      src="https://placehold.co/400x600/5a67d8/ffffff?text=${encodeURIComponent(book.name.substring(0, 10))}" 
-                      alt="Book cover for ${book.name} by ${book.author}">
+                <div class="fr-blue-box">
+                    ${book.name.substring(0, 10)}
+                </div>
             </a>
             <div class="fr-card__title">${book.name}</div>
             <div class="fr-card__author">${book.author}</div>

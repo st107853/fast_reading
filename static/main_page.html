@@ -113,7 +113,9 @@
                 {{range .Books}}
                     <div class="fr-card">
                     <a href="/library/book/{{.ID}}">
-                        <img class="fr-card__img" src="/static/lolita-cover.jpg" alt="Book cover for {{.Name}} by {{.Author}}">
+                        <div class="fr-blue-box">
+                            {{.Name}}
+                        </div>
                     </a>
                     <div class="fr-card__title">{{.Name}}</div>
                     <div class="fr-card__author">{{.Author}}</div>
@@ -138,8 +140,8 @@
                         <div class="fr-label">Label</div>
                     </div>
                 </div>
-                <div class="mp-book-image">
-                    <img src="/static/lolita-cover.jpg" alt="Book cover of Heaven Has No Favorites">
+                <div class="mp-book-image fr-blue-box">
+                    {{.Name}}
                 </div>
             </div>
         </main>

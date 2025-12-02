@@ -80,17 +80,19 @@
             </div>
         </div>
     </div>
-<div class="book-card-container">
-    <div class="book-cover-wrapper">
-        <img src="/static/lolita-cover.jpg" alt="Обложка книги Мой любимый сосед" class="book-cover-image">
+<div class="bp-book-card-container">
+    <div class="bp-book-cover-wrapper">
+        <div class="fr-blue-box">
+            {{.Name}}
+        </div>
     </div>
     
-    <div class="book-info-wrapper">
+    <div class="bp-book-info-wrapper">
         
         <h2>{{.Name}}</h2>
         <h3>{{.Author}}</h3>
 
-        <div class="book-section">
+        <div class="bp-book-section">
             <label for="labels">Labels</label>
             <div class="fr-list fr-list--left" id="labels" role="group" aria-label="Book tags">
                 {{range .BookLabels}}
@@ -99,7 +101,7 @@
             </div>
         </div>
 
-        <div class="action-buttons-wrapper">
+        <div class="bp-action-buttons-wrapper">
             <a href="/library/book/{{.ID}}/1" class="fr-btn fr-btn--large">Start Reading</a>
 
             <label class="bp-switch fr-switch">
@@ -115,7 +117,7 @@
         </div>
     </div>
     </div>
-    <div class="book-description">
+    <div class="bp-book-description">
         <h3>Book description</h3>
         <p>
             {{.Description}}

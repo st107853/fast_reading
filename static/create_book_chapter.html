@@ -94,16 +94,21 @@
             <input type="text" id="chapter-name" class="fr-form-input" value='{{.Title}}'>
         </div>
 
-        <button class="fr-btn-with-icon fr-btn-right">
-            <img src="/static/upload.svg" alt="add icon" class="fr-icon">
-            <span>Upload text</span>
-        </button>
+        <div class="fr-btn-right">
+            <label class="fr-btn-with-icon" for="file">
+                <span class="fr-icon">
+                    <img src="/static/upload.svg" alt="add icon" class="fr-icon"></span>
+                <span>Upload text</span>
+                <input type="file" id="file" name="file" onclick="updateText()"/>
+            </label>
+        </div>
+        
     </div>
 
     <div class="cb-text-grid">
         <section class="cb-book-text-area">
             <label for="chapter-text">Chapter text</label>
-            <textarea class="cb-textarea-description" id="chapter-text" >'{{.Text}}'</textarea>
+            <textarea class="fr-book-text fr-book-text--big" id="scrollable-content-reading" >'{{.Text}}'</textarea>
         </section>
 
         <section class="cb-book-scroll-control">

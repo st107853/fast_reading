@@ -50,27 +50,30 @@ async function saveUpdates(button, bookId) {
 function updateText() {
     const fileInput = document.getElementById("file");
     const bookTextArea = document.getElementById("chapter-text");
+    const file = fileInput.files[0];
 
-    // Check if a file is selected
+    // Проверка, выбран ли файл
     if (fileInput.files.length === 0) {
-        alert("Please select a file.");
+        showMessage("Please select a file.", 'error');
         return;
     }
 
-    const file = fileInput.files[0];
     const reader = new FileReader();
 
-    // Read the file content
+    
+ // Чтение файла как текста
+    reader.readAsText(file);
+
+    // Чтение содержимого файла
     reader.onload = function(event) {
         const fileContent = event.target.result;
-        bookTextArea.value = fileContent; // Write the file content to the textarea
+        bookTextArea.value = fileContent; // Запись содержимого в textarea
+        showMessage(`File "${file.name}" loaded successfully.`, 'success');
     };
 
     reader.onerror = function() {
         alert("Error reading file.");
     };
-
-    reader.readAsText(file); // Read the file as text
 }
 
 // Update the "Add chapter" anchor to point to the current book (if cookie exists)

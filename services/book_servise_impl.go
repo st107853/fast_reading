@@ -46,8 +46,6 @@ func (bs *BookServiseImpl) BookExist(bookName, bookAuthor string) (bool, error) 
 func (bs *BookServiseImpl) FindBookByID(bookID string) (models.Book, error) {
 	var book models.Book
 
-	fmt.Println("I'm at bsi 48 bookID:", bookID) // Debugging line
-
 	err := bs.collection.First(&book, bookID).Error
 	if err != nil {
 		return book, fmt.Errorf("bsi: failed to find book by ID: %w", err)

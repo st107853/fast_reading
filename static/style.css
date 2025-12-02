@@ -383,7 +383,7 @@ button, .fr-btn {
 
 /* Label ACTIVE (Using Secondary Fill) */
 
-.fr-label:active {
+.selected {
     background-color: var(--secondary-color);
     border-color: var(--secondary-color);
     color: var(--neutral-1-color);
@@ -415,6 +415,16 @@ button, .fr-btn {
     background-color: var(--primary-color);
 }
 
+.fr-btn-with-icon input[type="file"] {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 0px;
+    opacity: 0; 
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+}
 
 .fr-icon {
     height: 20px;
@@ -552,44 +562,44 @@ input[type=number] {
 | || 6. COMPONENTS: RANGE AND SWITCH
 |-----------------------------------------------------------
 */
-
-/* Range Input (Slider) Styling */
 input[type="range"] {
     appearance: none;
     -webkit-appearance: none;
     display: block;
-
-    height: 3px;
-    margin: 20px auto;
-    width: 80%;
     
+    height: 3px; 
     background: var(--primary-color);
     border-radius: 5px;
+    margin: 0;
+    width: 80%;
 }
 
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     cursor: pointer;
-
     height: 17px;
     width: 17px;
-    
     background: var(--secondary-color);
     border-bottom: 4px solid var(--primary-color);
     border-radius: var(--border-radius-md);
 }
 
-/* Slider Track (The background for the thumb) */
 input[type="range"]::-webkit-slider-runnable-track {
     -webkit-appearance: none;
-    
     background: transparent;
     border: none;
     box-shadow: none;
 }
 
-/* Switch Component (Theme Toggle) */
+/* Vertical scroll */
+input[type="range"].fr-scroll-slider--vertical {
+    transform-origin: left;
+    transform: rotate(90deg);
+    width: 400px;
+    height: 3px;
+}
 
+/* Switch Component (Theme Toggle) */
 .fr-switch {
     position: relative;
     display: inline-block;
@@ -683,14 +693,10 @@ input:checked + .fr-switch__track:before {
     white-space: pre-line;
 }
 
-input[type="range"].fr-scroll-slider--vertical {
-    appearance: none;
-    -webkit-appearance: none;
-    transform: rotate(90deg);
-
-    margin: 160% -40px;
-    width: auto;
+.fr-book-text--big {
+    height: 70vh;
 }
+
 
 
 /*
@@ -845,7 +851,25 @@ input[type="range"].fr-scroll-slider--vertical {
     width: 100%;
 
     margin-bottom: var(--spacing-sm);
+
+    background-color: var(--neutral-1-color);
 }
+
+.fr-blue-box {
+
+    height: 190px;
+    width: 100%;
+    
+    background-color: var(--primary-color); /* синий цвет (похожий на скрин) */
+    display: flex;          
+    justify-content: center;
+    align-items: center;    
+    color: var(--neutral-1-color);
+    font-size: 32px;
+
+    margin-bottom: var(--spacing-sm);
+}
+
 
 .fr-card__title,
 .fr-card__author {

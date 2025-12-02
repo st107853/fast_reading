@@ -103,11 +103,11 @@
            
 
             <section class="bp-book-text-area">
-                <div class="fr-book-text" id="chapter-text">{{.Chapter.Text}}</div>
+                <div class="fr-book-text" id="scrollable-content-reading">{{.Chapter.Text}}</div>
             </section>
 
             <section class="bp-book-scroll-control">
-                <input type="range" id="scrollRange" class="fr-scroll-slider--vertical" value="50" aria-label="Reading progress slider">
+                <input type="range" id="scrollRange" class="fr-scroll-slider--vertical" value="50" min="0" max="100" aria-label="Reading progress slider">
             </section>
         </div>
     </div>
@@ -115,10 +115,6 @@
         const text = `{{.Chapter.Text}}`;
         const words = text.split(/\s+/);
         const play = document.getElementById('play');
-        const bookText = document.getElementById("chapter-text");
-        const range = document.getElementById("scrollRange");
-        const button = document.querySelector('.nav-control-btn');
-        const chapterNav = document.querySelector('.chapter-nav-overlay');
         let index = 0;
         let intervalId = null;
         let speed = 600;
@@ -130,18 +126,6 @@
             } else {
                 clearInterval(intervalId);
                 intervalId = null;
-            }
-        }
-
-        function toggleChapterNav() {
-            if (chapterNav) {
-                chapterNav.classList.toggle('active');
-
-                var isExpanded = chapterNav.classList.contains('active');
-                
-                button.setAttribute('aria-expanded', isExpanded);
-            } else {
-                console.error("Chapter navigation overlay element (.chapter-nav-overlay) not found.");
             }
         }
 
@@ -161,16 +145,6 @@
                 startReading();
             }
         }
-
-        range.max = bookText.scrollHeight - bookText.clientHeight;
-        range.min = 0;
-
-        range.addEventListener("input", () => {
-            bookText.scrollTop = range.value;
-        });
-        bookText.addEventListener("scroll", () => {
-            range.value = bookText.scrollTop;
-        });
     </script>
 </body>
 </html>

@@ -88,6 +88,8 @@
 
 .cb-book-scroll-control {
     grid-area: scroll;
+    padding-top: 20px;
+    padding-left: 50%;
 }
 
 /*
