@@ -1,25 +1,21 @@
+// Main logic for style and settings handling
 document.addEventListener('DOMContentLoaded', () => {
-    // Query DOM elements here to avoid errors when script runs on pages without them
+    
+    // --- DOM Elements ---
     const openButtons = document.querySelectorAll('[data-modal-target]');
     const swatches = Array.from(document.querySelectorAll('.fr-swatch'));
     const themeToggles = Array.from(document.querySelectorAll('input[type="checkbox"][id="theme-toggle"], input.fr-theme-toggle'));
 
-    // Swatch persistence key
+    // Swatch logic
     const SWATCH_KEY = 'fr_swatch_color';
-
-    const saveSwatch = (color) => {
-        try { localStorage.setItem(SWATCH_KEY, color); } catch (e) {}
-    };
-
-    const getSavedSwatch = () => {
-        try { return localStorage.getItem(SWATCH_KEY); } catch (e) { return null; }
-    };
+    const saveSwatch = (color) => { try { localStorage.setItem(SWATCH_KEY, color); } catch (e) {} };
+    const getSavedSwatch = () => { try { return localStorage.getItem(SWATCH_KEY); } catch (e) { return null; } };
 
     const applySwatch = (color) => {
         if (!color) return;
+        // Apply the color as a CSS variable
         document.documentElement.style.setProperty('--primary-color', color);
 
-        // If there are swatch elements, mark the matching one as selected
         if (swatches.length) {
             swatches.forEach(s => {
                 const c = (s.dataset.color || '').toLowerCase();
@@ -28,20 +24,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Generic modal handling by data attribute
+   // Generic modal handling
     const openModal = (modalEl) => {
         if (!modalEl) return;
+        
+        // Save the element that was focused before opening the modal
+        lastFocusedElement = document.activeElement; 
+
         modalEl.classList.add('active');
         modalEl.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
-        modalEl.focus();
+        
+        // Move focus to the modal
+        modalEl.focus(); 
     };
 
     const closeModal = (modalEl) => {
         if (!modalEl) return;
-        modalEl.classList.remove('active');
+        
+        // Set aria-hidden="true" and visually hide the modal
         modalEl.setAttribute('aria-hidden', 'true');
+        modalEl.classList.remove('active');
         document.body.style.overflow = '';
+
+        // Restore focus to the element that was focused before opening
+        if (lastFocusedElement) {
+            lastFocusedElement.focus();
+            lastFocusedElement = null; // Clear the reference
+        } else {
+                // Fallback: Focus on the settings button
+            const openButton = document.querySelector('[data-modal-target="#settingsModal"]');
+            if (openButton) openButton.focus();
+        }
     };
 
     openButtons.forEach(btn => {
@@ -53,7 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Close buttons inside any modal: uses .fr-modal__close-btn
     document.querySelectorAll('.fr-modal__close-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const modalEl = btn.closest('.fr-modal');
@@ -61,27 +74,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Click on backdrop to close
     document.querySelectorAll('.fr-modal').forEach(modalEl => {
         modalEl.addEventListener('click', (e) => {
             if (e.target === modalEl) closeModal(modalEl);
         });
     });
 
-    // Close on ESC for any open modal
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             document.querySelectorAll('.fr-modal.active').forEach(modalEl => closeModal(modalEl));
         }
     });
 
-    // Colour Swatch Selection Logic
-    // Apply saved swatch early so pages without controls still show the chosen color
+    // Swatch Initialization & Events
     const initialSavedSwatch = getSavedSwatch();
     if (initialSavedSwatch) applySwatch(initialSavedSwatch);
 
     if (swatches.length) {
-        // If no saved swatch, prefer any swatch already marked in HTML via aria-checked
         if (!initialSavedSwatch) {
             const prechecked = swatches.find(s => s.getAttribute('aria-checked') === 'true');
             if (prechecked && prechecked.dataset.color) applySwatch(prechecked.dataset.color);
@@ -90,21 +99,14 @@ document.addEventListener('DOMContentLoaded', () => {
         swatches.forEach(swatch => {
             swatch.addEventListener('click', (e) => {
                 const target = e.currentTarget;
-                // Remove 'selected' state from all swatches
                 swatches.forEach(s => s.setAttribute('aria-checked', 'false'));
-
-                // Set 'selected' state on the clicked swatch
                 target.setAttribute('aria-checked', 'true');
-
-                // Apply & persist the selected color
                 const newColor = target.dataset.color;
                 if (newColor) {
                     applySwatch(newColor);
                     saveSwatch(newColor);
                 }
             });
-
-            // Handle keyboard navigation for accessibility
             swatch.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
@@ -114,32 +116,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* Theme (dark mode) handling ------------------------------------------------- */
-    const THEME_KEY = 'fr_theme'; // 'dark' | 'light'
-
-    const getSavedTheme = () => {
-        try { return localStorage.getItem(THEME_KEY); } catch (e) { return null; }
-    };
+    /* Theme (dark mode) handling */
+    const THEME_KEY = 'fr_theme';
+    const getSavedTheme = () => { try { return localStorage.getItem(THEME_KEY); } catch (e) { return null; } };
     const saveTheme = (theme) => { try { localStorage.setItem(THEME_KEY, theme); } catch (e) {} };
     const prefersDark = () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
     const applyTheme = (theme) => {
-        const root = document.documentElement; // apply to <html>
+        const root = document.documentElement;
         if (theme === 'dark') root.classList.add('fr-theme--dark'); else root.classList.remove('fr-theme--dark');
 
-        // sync any toggle checkboxes on the page
         themeToggles.forEach(cb => {
             cb.checked = (theme === 'dark');
             cb.setAttribute('aria-pressed', theme === 'dark');
         });
     };
 
-    // Initialize theme: saved -> system -> light
     let currentTheme = getSavedTheme();
     if (!currentTheme) currentTheme = prefersDark() ? 'dark' : 'light';
     applyTheme(currentTheme);
 
-    // Listen for changes on theme toggles
     if (themeToggles.length) {
         themeToggles.forEach(cb => cb.addEventListener('change', (e) => {
             const theme = e.target.checked ? 'dark' : 'light';
@@ -148,11 +144,67 @@ document.addEventListener('DOMContentLoaded', () => {
         }));
     }
 
-    // React to system preference change if user hasn't explicitly chosen
     const saved = getSavedTheme();
     if (!saved && window.matchMedia) {
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
             applyTheme(e.matches ? 'dark' : 'light');
+        });
+    }
+    
+    // LOGIC FOR FONT AND TEXT SIZE
+    const FONT_FAMILY_KEY = 'fr_font_family';
+    const FONT_SIZE_KEY = 'fr_font_size';
+    const FONT_WEIGHT_KEY = 'fr_font_weight';
+
+    // Select elements
+    const fontSelect = document.getElementById('fontFamilySelect');
+    const weightSelect = document.getElementById('fontWeightSelect');
+    const sizeSelect = document.getElementById('fontSizeSelect');
+
+    const saveTextPref = (key, value) => { try { localStorage.setItem(key, value); } catch (e) {} };
+    const getSavedTextPref = (key) => { try { return localStorage.getItem(key); } catch (e) { return null; } };
+    
+    //Loads saved settings and applies them via CSS variables
+    const applyTextStyle = () => {
+        const family = getSavedTextPref(FONT_FAMILY_KEY) || 'Inter, sans-serif'; 
+        const size = getSavedTextPref(FONT_SIZE_KEY) || '1.1rem'; 
+        const weight = getSavedTextPref(FONT_WEIGHT_KEY) || '400'; 
+        
+        // Apply styles via CSS variables on the root <html> element
+        const root = document.documentElement.style;
+        root.setProperty('--font-family-base', family);
+        root.setProperty('--text-font-size', size);
+        root.setProperty('--text-font-weight', weight);
+
+        // Update select boxes to reflect the current state
+        if (fontSelect) fontSelect.value = family;
+        if (sizeSelect) sizeSelect.value = size;
+        if (weightSelect) weightSelect.value = weight;
+        
+    };
+
+    // Load saved settings on startup
+    applyTextStyle(); 
+    
+    // Event listeners for selects
+    if (fontSelect) {
+        fontSelect.addEventListener('change', (e) => {
+            saveTextPref(FONT_FAMILY_KEY, e.target.value);
+            applyTextStyle(); 
+        });
+    }
+
+    if (sizeSelect) {
+        sizeSelect.addEventListener('change', (e) => {
+            saveTextPref(FONT_SIZE_KEY, e.target.value);
+            applyTextStyle(); 
+        });
+    }
+    
+    if (weightSelect) {
+        weightSelect.addEventListener('change', (e) => {
+            saveTextPref(FONT_WEIGHT_KEY, e.target.value);
+            applyTextStyle(); 
         });
     }
 });

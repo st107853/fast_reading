@@ -24,18 +24,24 @@ body {
     --border-radius-lg: 25px;
     --border-radius-md: 10px;
     --border-radius-sm: 5px;
-    --font-family-base: Arial, sans-serif;
-    --font-size-lg: 1.5rem;
-    --font-size-md: 1.1rem;
-    --font-size-sm: 1rem;
-    --font-size-xl: 2rem;
-    --font-size-xs: 0.875rem;
-    --font-size-xxl: 2.5rem;
+
+    /* Переменные для ТЕКСТА (теперь все управляем через переменные) */
+    --font-family-base: 'Inter', sans-serif;
+    --text-font-size: 1rem; /* Дефолтный размер */
+
+    --font-size-xxl: calc(2.5 * var(--text-font-size));
+    --font-size-xl: calc(2 * var(--text-font-size));
+    --font-size-lg: calc(1.5 * var(--text-font-size));
+    --font-size-md: calc(1.1 * var(--text-font-size));
+    --font-size-sm: var(--text-font-size);
+
     --icon-edit: url("edit.png");
     --icon-login: url("login.png");
     --icon-logo: url("logo_long_white.svg");
     --icon-search: url("search.png");
+
     --navbar-height: 60px;
+
     --neutral-1-color: #FFFFFF;
     --neutral-2-alpha: color-mix(in srgb, var(--neutral-2-color) 80%, transparent);
     --neutral-2-color: #E1E5F2;
@@ -43,7 +49,9 @@ body {
     --neutral-4-color: #6C7A89;
     --primary-color: #022B3A;
     --secondary-color: #1F7A8C;
+
     --button-height: 50px;
+
     --spacing-lg: 20px;
     --spacing-md: 16px;
     --spacing-sm: 8px;
@@ -68,6 +76,7 @@ h1, h2, h3, h4, p {
     margin: 0;
 
     color: inherit;
+    font-family: var(--font-family-base);
 }
 
 
@@ -141,21 +150,6 @@ hr {
 }
 
 .fr-theme--dark {
-    --border-radius-lg: 25px;
-    --border-radius-md: 10px;
-    --border-radius-sm: 5px;
-    --font-family-base: Arial, sans-serif;
-    --font-size-lg: 1.5rem;
-    --font-size-md: 1.1rem;
-    --font-size-sm: 1rem;
-    --font-size-xl: 2rem;
-    --font-size-xs: 0.875rem;
-    --font-size-xxl: 2.5rem;
-    --icon-edit: url("edit.png");
-    --icon-login: url("login.png");
-    --icon-logo: url("logo_long_white.svg");
-    --icon-search: url("search.png");
-    --navbar-height: 60px;
     --neutral-1-color: #1c1c1e;
     --neutral-2-alpha: color-mix(in srgb, var(--neutral-2-color) 80%, transparent);
     --neutral-2-color: #2c2c2e;
@@ -163,10 +157,6 @@ hr {
     --neutral-4-color: #6C7A89;
     --primary-color: #f5f5f7;
     --secondary-color: #3a3a3c;
-    --spacing-lg: 20px;
-    --spacing-md: 16px;
-    --spacing-sm: 8px;
-    --spacing-xs: 4px;
 }
 
 
@@ -407,7 +397,7 @@ button, .fr-btn {
     background-color: var(--secondary-color);
     border-radius: var(--border-radius-lg);
     color: var(--neutral-1-color);
-    font-size: 1rem;
+    font-size: var(--font-size-sm);
 }
 
 
@@ -477,7 +467,7 @@ input[type=number] {
     appearance: none;
     -webkit-appearance: none;
 
-    font-size: 1rem;
+    font-size: var(--font-size-sm);
     padding: 8px 0;
     text-align: center;
     width: 60px;
@@ -542,7 +532,7 @@ input[type=number] {
 
 .fr-label-item {
     padding: 6px 16px;
-    font-size: 15px;
+    font-size: var(--font-size-sm);
     cursor: pointer;
     transition: 0.2s;
     
@@ -571,7 +561,7 @@ input[type="range"] {
     background: var(--primary-color);
     border-radius: 5px;
     margin: 0;
-    width: 80%;
+    width: 100%;
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -689,7 +679,7 @@ input:checked + .fr-switch__track:before {
     
     background: var(--neutral-1-color);
     border-radius: 5px;
-    font-size: 30px;
+    font-size: var(--font-size-lg);
     white-space: pre-line;
 }
 
@@ -860,14 +850,16 @@ input:checked + .fr-switch__track:before {
     height: 190px;
     width: 100%;
     
-    background-color: var(--primary-color); /* синий цвет (похожий на скрин) */
+    background-color: var(--primary-color);
+    color: var(--neutral-1-color);
+
+    align-items: center;
     display: flex;          
     justify-content: center;
-    align-items: center;    
-    color: var(--neutral-1-color);
-    font-size: 32px;
-
     margin-bottom: var(--spacing-sm);
+
+    font-size: var(--font-size-xl);
+    overflow: hidden;
 }
 
 
@@ -883,7 +875,7 @@ input:checked + .fr-switch__track:before {
 
 
 .fr-card__title {
-    font-size: 1rem;
+    font-size: var(--font-size-sm);
     font-weight: 500;
 }
 

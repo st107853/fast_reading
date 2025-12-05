@@ -49,26 +49,23 @@ async function saveUpdates(button, bookId) {
 
 function updateText() {
     const fileInput = document.getElementById("file");
-    const bookTextArea = document.getElementById("chapter-text");
+    const bookTextArea = document.getElementById("scrollable-content-reading");
     const file = fileInput.files[0];
 
-    // Проверка, выбран ли файл
     if (fileInput.files.length === 0) {
-        showMessage("Please select a file.", 'error');
+        alert("Please select a file.");
         return;
     }
 
     const reader = new FileReader();
 
     
- // Чтение файла как текста
     reader.readAsText(file);
 
-    // Чтение содержимого файла
+    // Read file content
     reader.onload = function(event) {
         const fileContent = event.target.result;
-        bookTextArea.value = fileContent; // Запись содержимого в textarea
-        showMessage(`File "${file.name}" loaded successfully.`, 'success');
+        bookTextArea.value = fileContent; // Update textarea with file content
     };
 
     reader.onerror = function() {
@@ -99,10 +96,10 @@ document.addEventListener('DOMContentLoaded', function () {
 // Submit chapter for the current book
 async function submitChapter(button, bookId, chapterId) {
     const chapterNameElement = document.getElementById('chapter-name');
-    const bookTextElement = document.getElementById('chapter-text');
+    const bookTextElement = document.getElementById('scrollable-content-reading');
 
     if (!chapterNameElement || !bookTextElement) {
-        alert("Ошибка: не найдены элементы формы главы");
+        alert("Ошибка: не найдены элементы формы главы", !chapterNameElement, !bookTextElement);
         return;
     }
 
