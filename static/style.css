@@ -39,6 +39,7 @@ body {
     --icon-login: url("login.png");
     --icon-logo: url("logo_long_white.svg");
     --icon-search: url("search.png");
+    --icon-arrow: url("arrow_down.svg");
 
     --navbar-height: 60px;
 
@@ -429,14 +430,24 @@ button, .fr-btn {
 */
 
 .fr-form-select {
-    flex-grow: 1;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
 
     margin-bottom: var(--spacing-md);
-    padding: 10px;
+    padding: 10px 30px 10px 10px; 
 
     background-color: var(--neutral-1-color);
     border: 1px solid var(--neutral-2-color);
     border-radius: var(--border-radius-md);
+    cursor: pointer;
+
+    color: var(--primary-color);
+    
+    background-image: var(--icon-arrow);
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px 16px;
 }
 
 .fr-input-container {
@@ -495,12 +506,17 @@ input[type=number] {
 .fr-dropdown-menu {
     display: none;
 
+    /* Hide Scrollbar */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
     position: absolute;
-    top: 48px;
     left: 0;
 
     padding: 6px 0;
     width: 180px;
+    height: 360px;
+    overflow-y: scroll;
     z-index: 20;
     
     background: var(--neutral-1-color);
@@ -745,7 +761,6 @@ input:checked + .fr-switch__track:before {
     
     gap: 15px;
     grid-template-areas:
-        "colour brightness text example"
         "colour theme text example";
     grid-template-columns: repeat(4, 1fr);
 }

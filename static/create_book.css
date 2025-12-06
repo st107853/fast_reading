@@ -115,6 +115,10 @@
     padding: 15px;
     resize: vertical;
     width: 100%;
+    
+    /* Hide Scrollbar */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 /*
