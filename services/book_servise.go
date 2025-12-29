@@ -1,15 +1,17 @@
 package services
 
 import (
+	"mime/multipart"
+
 	"github.com/st107853/fast_reading/models"
 )
 
 type BookService interface {
-	InsertBook(book models.Book) (uint, error)
+	InsertBook(input models.Book, file *multipart.FileHeader, creatorUserID uint) (uint, error)
 	BookExist(bookName, bookAuthor string) (bool, error)
-	FindBookByID(bookID string) (models.Book, error)
-	FindBooksByCreatorID(creatorID uint) ([]models.Book, error)
-	FindFavoriteBooksByUserEmail(userID uint) ([]models.Book, error)
+	FindBookByID(bookID string) (models.GetBook, error)
+	FindBooksByCreatorID(creatorID uint) ([]models.SmallBookResponse, error)
+	FindFavoriteBooksByUserEmail(userID uint) ([]models.SmallBookResponse, error)
 	InsertChapter(chapter models.Chapter) (uint, error)
 	FindChapterByID(id uint) (models.ChapterResponse, error)
 	FindChapterByIDStr(id string) (models.Chapter, error)
@@ -18,11 +20,11 @@ type BookService interface {
 	DeleteAll() error
 	DeleteBook(bookId uint) error
 	DeleteChapter(chapterId uint) error
-	ListAllBooks() ([]models.Book, error)
+	ListAllBooks() ([]models.SmallBookResponse, error)
 	ListAllLabels() ([]models.Label, error)
-	FindAll(bookName string) ([]models.Book, error)
+	FindAllByName(bookName string) ([]models.SmallBookResponse, error)
 	FindBook(bookName string) (models.Book, error)
-	UpdateBook(bookId uint, book models.Book) (models.Book, error)
+	UpdateBook(bookId uint, file *multipart.FileHeader, book models.Book) (models.Book, error)
 	UpdateChapter(chapterId uint, chapter models.Chapter) (models.Chapter, error)
 	AddLabel(bookId, LabelId uint) error
 	ListAllBooksLabels(bookId string) ([]models.Label, error)

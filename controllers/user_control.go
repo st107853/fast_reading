@@ -18,8 +18,8 @@ type UserController struct {
 
 type UserData struct {
 	Name           string
-	FavouriteBooks []models.Book
-	CreatedBooks   []models.Book
+	FavouriteBooks []models.SmallBookResponse
+	CreatedBooks   []models.SmallBookResponse
 }
 
 func NewUserController(userService services.UserService, bookService services.BookService) UserController {
@@ -29,11 +29,9 @@ func NewUserController(userService services.UserService, bookService services.Bo
 func (uc *UserController) GetMe(ctx *gin.Context) {
 	currentUser := ctx.MustGet("currentUser").(*models.User)
 
-	//var user = models.FilteredResponse(currentUser)
-
 	// Fetch books created by the current user. If the book service fails,
 	// log the error and render the page with favorites only.
-	var created []models.Book
+	var created []models.SmallBookResponse
 	if uc.bookService != nil {
 		if cb, err := uc.bookService.FindBooksByCreatorID(currentUser.ID); err == nil {
 			created = cb
@@ -43,7 +41,7 @@ func (uc *UserController) GetMe(ctx *gin.Context) {
 		}
 	}
 
-	var favorite []models.Book
+	var favorite []models.SmallBookResponse
 	if uc.bookService != nil {
 		if fb, err := uc.bookService.FindFavoriteBooksByUserEmail(currentUser.ID); err == nil {
 			favorite = fb
@@ -64,6 +62,4 @@ func (uc *UserController) GetMe(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	//ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"user": models.FilteredResponse(currentUser)}})
 }

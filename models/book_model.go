@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"html/template"
 	"time"
 
 	"gorm.io/gorm"
@@ -10,16 +11,50 @@ import (
 type Book struct {
 	gorm.Model
 
-	Name        string    `json:"name" gorm:"not null"`
-	Author      string    `json:"author" gorm:"not null"`
-	ReleaseDate time.Time `json:"release_date"`
-	Released    bool      `json:"released" gorm:"default:false;not null"`
-	Description string    `json:"description" gorm:"type:text"`
+	Name        string    `json:"name" form:"name" gorm:"not null"`
+	Author      string    `json:"author" form:"author" gorm:"not null"`
+	ReleaseDate time.Time `json:"release_date" form:"release_date"`
+	Released    bool      `json:"released" form:"released" gorm:"default:false;not null"`
+	Description string    `json:"description" form:"description" gorm:"type:text"`
+	CoverPath   string    `json:"cover_path" form:"cover_path"`
 
 	CreatorUserID uint `json:"creator_user_id"`
 
 	Labels      []*Label `json:"labels" gorm:"many2many:book_labels;"`
 	FavoritedBy []*User  `json:"favorited_by" gorm:"many2many:user_favorites;"`
+}
+
+type BookBase struct {
+	gorm.Model
+
+	Name          string   `json:"name" gorm:"column:name"`
+	Author        string   `json:"author" gorm:"column:author"`
+	Description   string   `json:"description" form:"description" gorm:"type:text"`
+	BookLabels    []*Label `json:"labels" gorm:"many2many:book_labels;"`
+	CreatorUserID uint     `json:"creator_user_id"`
+	CoverPath     string   `json:"cover_path" form:"cover_path"`
+}
+
+func (BookBase) TableName() string {
+	return "books"
+}
+
+func (BookResponse) TableName() string {
+	return "books"
+}
+
+type GetBook struct {
+	BookID        uint         `json:"id" gorm:"column:id"`
+	Name          string       `json:"name" gorm:"column:name"`
+	Author        string       `json:"author" gorm:"column:author"`
+	Description   string       `json:"description" form:"description" gorm:"type:text"`
+	BookLabels    []*Label     `json:"labels" gorm:"many2many:book_labels;"`
+	Chapters      []Chapter    `json:"chapter"`
+	IsFavorited   bool         `json:"is_favorited"`
+	IsCreator     bool         `json:"is_creator"`
+	CreatorUserID uint         `json:"creator_user_id"`
+	AllLabels     []Label      `json:"all_labels"`
+	Cover         template.URL `json:"book_cover"`
 }
 
 type Chapter struct {
@@ -32,9 +67,17 @@ type Chapter struct {
 }
 
 type BookResponse struct {
-	ID     string `json:"id" gorm:"column:book_id"`
-	Name   string `json:"name" gorm:"column:name"`
-	Author string `json:"author" gorm:"column:author"`
+	ID        uint   `json:"id" gorm:"column:id"`
+	Name      string `json:"name" gorm:"column:name"`
+	Author    string `json:"author" gorm:"column:author"`
+	CoverPath string `json:"cover_path" form:"cover_path"`
+}
+
+type SmallBookResponse struct {
+	ID     uint         `json:"id"`
+	Name   string       `json:"name"`
+	Author string       `json:"author"`
+	Cover  template.URL `json:"book_cover"`
 }
 
 type ChapterResponse struct {

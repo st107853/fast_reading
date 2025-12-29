@@ -1,8 +1,18 @@
 package services
 
 import (
+	"bytes"
 	"context"
+	"encoding/base64"
 	"fmt"
+	"html/template"
+	"image"
+	_ "image/jpeg"
+	"image/png"
+	"io"
+	"mime/multipart"
+	"os"
+	"path/filepath"
 
 	"github.com/st107853/fast_reading/models"
 	"gorm.io/gorm"
@@ -18,16 +28,62 @@ func NewBookService(collection *gorm.DB, ctx context.Context) *BookServiseImpl {
 	return &BookServiseImpl{collection: collection, ctx: ctx}
 }
 
-// InsertBook inserts a new book into the database.
-func (bs *BookServiseImpl) InsertBook(book models.Book) (uint, error) {
-	// Validate creator user id to avoid foreign key constraint violation
-	if book.CreatorUserID == 0 {
-		return 0, fmt.Errorf("bsi: missing CreatorUserID")
+// InsertBook inserts a new book into the database and saves the cover file if provided.
+func (bs *BookServiseImpl) InsertBook(book models.Book, file *multipart.FileHeader, creatorUserID uint) (uint, error) {
+
+	// Set the creator user ID before inserting
+	book.CreatorUserID = creatorUserID
+
+	if err := bs.collection.Create(&book).Error; err != nil {
+		return 0, fmt.Errorf("failed to insert book record: %w", err)
 	}
 
-	// Insert the book
-	err := bs.collection.Create(&book).Error
-	return book.ID, err
+	bookId := book.ID
+
+	// Save the cover file if provided
+	if file != nil {
+		ext := filepath.Ext(file.Filename)
+
+		// Cover name = book ID + extension
+		coverFileName := fmt.Sprintf("%d%s", bookId, ext)
+		targetPath := filepath.Join("covers", coverFileName)
+
+		// Creation of 'covers' directory if it doesn't exist
+		if _, statErr := os.Stat("covers"); os.IsNotExist(statErr) {
+			if mkdirErr := os.MkdirAll("covers", os.ModePerm); mkdirErr != nil {
+				// В случае ошибки создания папки, возвращаем ошибку, но запись книги уже есть
+				return bookId, fmt.Errorf("failed to create storage directory for cover: %w", mkdirErr)
+			}
+		}
+
+		// Copying the file
+		src, openErr := file.Open()
+		if openErr != nil {
+			return bookId, fmt.Errorf("failed to open uploaded file: %w", openErr)
+		}
+		defer src.Close()
+
+		dst, createErr := os.Create(targetPath)
+		if createErr != nil {
+			return bookId, fmt.Errorf("failed to create destination file for cover: %w", createErr)
+		}
+		defer dst.Close()
+
+		if _, copyErr := io.Copy(dst, src); copyErr != nil {
+			return bookId, fmt.Errorf("failed to save file content: %w", copyErr)
+		}
+
+		// Updating the book record with the cover path
+		book.CoverPath = targetPath
+
+		// Saving changes to the DB
+		if err := bs.collection.Model(&book).Update("CoverPath", targetPath).Error; err != nil {
+			// TODO: In case of an update error delete the saved cover file
+			return bookId, fmt.Errorf("failed to update book with CoverPath: %w", err)
+		}
+	}
+
+	return bookId, nil
 }
 
 // BookExist checks if a book exist and return bool.
@@ -43,32 +99,114 @@ func (bs *BookServiseImpl) BookExist(bookName, bookAuthor string) (bool, error) 
 }
 
 // FindBookByID finds and returns book by its ID.
-func (bs *BookServiseImpl) FindBookByID(bookID string) (models.Book, error) {
-	var book models.Book
+func (bs *BookServiseImpl) FindBookByID(bookID string) (models.GetBook, error) {
+	var base models.BookBase
+	var result models.GetBook
 
-	err := bs.collection.First(&book, bookID).Error
+	// Find the book base information
+	err := bs.collection.First(&base, bookID).Error
 	if err != nil {
-		return book, fmt.Errorf("bsi: failed to find book by ID: %w", err)
+		return result, fmt.Errorf("bsi: failed to find book by ID: %w", err)
 	}
 
-	return book, nil
+	// Find book's chapters
+	err = bs.collection.Where("book_id = ?", bookID).Order("chapter_order ASC").Find(&result.Chapters).Error
+	if err != nil {
+		return result, fmt.Errorf("bsi: failed to find chapters by book ID: %w", err)
+	}
+
+	// Find book's labels
+	err = bs.collection.Joins("JOIN book_labels ON book_labels.label_id = labels.id").
+		Where("book_labels.book_id = ?", bookID).
+		Find(&result.BookLabels).Error
+
+	if err != nil {
+		return result, fmt.Errorf("bsi: failed to find all labels: %w", err)
+	}
+
+	// Get book's cover
+	if base.CoverPath != "" {
+		img, err := getCover(base.CoverPath)
+		if err == nil {
+			// Конвертируем объект изображения в Base64 строку
+			base64Str, err := imageToSafeBase64(img)
+			if err == nil {
+				result.Cover = base64Str // Теперь это строка "data:image/png;base64,..."
+			}
+		}
+	}
+
+	// Map base fields to result
+	result.BookID = base.ID
+	result.Name = base.Name
+	result.Author = base.Author
+	result.Description = base.Description
+	result.CreatorUserID = base.CreatorUserID
+	return result, nil
+}
+
+func getCover(filePath string) (image.Image, error) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	image, _, err := image.Decode(f)
+	return image, err
+}
+
+// imageToSafeBase64 converts an image.Image to a base64-encoded string wrapped in template.URL.
+func imageToSafeBase64(img image.Image) (template.URL, error) {
+	if img == nil {
+		return "", nil
+	}
+
+	buffer := new(bytes.Buffer)
+	if err := png.Encode(buffer, img); err != nil {
+		return "", err
+	}
+
+	encoded := base64.StdEncoding.EncodeToString(buffer.Bytes())
+	safeURL := template.URL(fmt.Sprintf("data:image/png;base64,%s", encoded))
+
+	return safeURL, nil
 }
 
 // FindBooksByCreatorID finds and returns books by the creator's ID.
-func (bs *BookServiseImpl) FindBooksByCreatorID(creatorID uint) ([]models.Book, error) {
-	var books []models.Book
+func (bs *BookServiseImpl) FindBooksByCreatorID(creatorID uint) ([]models.SmallBookResponse, error) {
+	var books []models.BookResponse
+	var result []models.SmallBookResponse
 
 	err := bs.collection.Where("creator_user_id = ?", creatorID).Find(&books).Error
 	if err != nil {
-		return nil, fmt.Errorf("bsi: failed to find books by creator ID: %w", err)
+		return nil, fmt.Errorf("bsi: failed to find all books: %w", err)
+	}
+	result = make([]models.SmallBookResponse, len(books))
+
+	for i, book := range books {
+		result[i] = models.SmallBookResponse{
+			ID:     book.ID,
+			Name:   book.Name,
+			Author: book.Author,
+		}
+		if book.CoverPath != "" {
+			img, err := getCover(book.CoverPath)
+			if err == nil {
+				base64Str, err := imageToSafeBase64(img)
+				if err == nil {
+					result[i].Cover = base64Str
+				}
+			}
+		}
 	}
 
-	return books, nil
+	return result, nil
 }
 
 // FindFavoriteBooksByUserEmail finds and returns favorite books by user ID.
-func (bs *BookServiseImpl) FindFavoriteBooksByUserEmail(userID uint) ([]models.Book, error) {
-	var books []models.Book
+func (bs *BookServiseImpl) FindFavoriteBooksByUserEmail(userID uint) ([]models.SmallBookResponse, error) {
+	var books []models.BookResponse
+	var result []models.SmallBookResponse
 
 	err := bs.collection.Joins("JOIN user_favorites ON user_favorites.book_id = books.id").
 		Where("user_favorites.user_id = ?", userID).
@@ -77,7 +215,26 @@ func (bs *BookServiseImpl) FindFavoriteBooksByUserEmail(userID uint) ([]models.B
 		return nil, fmt.Errorf("bsi: failed to find favorite books by user ID: %w", err)
 	}
 
-	return books, nil
+	result = make([]models.SmallBookResponse, len(books))
+
+	for i, book := range books {
+		result[i] = models.SmallBookResponse{
+			ID:     book.ID,
+			Name:   book.Name,
+			Author: book.Author,
+		}
+		if book.CoverPath != "" {
+			img, err := getCover(book.CoverPath)
+			if err == nil {
+				base64Str, err := imageToSafeBase64(img)
+				if err == nil {
+					result[i].Cover = base64Str
+				}
+			}
+		}
+	}
+
+	return result, nil
 }
 
 // InsertChapter inserts a new chapter into the database and assigns an order if not set.
@@ -179,15 +336,34 @@ func (bs *BookServiseImpl) DeleteChapter(chapterId uint) error {
 }
 
 // ListAllBooks finds and returns all books.
-func (bs *BookServiseImpl) ListAllBooks() ([]models.Book, error) {
-	var books []models.Book
+func (bs *BookServiseImpl) ListAllBooks() ([]models.SmallBookResponse, error) {
+	var books []models.BookResponse
+	var result []models.SmallBookResponse
 
 	err := bs.collection.Limit(20).Find(&books).Error
 	if err != nil {
 		return nil, fmt.Errorf("bsi: failed to find all books: %w", err)
 	}
+	result = make([]models.SmallBookResponse, len(books))
 
-	return books, nil
+	for i, book := range books {
+		result[i] = models.SmallBookResponse{
+			ID:     book.ID,
+			Name:   book.Name,
+			Author: book.Author,
+		}
+		if book.CoverPath != "" {
+			img, err := getCover(book.CoverPath)
+			if err == nil {
+				base64Str, err := imageToSafeBase64(img)
+				if err == nil {
+					result[i].Cover = base64Str
+				}
+			}
+		}
+	}
+
+	return result, nil
 }
 
 // ListAllLabels finds and returns all labels.
@@ -207,7 +383,6 @@ func (bs *BookServiseImpl) ListAllBooksLabels(bookId string) ([]models.Label, er
 	var labels []models.Label
 
 	err := bs.collection.Joins("JOIN book_labels ON book_labels.label_id = labels.id").
-		// ИСПРАВЛЕНО: Явно указываем таблицу book_labels
 		Where("book_labels.book_id = ?", bookId).
 		Find(&labels).Error
 
@@ -219,15 +394,33 @@ func (bs *BookServiseImpl) ListAllBooksLabels(bookId string) ([]models.Label, er
 }
 
 // FindAll finds and returns books by its name.
-func (bs *BookServiseImpl) FindAll(bookName string) ([]models.Book, error) {
-	var books []models.Book
-
+func (bs *BookServiseImpl) FindAllByName(bookName string) ([]models.SmallBookResponse, error) {
+	var books []models.BookResponse
+	var result []models.SmallBookResponse
 	err := bs.collection.Where("name = ?", bookName).Find(&books).Error
 	if err != nil {
-		return nil, fmt.Errorf("bsi: failed to find books by name: %w", err)
+		return nil, fmt.Errorf("bsi: failed to find all books: %w", err)
+	}
+	result = make([]models.SmallBookResponse, len(books))
+
+	for i, book := range books {
+		result[i] = models.SmallBookResponse{
+			ID:     book.ID,
+			Name:   book.Name,
+			Author: book.Author,
+		}
+		if book.CoverPath != "" {
+			img, err := getCover(book.CoverPath)
+			if err == nil {
+				base64Str, err := imageToSafeBase64(img)
+				if err == nil {
+					result[i].Cover = base64Str
+				}
+			}
+		}
 	}
 
-	return books, nil
+	return result, nil
 }
 
 // FindBook finds and returns book by its name.
@@ -243,8 +436,9 @@ func (bs *BookServiseImpl) FindBook(bookName string) (models.Book, error) {
 }
 
 // UpdateBook find and updates a book's fields.
-func (bs *BookServiseImpl) UpdateBook(bookId uint, input models.Book) (models.Book, error) {
+func (bs *BookServiseImpl) UpdateBook(bookId uint, file *multipart.FileHeader, input models.Book) (models.Book, error) {
 	var existingBook models.Book
+
 	if err := bs.collection.First(&existingBook, bookId).Error; err != nil {
 		return models.Book{}, fmt.Errorf("bsi: book with id %d not found: %w", bookId, err)
 	}
@@ -255,6 +449,51 @@ func (bs *BookServiseImpl) UpdateBook(bookId uint, input models.Book) (models.Bo
 		"release_date": input.ReleaseDate,
 		"description":  input.Description,
 		"released":     input.Released,
+	}
+
+	// Conditionally add CoverPath ONLY if it was set by the controller (i.e., a file was uploaded)
+	if input.CoverPath != "" {
+		updateData["cover_path"] = input.CoverPath
+	}
+
+	if file != nil {
+		ext := filepath.Ext(file.Filename)
+
+		// Cover name = book ID + extension
+		coverFileName := fmt.Sprintf("%d%s", bookId, ext)
+		targetPath := filepath.Join("covers", coverFileName)
+
+		// Creation of 'covers' directory if it doesn't exist
+		if _, statErr := os.Stat("covers"); os.IsNotExist(statErr) {
+			if mkdirErr := os.MkdirAll("covers", os.ModePerm); mkdirErr != nil {
+				return existingBook, fmt.Errorf("failed to create storage directory for cover: %w", mkdirErr)
+			}
+		}
+
+		// Copying the file
+		src, openErr := file.Open()
+		if openErr != nil {
+			return existingBook, fmt.Errorf("failed to open uploaded file: %w", openErr)
+		}
+		defer src.Close()
+
+		dst, createErr := os.Create(targetPath)
+		if createErr != nil {
+			return existingBook, fmt.Errorf("failed to create destination file for cover: %w", createErr)
+		}
+		defer dst.Close()
+
+		if _, copyErr := io.Copy(dst, src); copyErr != nil {
+			return existingBook, fmt.Errorf("failed to save file content: %w", copyErr)
+		}
+
+		// Updating the book record with the cover path
+		existingBook.CoverPath = targetPath
+		// Saving changes to the database
+		if err := bs.collection.Model(&existingBook).Update("CoverPath", targetPath).Error; err != nil {
+			// TODO: In case of an update error delete the saved cover file
+			return existingBook, fmt.Errorf("failed to update book with CoverPath: %w", err)
+		}
 	}
 
 	if err := bs.collection.Model(&existingBook).Updates(updateData).Error; err != nil {

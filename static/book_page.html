@@ -84,9 +84,13 @@
 
     <div class="bp-book-card-container">
         <div class="bp-book-cover-wrapper">
-            <div class="fr-blue-box">
-                {{.Name}}
-            </div>
+            {{if .Cover}}
+                <img src="{{.Cover}}" alt="Обложка книги" class="book-cover">
+            {{else}}
+                <div class="fr-blue-box">
+                    {{.Name}}
+                </div>
+            {{end}}
         </div>
         
         <div class="bp-book-info-wrapper">
@@ -104,7 +108,7 @@
         </div>
 
         <div class="bp-action-buttons-wrapper">
-            <a href="/library/book/{{.ID}}/1" class="fr-btn fr-btn--large">Start Reading</a>
+            <a href="/library/book/{{.BookID}}/1" class="fr-btn fr-btn--large">Start Reading</a>
 
             <label class="bp-switch fr-switch">
                 <input type="checkbox" id="favBtn" onclick="addToFavorites(this)" {{if .IsFavorited}}checked{{end}} />
@@ -112,7 +116,7 @@
             </label>
         </div>
         <div {{if not .IsCreator}}style="display: none;"{{end}}>
-            <a href="/library/addbook/{{.ID}}"><button class="fr-btn-with-icon" id="edit-btn">
+            <a href="/library/addbook/{{.BookID}}"><button class="fr-btn-with-icon" id="edit-btn">
                 <img src="/static/edit.svg" alt="edit icon" class="fr-icon">
                 <span>Edit</span>
             </button></a>

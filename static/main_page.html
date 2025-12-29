@@ -114,9 +114,13 @@
                 {{range .Books}}
                     <div class="fr-card">
                     <a href="/library/book/{{.ID}}">
-                        <div class="fr-blue-box">
-                            {{.Name}}
-                        </div>
+                        {{if .Cover}}
+                            <img src="{{.Cover}}" alt="Обложка книги" class="book-cover">
+                        {{else}}
+                            <div class="fr-blue-box">
+                                {{.Name}}
+                            </div>
+                        {{end}}
                     </a>
                     <div class="fr-card__title">{{.Name}}</div>
                     <div class="fr-card__author">{{.Author}}</div>

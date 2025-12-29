@@ -1,13 +1,13 @@
 package controllers
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/st107853/fast_reading/config"
 	"github.com/st107853/fast_reading/models"
 	"github.com/st107853/fast_reading/services"
 )
@@ -21,7 +21,7 @@ var addBookChapter = template.Must(template.New("create_book_chapter.html").Pars
 
 type BookData struct {
 	Title  string
-	Books  []models.Book
+	Books  []models.SmallBookResponse
 	Labels []models.Label
 }
 
@@ -66,7 +66,8 @@ func (bc *BookController) ListAllBooks(c *gin.Context) {
 }
 
 func (bc *BookController) AllBooks(c *gin.Context) {
-	var books []models.Book
+	var books []models.SmallBookResponse
+
 	books, err := bc.bookService.ListAllBooks()
 
 	if err != nil {
@@ -94,53 +95,44 @@ func (bc *BookController) AllBooks(c *gin.Context) {
 }
 
 func (bc *BookController) CreateBook(c *gin.Context) {
-	var book models.Book
-	if err := c.ShouldBindJSON(&book); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	var input models.Book
+	// c.ShouldBind() using binding/form for multipart/form-data
+	if err := c.ShouldBind(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input data or missing fields: " + err.Error()})
 		return
 	}
 
-	// Check if the book already exists
-	existingBook, err := bc.bookService.BookExist(book.Name, book.Author)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	if existingBook {
-		c.JSON(http.StatusConflict, gin.H{"error": "Book already exists"})
+	// Get the file from the form input
+	// Note: We do not return an error if the file is missing
+	file, err := c.FormFile("cover_image")
+	if err != nil && err != http.ErrMissingFile {
+		// Error, if it's something other than missing file
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve cover file: " + err.Error()})
 		return
 	}
 
-	// Add creator user ID from cookie
 	cookie, err := c.Cookie("user_id")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found " + err.Error()})
 		return
 	}
-
-	userid, err := strconv.ParseUint(cookie, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	book.CreatorUserID = uint(userid)
-
-	book_id, err := bc.bookService.InsertBook(book)
+	creatorUserID, err := strconv.ParseUint(cookie, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	config, err := config.LoadConfig(".")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "error": "Could not load config " + err.Error()})
+	bookID, serviceErr := bc.bookService.InsertBook(input, file, uint(creatorUserID))
+
+	if serviceErr != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to create book: %s", serviceErr.Error())})
 		return
 	}
 
-	c.SetCookie("book_id", strconv.Itoa(int(book_id)), config.AccessTokenMaxAge*60, "/", "localhost", false, false)
-
-	// Return created book ID and name so client can navigate to chapter creation
-	c.JSON(http.StatusCreated, gin.H{"book_id": book_id, "name": book.Name})
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Book created successfully",
+		"book_id": bookID,
+	})
 }
 
 func (bc *BookController) CreateChapter(c *gin.Context) {
@@ -218,27 +210,27 @@ func (bc *BookController) UpdateBookChapter(c *gin.Context) {
 }
 
 func (bc *BookController) ReleaseBook(c *gin.Context) {
-	idParam := c.Param("book_id")
-	bookId, err := strconv.ParseUint(idParam, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
-		return
-	}
+	// idParam := c.Param("book_id")
+	// bookId, err := strconv.ParseUint(idParam, 10, 64)
+	// if err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
+	// 	return
+	// }
 
-	book, err := bc.bookService.FindBookByID(idParam)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
+	// book, err := bc.bookService.FindBookByID(idParam)
+	// if err != nil {
+	// 	c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+	// 	return
+	// }
 
-	book.Released = true
-	updatedBook, err := bc.bookService.UpdateBook(uint(bookId), book)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
+	// book.Released = true
+	// updatedBook, err := bc.bookService.UpdateBook(uint(bookId), nil, book)
+	// if err != nil {
+	// 	c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+	// 	return
+	// }
 
-	c.JSON(http.StatusOK, updatedBook)
+	// c.JSON(http.StatusOK, updatedBook)
 }
 
 func (bc *BookController) BookFavourite(c *gin.Context) {
@@ -255,7 +247,7 @@ func (bc *BookController) BookFavourite(c *gin.Context) {
 	}
 
 	// Call the function to add the book to favorite books
-	err = bc.userService.AddBookToFavoriteBooks(cookie, book.ID)
+	err = bc.userService.AddBookToFavoriteBooks(cookie, strconv.FormatUint(uint64(book.ID), 10))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add book to favorite books " + err.Error()})
 		return
@@ -266,9 +258,9 @@ func (bc *BookController) BookFavourite(c *gin.Context) {
 
 // GetBooks retrieves all books from the database
 func (bc *BookController) GetBooksByName(c *gin.Context) {
-	var books []models.Book
+	var books []models.SmallBookResponse
 	name := c.Param("name")
-	books, err := bc.bookService.FindAll(name)
+	books, err := bc.bookService.FindAllByName(name)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -296,7 +288,7 @@ func (bc *BookController) GetBooksByName(c *gin.Context) {
 
 // GetCreatedBooks retrieves all books created by the user
 func (bc *BookController) GetCreatedBooks(c *gin.Context) {
-	var books []models.Book
+	var books []models.SmallBookResponse
 	cookie, err := c.Cookie("user_id")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found " + err.Error()})
@@ -337,19 +329,11 @@ func (bc *BookController) GetCreatedBooks(c *gin.Context) {
 // GetBook retrieves a book by its ID
 func (bc *BookController) GetBook(c *gin.Context) {
 	id := c.Param("book_id")
-	isFavorited := false
-	isCreator := false
-	var book models.Book
+	var book models.GetBook
 
 	book, err := bc.bookService.FindBookByID(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
-
-	chapters, err := bc.bookService.FindChaptersByBookID(book.Model.ID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -362,35 +346,17 @@ func (bc *BookController) GetBook(c *gin.Context) {
 		}
 
 		// Check if book is favorited by current user (if authenticated)
-		isFavorited, err = bc.userService.IsBookFavorited(uint(userid), book.Model.ID)
+		book.IsFavorited, err = bc.userService.IsBookFavorited(uint(userid), book.BookID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		isCreator = userid == uint64(book.CreatorUserID)
-	}
-
-	labels, err := bc.bookService.ListAllBooksLabels(id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Pass both book and isFavorited to template
-	templateData := gin.H{
-		"Name":        book.Name,
-		"Author":      book.Author,
-		"ID":          book.Model.ID,
-		"Description": book.Description,
-		"Chapters":    chapters,
-		"IsFavorited": isFavorited,
-		"IsCreator":   isCreator,
-		"BookLabels":  labels,
+		book.IsCreator = userid == uint64(book.CreatorUserID)
 	}
 
 	// Execute the bookPage template and write the output to the response writer
-	if err := bookPage.Execute(c.Writer, templateData); err != nil {
+	if err := bookPage.Execute(c.Writer, book); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -415,7 +381,7 @@ func (bc *BookController) GetChapter(c *gin.Context) {
 	}
 }
 
-// UpdateBook updates an existing book
+// UpdateBook handles the request, including file upload and service call.
 func (bc *BookController) UpdateBook(c *gin.Context) {
 	idParam := c.Param("book_id")
 	bookId, err := strconv.ParseUint(idParam, 10, 64)
@@ -424,15 +390,24 @@ func (bc *BookController) UpdateBook(c *gin.Context) {
 		return
 	}
 
-	var inputData models.Book
-	if err := c.ShouldBindJSON(&inputData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	var input models.Book
+
+	if err := c.ShouldBind(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input data: " + err.Error()})
 		return
 	}
 
-	updatedBook, err := bc.bookService.UpdateBook(uint(bookId), inputData)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+	// Get the file from the form input
+	file, err := c.FormFile("cover_image")
+	if err != nil && err != http.ErrMissingFile {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve cover file: " + err.Error()})
+		return
+	}
+
+	// Call Service
+	updatedBook, serviceErr := bc.bookService.UpdateBook(uint(bookId), file, input)
+	if serviceErr != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": serviceErr.Error()})
 		return
 	}
 
@@ -493,7 +468,7 @@ func (bc *BookController) AddBook(c *gin.Context) {
 		"Author":      "Book author*",
 		"Description": "Book description*",
 		"Chapters":    nil,
-		"Labels":      labels,
+		"AllLabels":   labels,
 	}
 
 	if err := addBook.Execute(c.Writer, templateData); err != nil {
@@ -514,45 +489,21 @@ func (bc *BookController) AddBookChapter(c *gin.Context) {
 
 func (bc *BookController) EditBook(c *gin.Context) {
 	id := c.Param("book_id")
-	var book models.Book
-	var chapters []models.Chapter
-
+	var book models.GetBook
 	book, err := bc.bookService.FindBookByID(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
-	chapters, err = bc.bookService.FindChaptersByBookID(book.ID)
+	book.AllLabels, err = bc.bookService.ListAllLabels()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
-	}
-
-	bookLabels, err := bc.bookService.ListAllBooksLabels(id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	labels, err := bc.bookService.ListAllLabels()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	templateData := gin.H{
-		"Name":        book.Name,
-		"Author":      book.Author,
-		"Description": book.Description,
-		"Chapters":    chapters,
-		"BookID":      book.ID,
-		"BookLabels":  bookLabels,
-		"AllLabels":   labels,
 	}
 
 	// Execute the bookPage template and write the output to the response writer
-	if err := addBook.Execute(c.Writer, templateData); err != nil {
+	if err := addBook.Execute(c.Writer, book); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

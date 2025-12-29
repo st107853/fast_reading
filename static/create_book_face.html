@@ -136,11 +136,14 @@
         </section>
 
         <section class="cb-editor-photo-upload">
-            <div class="cb-photo-placeholder"></div>
-            <button class="fr-btn-with-icon">
+            
+            <div class="cb-photo-placeholder" id="image-preview"></div>
+            
+            <div class="fr-btn-with-icon" onclick="document.getElementById('image-file').click()">
                 <img src="/static/upload.svg" alt="upload icon" class="fr-icon">
                 <span>Upload image</span>
-            </button>
+                <input type="file" id="image-file" accept="image/*" class="hidden" onchange="handleImageUpload()">
+            </div>
         </section>
 
         <section class="cb-editor-description">
