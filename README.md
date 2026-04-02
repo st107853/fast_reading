@@ -1,5 +1,3 @@
-sudo systemctl start mongod
+I have a friend who went blind once. Doctors were able to restore her sight, but they advised her to read less, because moving her eyes along the lines could harm her. All I wanted was to give her back the ability to read the books she loved most. This is how I created my Fast Reading project.
 
-openssl genpkey -algorithm RSA -out private_key.pem -pkeyopt rsa_keygen_bits:2048 
-
-openssl rsa -pubout -in private_key.pem -out public_key.pem
+The idea is that the words in the book will appear in the same place at a speed that is comfortable for the reader.
