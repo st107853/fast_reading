@@ -130,10 +130,9 @@
     background-color: var(--neutral-1-color);
     border: 1px solid var(--neutral-4-color);
     border-radius: 5px;
-    height: 200px;
+    height: 190px;
     margin-bottom: 10px;
-    max-width: 200px;
-    width: 100%;
+    width: 168px;
 }
 
 .cb-input-label {

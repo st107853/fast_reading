@@ -23,10 +23,10 @@ type BookService interface {
 	ListAllBooks() ([]models.SmallBookResponse, error)
 	ListAllLabels() ([]models.Label, error)
 	FindAllByName(bookName string) ([]models.SmallBookResponse, error)
-	FindBook(bookName string) (models.Book, error)
+	ReleaseBook(bookId uint) error
 	UpdateBook(bookId uint, file *multipart.FileHeader, book models.Book) (models.Book, error)
 	UpdateChapter(chapterId uint, chapter models.Chapter) (models.Chapter, error)
-	AddLabel(bookId, LabelId uint) error
+	AddLabel(bookId uint, labelIds []uint) error
 	ListAllBooksLabels(bookId string) ([]models.Label, error)
 	SearchBooks(keyword string, labelIDs []uint) ([]models.Book, error)
 }

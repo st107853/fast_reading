@@ -16,7 +16,6 @@ import (
 
 	"github.com/st107853/fast_reading/models"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type BookServiseImpl struct {
@@ -340,7 +339,7 @@ func (bs *BookServiseImpl) ListAllBooks() ([]models.SmallBookResponse, error) {
 	var books []models.BookResponse
 	var result []models.SmallBookResponse
 
-	err := bs.collection.Limit(20).Find(&books).Error
+	err := bs.collection.Limit(20).Where("released = ?", true).Find(&books).Error
 	if err != nil {
 		return nil, fmt.Errorf("bsi: failed to find all books: %w", err)
 	}
@@ -397,7 +396,7 @@ func (bs *BookServiseImpl) ListAllBooksLabels(bookId string) ([]models.Label, er
 func (bs *BookServiseImpl) FindAllByName(bookName string) ([]models.SmallBookResponse, error) {
 	var books []models.BookResponse
 	var result []models.SmallBookResponse
-	err := bs.collection.Where("name = ?", bookName).Find(&books).Error
+	err := bs.collection.Where("name = ?", bookName).Where("released = ?", true).Find(&books).Error
 	if err != nil {
 		return nil, fmt.Errorf("bsi: failed to find all books: %w", err)
 	}
@@ -423,16 +422,13 @@ func (bs *BookServiseImpl) FindAllByName(bookName string) ([]models.SmallBookRes
 	return result, nil
 }
 
-// FindBook finds and returns book by its name.
-func (bs *BookServiseImpl) FindBook(bookName string) (models.Book, error) {
-	var book models.Book
-
-	err := bs.collection.Where("name = ?", bookName).First(&book).Error
-	if err != nil {
-		return book, fmt.Errorf("bsi: failed to find book by name: %w", err)
+// ReleaseBook sets the release status of a book to true.
+func (bs *BookServiseImpl) ReleaseBook(bookId uint) error {
+	if err := bs.collection.Model(&models.Book{}).Where("id = ?", bookId).Update("released", true).Error; err != nil {
+		return fmt.Errorf("bsi: failed to release book: %w", err)
 	}
 
-	return book, nil
+	return nil
 }
 
 // UpdateBook find and updates a book's fields.
@@ -526,53 +522,44 @@ func (bs *BookServiseImpl) UpdateChapter(chapterId uint, chapter models.Chapter)
 	return existingChapter, nil
 }
 
-// AddLabel adds a label to a book.
-func (bs *BookServiseImpl) AddLabel(bookId, labelId uint) error {
+func (bs *BookServiseImpl) AddLabel(bookId uint, labelIds []uint) error {
 	var book models.Book
-	if err := bs.collection.Preload("Labels").First(&book, bookId).Error; err != nil {
+
+	if err := bs.collection.First(&book, bookId).Error; err != nil {
 		return fmt.Errorf("bsi: book with id %d not found: %w", bookId, err)
 	}
 
-	var label models.Label
-	if err := bs.collection.First(&label, labelId).Error; err != nil {
-		return fmt.Errorf("bsi: label with id %d not found: %w", labelId, err)
-	}
-
-	// Check if the label is already associated with the book
-	for _, lbl := range book.Labels {
-		if lbl.ID == label.ID {
-			bs.collection.Model(&book).Association("Labels").Delete(&label)
-			return nil // Label already associated, no action needed
+	var labels []models.Label
+	if len(labelIds) > 0 {
+		if err := bs.collection.Find(&labels, labelIds).Error; err != nil {
+			return fmt.Errorf("bsi: failed to fetch labels: %w", err)
 		}
 	}
 
-	// Append the label to the book's Labels slice
-	if err := bs.collection.Model(&book).Association("Labels").Append(&label); err != nil {
-		return fmt.Errorf("bsi: failed to add label to book: %w", err)
+	err := bs.collection.Model(&book).Association("Labels").Replace(labels)
+	if err != nil {
+		return fmt.Errorf("bsi: failed to replace labels for book %d: %w", bookId, err)
 	}
 
 	return nil
 }
 
 func SearchScope(keyword string, labelIDs []uint) func(db *gorm.DB) *gorm.DB {
-
 	return func(db *gorm.DB) *gorm.DB {
-
+		// Search by keyword in book name (case-insensitive)
 		if keyword != "" {
 			db = db.Where("name ILIKE ?", "%"+keyword+"%")
 		}
 
+		// Filter by labels if labelIDs are provided
 		if len(labelIDs) > 0 {
-
-			cleanDB := db.
-				Session(&gorm.Session{NewDB: true, SkipDefaultTransaction: true}).
-				Omit(clause.Associations)
-
-			subQuery := cleanDB.
+			// Создаем подзапрос к таблице связей
+			subQuery := db.Session(&gorm.Session{NewDB: true}).
 				Table("book_labels").
 				Select("book_id").
 				Where("label_id IN (?)", labelIDs).
-				Group("book_id")
+				Group("book_id").
+				Having("COUNT(DISTINCT label_id) = ?", len(labelIDs))
 
 			db = db.Where("id IN (?)", subQuery)
 		}

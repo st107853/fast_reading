@@ -17,6 +17,7 @@ func NewBookRouteController(bookController controllers.BookController) BookRoute
 func (bc *BookRouteController) BookRoute(rg *gin.RouterGroup, bookService services.BookService) {
 	rg.POST("/", bc.bookController.CreateBook)
 	rg.PUT("/:book_id", bc.bookController.UpdateBook)
+	rg.PUT("/release/:book_id", bc.bookController.ReleaseBook)
 	rg.DELETE("/:book_id", bc.bookController.DeleteBook)
 	rg.DELETE("/", bc.bookController.DeleteAllBooks)
 	rg.DELETE("/chapter/:chapter_id", bc.bookController.DeleteChapter)
@@ -31,6 +32,6 @@ func (bc *BookRouteController) BookRoute(rg *gin.RouterGroup, bookService servic
 	rg.POST("/addbook/:book_id/chapter", bc.bookController.CreateChapter)
 	rg.GET("/addbook/:book_id/chapter/:chapter_id", bc.bookController.EditBookChapter)
 	rg.PUT("/addbook/:book_id/chapter/:chapter_id", bc.bookController.UpdateBookChapter)
-	rg.POST("/addbook/:book_id/label/:label_id", bc.bookController.AddLabel)
+	rg.PUT("/book/:book_id/labels", bc.bookController.AddLabel)
 	rg.GET("/filter/", bc.bookController.ListAllBooks)
 }

@@ -36,6 +36,8 @@ var (
 func init() {
 	ctx = context.TODO()
 
+	fmt.Println(1)
+
 	// Initialize GORM via models helper (returns *gorm.DB)
 	gdb, err := models.OpenDbConnection()
 	if err != nil {
@@ -45,29 +47,37 @@ func init() {
 		log.Fatal("models.OpenDbConnection returned nil *gorm.DB")
 	}
 
+	fmt.Println(2)
 	// Auto-migrate core models (safe no-op if tables exist)
 	if err := gdb.AutoMigrate(&models.Book{}, &models.User{}); err != nil {
 		log.Fatalf("Failed to migrate models: %v", err)
 	}
 
+	fmt.Println(3)
 	// Wire services with GORM-backed implementations
 	userService = services.NewUserServiceImpl(gdb, ctx)
 	authService = services.NewAuthService(gdb, ctx)
 	bookService = services.NewBookService(gdb, ctx)
 
+	fmt.Println(4)
 	// Create controllers and route controllers
 	AuthController = controllers.NewAuthController(authService, userService)
 	AuthRouteController = routes.NewAuthRouteController(AuthController)
 
+	fmt.Println(5)
 	UserController = controllers.NewUserController(userService, bookService)
 	UserRouteController = routes.NewRouteUserController(UserController)
 
+	fmt.Println(6)
 	BookController := controllers.NewBookController(bookService, userService)
 	BookRouteController = routes.NewBookRouteController(BookController)
 
+	fmt.Println(7)
 	server = gin.New()
 	server.Use(gin.Logger())   // Add Logger middleware explicitly
 	server.Use(gin.Recovery()) // Add Recovery middleware explicitly
+
+	fmt.Println(8)
 }
 
 func main() {

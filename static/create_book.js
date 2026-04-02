@@ -1,11 +1,6 @@
-const CHAPTER_TEXT_KEY = 'chapterEditor_text';
-const COVER_IMAGE_KEY = 'chapterEditor_coverImage';
 const TARGET_WIDTH = 168;
 const TARGET_HEIGHT = 190;
 
-// Фиктивные данные для демонстрации отправки на сервер
-const MOCK_BOOK_ID = 42; 
-const MOCK_API_URL = `/books/${MOCK_BOOK_ID}`; // Эмулируем ваш роут PUT /books/:book_id
 
 // Utility function to display messages
 function showMessage(message, type) {
@@ -20,26 +15,26 @@ function showMessage(message, type) {
     }
 }
 
-// --- ФУНКЦИИ КОНВЕРТАЦИИ ДЛЯ ОТПРАВКИ ---
+// --- Functions of Image Processing ---
 
 /**
- * Конвертирует Data URL (Base64) в объект Blob.
- * Используется для подготовки изображения обложки к отправке через FormData.
- * @param {string} dataurl - Data URL изображения.
- * @returns {Blob} Объект Blob.
+ * Converts a Data URL (Base64) to a Blob object.
+ * Used to prepare the cover image for submission via FormData.
+ * @param {string} dataurl - Data URL of the image.
+ * @returns {Blob} The resulting Blob object.
  */
 function dataURLtoBlob(dataurl) {
     const parts = dataurl.split(',');
     
-    // 1. Усиленная проверка: Data URL должен содержать две части: метаданные и данные.
+    // Data URL should have two parts: header and data
     if (parts.length !== 2) {
         throw new Error("Data URL is improperly formatted (missing base64 data part).");
     }
 
-    // Получаем MIME-тип из первой части (e.g., image/jpeg)
+    // Get the MIME type from the first part (e.g., image/jpeg)
     const mimeMatch = parts[0].match(/:(.*?);/);
     if (!mimeMatch || mimeMatch.length < 2) {
-        // Если MIME-тип не найден, используем по умолчанию image/jpeg
+        // If MIME type is not found, use the default image/jpeg
         console.warn("MIME type not found in Data URL header. Defaulting to 'image/jpeg'.");
         var mime = 'image/jpeg';
     } else {
@@ -48,27 +43,26 @@ function dataURLtoBlob(dataurl) {
     
     const base64Data = parts[1];
 
-    // 2. Декодируем Base64-строку. Это наиболее вероятное место сбоя, 
-    // если данные в localStorage повреждены.
+    // Decoding Base64 string to binary data
     const bstr = atob(base64Data);
     let n = bstr.length;
     const u8arr = new Uint8Array(n);
 
-    // Преобразуем декодированные символы в Uint8Array
+    // Convert the decoded characters to a Uint8Array
     while (n--) {
         u8arr[n] = bstr.charCodeAt(n);
     }
     return new Blob([u8arr], { type: mime });
 }
 
-// --- ЛОГИКА ЗАГРУЗКИ ИЗОБРАЖЕНИЯ (С РЕСАЙЗОМ) ---
+// --- LOGIC FOR IMAGE UPLOAD (WITH RESIZING) ---
 function handleImageUpload() {
     const fileInput = document.getElementById("image-file");
     const imagePreview = document.getElementById("image-preview");
     const file = fileInput.files[0];
 
     if (!file || !file.type.startsWith('image/')) {
-        showMessage("Пожалуйста, выберите файл изображения.", 'error');
+        showMessage("Please select an image file.", 'error');
         return;
     }
 
@@ -77,111 +71,68 @@ function handleImageUpload() {
     reader.onload = function(event) {
         const img = new Image();
         img.onload = function() {
-            // Создаем холст для ресайза
+            // Create a canvas to resize the image
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
 
             canvas.width = TARGET_WIDTH;
             canvas.height = TARGET_HEIGHT;
 
-            // Рисуем изображение на холсте, сжимая его
+            // Draw the image on the canvas, resizing it
             ctx.drawImage(img, 0, 0, TARGET_WIDTH, TARGET_HEIGHT);
 
-            // Получаем ресайзнутое изображение в формате DataURL
-            const resizedImageUrl = canvas.toDataURL('image/jpeg', 0.8); // Сжатие качества 0.8
+            // Get the resized image in DataURL format
+            const resizedImageUrl = canvas.toDataURL('image/jpeg', 0.8); // Quality compression 0.8
 
-            // 1. Обновление превью
+            // Update the preview
             imagePreview.style.backgroundImage = `url(${resizedImageUrl})`;
             imagePreview.textContent = "";
 
-            // 2. Сохранение в ГЛОБАЛЬНУЮ ПЕРЕМЕННУЮ (ИСПРАВЛЕНИЕ)
+            // Save in GLOBAL VARIABLE (FIX)
             window.tempCoverImageBase64 = resizedImageUrl;
             
-            showMessage(`Обложка успешно загружена, сжата до ${TARGET_WIDTH}x${TARGET_HEIGHT}px.`, 'success');
+            showMessage(`Cover successfully uploaded and resized to ${TARGET_WIDTH}x${TARGET_HEIGHT}px.`, 'success');
         };
         
         img.onerror = function() {
-            showMessage("Ошибка загрузки изображения в память.", 'error');
+            showMessage("Error loading image into memory.", 'error');
         };
 
         img.src = event.target.result;
     };
 
     reader.onerror = function() {
-        showMessage("Ошибка чтения файла изображения.", 'error');
+        showMessage("Error reading image file.", 'error');
     };
     
     reader.readAsDataURL(file);
 }
 
-// --- ЛОГИКА ОТПРАВКИ ОБНОВЛЕНИЙ ---
-async function saveUpdates(button, bookId) {
-    
-    // ИСПРАВЛЕНИЕ: Получаем Data URL из ГЛОБАЛЬНОЙ ПЕРЕМЕННОЙ
-    const savedImageURL = window.tempCoverImageBase64; 
-
+async function releaseBook(button, bookId) {
     const bookName = document.getElementById('book-name');
     const bookAuthor = document.getElementById('author-name');
     const releaseDate = document.getElementById('publication-year');
     const bookText = document.getElementById('book-description');
 
     if (!bookName || !bookAuthor || !releaseDate || !bookText) {
-        showMessage("Ошибка: Не удалось найти один из обязательных элементов формы.", 'error');
+        showMessage("Error: Could not find one of the required form elements.", 'error');
         return;
     }
-    
-    const formData = new FormData();
-    formData.append('name', bookName.value.trim());
-    formData.append('author', bookAuthor.value.trim());
-    // Добавляем дату в формате ISO 8601, как вы указали
-    formData.append('release_date', releaseDate.value.trim() + "-01-02T00:00:00Z"); 
-    formData.append('description', bookText.value.trim());
 
-    
-    // 2. Добавление изображения обложки как файла (если доступно)
-    if (savedImageURL) {
-        try {
-            // Преобразуем Data URL в Blob
-            const imageBlob = dataURLtoBlob(savedImageURL);
-            
-            let extension = imageBlob.type.split('/')[1];
-            if (extension === 'jpeg') extension = 'jpg'; 
-            
-            // Добавляем Blob в FormData с именем 'cover_image' (как ожидает Go-контроллер)
-            formData.append('cover_image', imageBlob, `cover_${bookId || Date.now()}.${extension}`);
-            
-            showMessage("Подготовка: Изображение обложки добавлено в форму.", 'info');
-        } catch (e) {
-            console.error("Blob conversion error:", e);
-            showMessage(`Ошибка при преобразовании изображения обложки: ${e.message}. Отправка без обложки.`, 'error');
-        }
-    } else {
-        // Теперь это сообщение будет появляться только если пользователь не загружал обложку
-        showMessage("Подготовка: Изображение обложки не найдено. Отправка только текста.", 'info');
-    }
-
-    const method = bookId ? "PUT" : "POST";
-    const url = bookId ? `/library/${bookId}` : `/library/`;
+    const method = "PUT";
+    const url = `/library/release/${bookId}`;
     
     // Mocking the fetch call for demonstration purposes in Canvas
     button.disabled = true;
-    button.textContent = 'Отправка...';
+    button.textContent = 'Publishing...';
 
    try {
         const response = await fetch(url, {
             method,
-            body: formData
         });
-        if (response.status === 201) {
-            const result = await response.json();
-            button.classList.add("clicked");
-            showMessage("Книга успешно создана!", 'success');
-            // Перенаправление на страницу создания главы
-            window.location.href = `/library/addbook/${result.book_id}`; 
-        } 
-        else if (response.status === 200) {
-            button.classList.add("clicked");
-            showMessage("Книга успешно обновлена!", 'success');
+        if (response.status === 200) {
+            // button.classList.add("clicked");
+            showMessage("Book successfully published!", 'success');
         } 
         else {
             const errorText = await response.text();
@@ -189,16 +140,86 @@ async function saveUpdates(button, bookId) {
         }
     } catch (err) {
         console.error("Error during fetch:", err);
-        showMessage("Ошибка при отправке данных на сервер: " + err.message, 'error');
+        showMessage("Error: " + err.message, 'error');
     } finally {
-        button.classList.remove("clicked");
+        //button.classList.remove("clicked");
     }
     
     button.disabled = false;
-    button.textContent = 'Saved';
+    button.textContent = 'Publish';
+
+    
 }
 
-// Инициализация превью при загрузке
+async function saveUpdates(button, bookId) {
+    const savedImageURL = window.tempCoverImageBase64; 
+    const bookName = document.getElementById('book-name');
+    const bookAuthor = document.getElementById('author-name');
+    const releaseDate = document.getElementById('publication-year');
+    const bookText = document.getElementById('book-description');
+
+    if (!bookName || !bookAuthor || !releaseDate || !bookText) {
+        showMessage("Please fill in all required fields.", 'error');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('name', bookName.value.trim());
+    formData.append('author', bookAuthor.value.trim());
+    formData.append('release_date', releaseDate.value.trim() + "-01-02T00:00:00Z"); 
+    formData.append('description', bookText.value.trim());
+
+    if (savedImageURL) {
+        try {
+            const imageBlob = dataURLtoBlob(savedImageURL);
+            let extension = imageBlob.type.split('/')[1] || 'jpg';
+            formData.append('cover_image', imageBlob, `cover.${extension}`);
+        } catch (e) {
+            console.error("Blob error:", e);
+        }
+    }
+
+    const method = bookId ? "PUT" : "POST";
+    const url = bookId ? `/library/${bookId}` : `/library/`;
+    
+    button.disabled = true;
+    button.textContent = 'Отправка...';
+
+    try {
+        const response = await fetch(url, { method, body: formData });
+        const result = await response.json();
+
+        if (!response.ok) throw new Error(result.error || "Server error");
+
+        // Creating new book
+        if (response.status === 201) {
+            const newBookId = result.book_id;
+
+            if (selectedLabels && selectedLabels.length > 0) {
+                await saveAllLabels(newBookId); 
+            }
+
+            window.location.href = `/library/addbook/${newBookId}`; 
+        } 
+        
+        // Updating existing book
+        else if (response.status === 200) {
+            if (selectedLabels && selectedLabels.length > 0) {
+                await saveAllLabels(bookId);
+            }
+            button.textContent = 'Saved';
+        }
+
+    } catch (err) {
+        console.error(err);
+        showMessage("Error: " + err.message, 'error');
+        button.textContent = 'Error';
+    } finally {
+        button.disabled = false;
+    }
+}
+
+// Initialize image preview if there's a temporary cover image stored (e.g., after page reload)
 document.addEventListener('DOMContentLoaded', () => {
     const imagePreview = document.getElementById("image-preview");
     if (window.tempCoverImageBase64) {
@@ -258,7 +279,7 @@ async function submitChapter(button, bookId, chapterId) {
     const bookTextElement = document.getElementById('scrollable-content-reading');
 
     if (!chapterNameElement || !bookTextElement) {
-        alert("Ошибка: не найдены элементы формы главы", !chapterNameElement, !bookTextElement);
+        alert("Error: Could not find one of the required chapter form elements.", !chapterNameElement, !bookTextElement);
         return;
     }
 
@@ -285,7 +306,6 @@ async function submitChapter(button, bookId, chapterId) {
         // Create chapter
         if (!chapterId && response.status === 201) {
             button.classList.add('clicked');
-            alert("Chapter successfully created");
             window.location.href = `/library/addbook/${encodeURIComponent(bookId)}`;
             return;
         }
@@ -293,7 +313,6 @@ async function submitChapter(button, bookId, chapterId) {
         // Update chapter
         if (chapterId && response.status === 200) {
             button.classList.add('clicked');
-            alert("Chapter successfully updated");
             return;
         }
 
@@ -309,9 +328,7 @@ async function submitChapter(button, bookId, chapterId) {
 
 // Handle book deletion
 function deleteBook(id) {
-    console.log("Sended to server data:", id);
     if (!id) {
-        alert("Please select a book to delete.");
         return;
     }
 
@@ -328,9 +345,7 @@ function deleteBook(id) {
 
 // Handle book deletion
 function deleteChapter(id) {
-    console.log("Sended to server data:", id);
     if (!id) {
-        alert("Please select a chapter to delete.");
         return;
     }
 
@@ -345,40 +360,66 @@ function deleteChapter(id) {
     xhr.send();
 }
 
-function toggleDropdown(event) {
-    // stops form submission & page reload
-    if (event) event.preventDefault();
+const menu = document.getElementById("dropdownMenu");
+const labelsList = document.getElementById('labelsList');
 
-    const menu = document.getElementById("dropdownMenu");
+// 17 existing labels + 1 for "no label" (id=0) which is always selected
+let selectedLabels = Array(18).fill(false);
+
+if (labelsList) {
+    const items = labelsList.querySelectorAll('.fr-label-item');
+
+    items.forEach(item => {
+        const id = parseInt(item.getAttribute('data-id'));
+        if (!isNaN(id) && id >= 0 && id < selectedLabels.length) {
+            selectedLabels[id] = true;
+        }
+    });
+}
+
+function toggleDropdown(event) {
+    if (event) event.stopPropagation();
     menu.classList.toggle("open");
 }
 
-async function submitNewLabel(bookId, labelId) {
-    const url = `/library/addbook/${bookId}/label/${labelId}`;
+function toggleLabelUI(labelId, labelName) {
+    labelId = parseInt(labelId);
+    selectedLabels[0] = true;
 
-    try {
-        const response = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include"
-        });
 
-        if (response.status === 201) {
-            return;
+    if ( !selectedLabels[labelId] ) {
+        selectedLabels[labelId] = true;
+        renderLabel(labelId, labelName);
+    } else {
+        selectedLabels[labelId] = false;
+        const elementToRemove = document.querySelector(`.fr-label-item[data-id="${labelId}"]`);
+        if (elementToRemove) elementToRemove.remove();
+    }
+}
+
+function renderLabel(id, name) {
+    const div = document.createElement('div');
+    div.className = 'fr-label-item';
+    div.setAttribute('data-id', id);
+    div.textContent = name;
+    labelsList.appendChild(div);
+}
+
+async function saveAllLabels(bookId) {
+    const url = `/library/book/${bookId}/labels`;
+    const response = await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ label_ids: selectedLabels })
+    });
+    return response;
+}
+
+// Clouse dropdown when clicking outside
+window.onclick = function(event) {
+    if (!event.target.matches('.fr-btn-with-icon') && !event.target.closest('.fr-btn-with-icon')) {
+        if (menu.classList.contains('open')) {
+            menu.classList.remove('open');
         }
-
-        const responseText = await response.text();
-        let errorData = {};
-        try {
-            errorData = JSON.parse(responseText);
-        } catch (e) {
-            errorData = { error: responseText };
-        }
-
-        throw new Error(errorData.error || `Server error (Status: ${response.status})`);
-
-    } catch (err) {
-        console.error("Error adding label:", err);
-        alert("Failed to add label: " + err.message);
     }
 }

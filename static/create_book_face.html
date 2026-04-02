@@ -115,21 +115,24 @@
                 </div>
 
                 <div class="fr-label-dropdown">
-                    <button type="button" class="fr-btn-with-icon" onclick="toggleDropdown()">
+                    <button type="button" class="fr-btn-with-icon" onclick="toggleDropdown(event)">
                         <img src="/static/add.svg" alt="add icon" class="fr-icon">
                         <span>Add label</span>
                     </button>
 
                     <div class="fr-dropdown-menu" id="dropdownMenu">
                         {{range .AllLabels}}
-                            <div class="fr-dropdown-item" onclick="submitNewLabel('{{$.BookID}}','{{.ID}}')">{{.Name}}</div>
+                            <div class="fr-dropdown-item" 
+                                onclick="toggleLabelUI('{{.ID}}', '{{.Name}}')">
+                                {{.Name}}
+                            </div>
                         {{end}}
                     </div>
                 </div>
 
-                <div class="fr-label-list">
+                <div class="fr-label-list" id="labelsList">
                     {{range .BookLabels}}
-                        <div class="fr-label-item">{{.Name}}</div>
+                        <div class="fr-label-item" data-id={{.ID}}>{{.Name}}</div>
                     {{end}}
                 </div>
             </div>
@@ -137,7 +140,15 @@
 
         <section class="cb-editor-photo-upload">
             
-            <div class="cb-photo-placeholder" id="image-preview"></div>
+            <div class="cb-photo-placeholder" id="image-preview">
+                {{if .Cover}}
+                    <img src="{{.Cover}}" alt="Обложка книги" class="book-cover">
+                {{else}}
+                    <div class="fr-blue-box">
+                        Upload image
+                    </div>
+                {{end}}
+            </div>
             
             <div class="fr-btn-with-icon" onclick="document.getElementById('image-file').click()">
                 <img src="/static/upload.svg" alt="upload icon" class="fr-icon">
@@ -161,11 +172,14 @@
                     </li>
                     {{end}}
                 </ul>
+                <div class="fr-list" >   
+                    <a href="/library/addbook/{{.BookID}}/chapter" class="fr-list fr-btn fr-btn--large">Add Chapter</a>
+                </div>
             </div>
         </section>
 
         <footer class="cb-editor-actions">
-            <button type="button" class="fr-btn--large">Publish</button>
+            <button type="button" class="fr-btn--large" id="release-button" onclick="releaseBook(this,`{{.BookID}}`)">Publish</button>
             <button type="button" class="fr-btn--large" id="save-button" onclick="saveUpdates(this, `{{.BookID}}`)">Save</button>
             <button type="button" class="fr-btn--large" id="delete-button" onclick="deleteBook(`{{.BookID}}`)">Delete</button>
         </footer>

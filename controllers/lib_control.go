@@ -210,27 +210,20 @@ func (bc *BookController) UpdateBookChapter(c *gin.Context) {
 }
 
 func (bc *BookController) ReleaseBook(c *gin.Context) {
-	// idParam := c.Param("book_id")
-	// bookId, err := strconv.ParseUint(idParam, 10, 64)
-	// if err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
-	// 	return
-	// }
+	idParam := c.Param("book_id")
+	bookId, err := strconv.ParseUint(idParam, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
+		return
+	}
 
-	// book, err := bc.bookService.FindBookByID(idParam)
-	// if err != nil {
-	// 	c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-	// 	return
-	// }
+	err = bc.bookService.ReleaseBook(uint(bookId))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
 
-	// book.Released = true
-	// updatedBook, err := bc.bookService.UpdateBook(uint(bookId), nil, book)
-	// if err != nil {
-	// 	c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-	// 	return
-	// }
-
-	// c.JSON(http.StatusOK, updatedBook)
+	c.JSON(http.StatusOK, gin.H{"message": "Book released successfully"})
 }
 
 func (bc *BookController) BookFavourite(c *gin.Context) {
@@ -509,28 +502,37 @@ func (bc *BookController) EditBook(c *gin.Context) {
 	}
 }
 
+// UpdateLabelsRequest represents the expected JSON structure for updating book labels
+type UpdateLabelsRequest struct {
+	LabelIDs []bool `json:"label_ids"`
+}
+
 func (bc *BookController) AddLabel(c *gin.Context) {
 	idParam := c.Param("book_id")
-	labelIdParam := c.Param("label_id")
-
-	// Convert idParam and labelIdParam to uint
 	bookId, err := strconv.ParseUint(idParam, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
 		return
 	}
 
-	labelId, err := strconv.ParseUint(labelIdParam, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid label ID"})
+	var req UpdateLabelsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON body"})
 		return
 	}
 
-	err = bc.bookService.AddLabel(uint(bookId), uint(labelId))
+	var labelIDs []uint
+	for i := 1; i < len(req.LabelIDs); i++ {
+		if req.LabelIDs[i] {
+			labelIDs = append(labelIDs, uint(i))
+		}
+	}
+
+	err = bc.bookService.AddLabel(uint(bookId), labelIDs)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Label added to book"})
+	c.JSON(http.StatusOK, gin.H{"message": "Labels updated successfully"})
 }
