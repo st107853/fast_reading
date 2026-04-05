@@ -92,6 +92,7 @@ func main() {
 	defer models.RemoveDb(db)
 
 	server.Static("/static", "./static")
+	server.Static("/library/covers", "./covers")
 
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = []string{"http://localhost:8080", "http://localhost:3000"}

@@ -571,7 +571,7 @@ func SearchScope(keyword string, labelIDs []uint) func(db *gorm.DB) *gorm.DB {
 func (bs *BookServiseImpl) SearchBooks(keyword string, labelIDs []uint) ([]models.Book, error) {
 	var books []models.Book
 
-	err := bs.collection.Scopes(SearchScope(keyword, labelIDs)).Find(&books).Error
+	err := bs.collection.Scopes(SearchScope(keyword, labelIDs)).Where("released = ?", true).Find(&books).Error
 
 	if err != nil {
 		return nil, fmt.Errorf("bsi: failed to search books: %w", err)

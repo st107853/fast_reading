@@ -124,12 +124,13 @@ function renderResults(books) {
         const bookElement = document.createElement('div');
         bookElement.className = 'fr-card bg-white rounded-xl shadow-md p-2 transition-shadow duration-300 hover:shadow-lg'; 
         
+        // Используем тернарный оператор для проверки наличия обложки
         bookElement.innerHTML = `
             <a href="/library/book/${book.id}">
-                <!-- Using placeholder image as cover is not provided in DTO -->
-                <div class="fr-blue-box">
-                    ${book.name.substring(0, 10)}
-                </div>
+                ${book.cover_path
+                    ? `<img src="${book.cover_path}" alt="book cover" class="book-cover">` 
+                    : `<div class="fr-blue-box">${book.name}</div>`
+                }
             </a>
             <div class="fr-card__title">${book.name}</div>
             <div class="fr-card__author">${book.author}</div>

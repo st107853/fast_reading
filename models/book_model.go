@@ -93,9 +93,10 @@ type Label struct {
 
 // STRUCTURE FOR JSON OUTPUT
 type BookListItem struct {
-	ID     uint   `json:"id"`
-	Name   string `json:"name"`
-	Author string `json:"author"`
+	ID     uint         `json:"id"`
+	Name   string       `json:"name"`
+	Author string       `json:"author"`
+	Cover  template.URL `json:"cover_path"`
 }
 
 // MarshalBookList converts a slice of Book models into a JSON byte slice,
@@ -108,6 +109,7 @@ func MarshalBookList(books []Book) ([]byte, error) {
 			ID:     book.ID,
 			Name:   book.Name,
 			Author: book.Author,
+			Cover:  template.URL(book.CoverPath),
 		}
 	}
 

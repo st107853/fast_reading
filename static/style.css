@@ -95,6 +95,7 @@ h2 {
     font-weight: 500;
 
     margin-bottom: var(--spacing-sm);
+    margin-left: var(--spacing-lg);
 }
 
 
