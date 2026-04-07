@@ -19,6 +19,7 @@ import (
 var (
 	server *gin.Engine
 	ctx    context.Context
+	conf   config.Config
 
 	userService         services.UserService
 	UserController      controllers.UserController
@@ -35,11 +36,19 @@ var (
 
 func init() {
 	ctx = context.TODO()
+	var err error
 
+	fmt.Println("Starting Fast Reading API...")
+	conf, err = config.LoadConfig(".")
+	if err != nil {
+		log.Fatal("Could not load config", err)
+	}
+
+	fmt.Println("config loaded")
 	fmt.Println(1)
 
 	// Initialize GORM via models helper (returns *gorm.DB)
-	gdb, err := models.OpenDbConnection()
+	gdb, err := models.OpenDbConnectionWithConfig(conf.Host, conf.DBname, conf.DBuser, conf.DBpassword)
 	if err != nil {
 		log.Fatalf("models.OpenDbConnection failed: %v", err)
 	}
@@ -81,13 +90,6 @@ func init() {
 }
 
 func main() {
-	fmt.Println("Starting Fast Reading API...")
-	config, err := config.LoadConfig(".")
-	if err != nil {
-		log.Fatal("Could not load config", err)
-	}
-
-	fmt.Println("config loaded")
 
 	defer models.RemoveDb(db)
 
@@ -111,5 +113,5 @@ func main() {
 		log.Printf("Method: %s, Path: %s", route.Method, route.Path)
 	}
 
-	log.Fatal(server.Run(":" + config.Port))
+	log.Fatal(server.Run(":" + conf.Port))
 }

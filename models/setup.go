@@ -10,8 +10,6 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
-
-	"os"
 )
 
 type Database struct {
@@ -21,10 +19,10 @@ type Database struct {
 var DB *gorm.DB
 
 // Opening a database and save the reference to `Database` struct.
-func OpenDbConnection() (*gorm.DB, error) {
+func OpenDbConnectionWithConfig(host, dbname, user, password string) (*gorm.DB, error) {
 
 	dsn := fmt.Sprintf("host=%s dbname=%s user=%s password=%s",
-		os.Getenv("HOST"), os.Getenv("DBNAME"), os.Getenv("DBUSER"), os.Getenv("DBPASS"))
+		host, dbname, user, password)
 
 	// 2. Настраиваем GORM Logger (лучше, чем fmt.Println)
 	// newLogger := logger.New(
