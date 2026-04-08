@@ -13,6 +13,7 @@ import (
 	"mime/multipart"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/st107853/fast_reading/models"
 	"gorm.io/gorm"
@@ -33,6 +34,8 @@ func (bs *BookServiseImpl) InsertBook(book models.Book, file *multipart.FileHead
 	// Set the creator user ID before inserting
 	book.CreatorUserID = creatorUserID
 
+	fmt.Println(book)
+
 	if err := bs.collection.Create(&book).Error; err != nil {
 		return 0, fmt.Errorf("failed to insert book record: %w", err)
 	}
@@ -50,7 +53,6 @@ func (bs *BookServiseImpl) InsertBook(book models.Book, file *multipart.FileHead
 		// Creation of 'covers' directory if it doesn't exist
 		if _, statErr := os.Stat("covers"); os.IsNotExist(statErr) {
 			if mkdirErr := os.MkdirAll("covers", os.ModePerm); mkdirErr != nil {
-				// В случае ошибки создания папки, возвращаем ошибку, но запись книги уже есть
 				return bookId, fmt.Errorf("failed to create storage directory for cover: %w", mkdirErr)
 			}
 		}
@@ -99,7 +101,7 @@ func (bs *BookServiseImpl) BookExist(bookName, bookAuthor string) (bool, error) 
 
 // FindBookByID finds and returns book by its ID.
 func (bs *BookServiseImpl) FindBookByID(bookID string) (models.GetBook, error) {
-	var base models.BookBase
+	var base models.Book
 	var result models.GetBook
 
 	// Find the book base information
@@ -127,20 +129,19 @@ func (bs *BookServiseImpl) FindBookByID(bookID string) (models.GetBook, error) {
 	if base.CoverPath != "" {
 		img, err := getCover(base.CoverPath)
 		if err == nil {
-			// Конвертируем объект изображения в Base64 строку
 			base64Str, err := imageToSafeBase64(img)
 			if err == nil {
-				result.Cover = base64Str // Теперь это строка "data:image/png;base64,..."
+				result.Cover = base64Str
 			}
 		}
 	}
 
-	// Map base fields to result
 	result.BookID = base.ID
 	result.Name = base.Name
 	result.Author = base.Author
 	result.Description = base.Description
 	result.CreatorUserID = base.CreatorUserID
+	result.PublicationYear = base.PublicationYear
 	return result, nil
 }
 
@@ -424,8 +425,22 @@ func (bs *BookServiseImpl) FindAllByName(bookName string) ([]models.SmallBookRes
 
 // ReleaseBook sets the release status of a book to true.
 func (bs *BookServiseImpl) ReleaseBook(bookId uint) error {
-	if err := bs.collection.Model(&models.Book{}).Where("id = ?", bookId).Update("released", true).Error; err != nil {
-		return fmt.Errorf("bsi: failed to release book: %w", err)
+	var book models.Book
+
+	if err := bs.collection.First(&book, bookId).Error; err != nil {
+		return fmt.Errorf("bsi: book not found: %w", err)
+	}
+
+	updates := map[string]interface{}{
+		"released": !book.Released,
+	}
+
+	if book.ReleaseDate.Year() < 2 {
+		updates["release_date"] = time.Now()
+	}
+
+	if err := bs.collection.Model(&book).Updates(updates).Error; err != nil {
+		return fmt.Errorf("bsi: failed to update book status: %w", err)
 	}
 
 	return nil
@@ -440,11 +455,11 @@ func (bs *BookServiseImpl) UpdateBook(bookId uint, file *multipart.FileHeader, i
 	}
 
 	updateData := map[string]interface{}{
-		"name":         input.Name,
-		"author":       input.Author,
-		"release_date": input.ReleaseDate,
-		"description":  input.Description,
-		"released":     input.Released,
+		"name":             input.Name,
+		"author":           input.Author,
+		"publication_year": input.PublicationYear,
+		"description":      input.Description,
+		"released":         input.Released,
 	}
 
 	// Conditionally add CoverPath ONLY if it was set by the controller (i.e., a file was uploaded)

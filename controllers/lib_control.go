@@ -102,11 +102,8 @@ func (bc *BookController) CreateBook(c *gin.Context) {
 		return
 	}
 
-	// Get the file from the form input
-	// Note: We do not return an error if the file is missing
 	file, err := c.FormFile("cover_image")
 	if err != nil && err != http.ErrMissingFile {
-		// Error, if it's something other than missing file
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve cover file: " + err.Error()})
 		return
 	}

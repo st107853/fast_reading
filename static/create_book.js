@@ -88,7 +88,6 @@ function handleImageUpload() {
             imagePreview.style.backgroundImage = `url(${resizedImageUrl})`;
             imagePreview.textContent = "";
 
-            // Save in GLOBAL VARIABLE (FIX)
             window.tempCoverImageBase64 = resizedImageUrl;
             
             showMessage(`Cover successfully uploaded and resized to ${TARGET_WIDTH}x${TARGET_HEIGHT}px.`, 'success');
@@ -111,10 +110,10 @@ function handleImageUpload() {
 async function releaseBook(button, bookId) {
     const bookName = document.getElementById('book-name');
     const bookAuthor = document.getElementById('author-name');
-    const releaseDate = document.getElementById('publication-year');
+    const publicationYear = document.getElementById('publication-year');
     const bookText = document.getElementById('book-description');
 
-    if (!bookName || !bookAuthor || !releaseDate || !bookText) {
+    if (!bookName || !bookAuthor || !publicationYear || !bookText) {
         showMessage("Error: Could not find one of the required form elements.", 'error');
         return;
     }
@@ -155,10 +154,10 @@ async function saveUpdates(button, bookId) {
     const savedImageURL = window.tempCoverImageBase64; 
     const bookName = document.getElementById('book-name');
     const bookAuthor = document.getElementById('author-name');
-    const releaseDate = document.getElementById('publication-year');
+    const publicationYear = document.getElementById('publication-year');
     const bookText = document.getElementById('book-description');
 
-    if (!bookName || !bookAuthor || !releaseDate || !bookText) {
+    if (!bookName || !bookAuthor || !publicationYear || !bookText) {
         showMessage("Please fill in all required fields.", 'error');
         return;
     }
@@ -166,8 +165,13 @@ async function saveUpdates(button, bookId) {
     const formData = new FormData();
     formData.append('name', bookName.value.trim());
     formData.append('author', bookAuthor.value.trim());
-    formData.append('release_date', releaseDate.value.trim() + "-01-02T00:00:00Z"); 
+    formData.append('publication_year', publicationYear.value.trim());
     formData.append('description', bookText.value.trim());
+
+    console.log("FormData entries:");
+    for (let pair of formData.entries()) {
+        console.log(pair[0]+ ': ' + pair[1]);
+    }
 
     if (savedImageURL) {
         try {
