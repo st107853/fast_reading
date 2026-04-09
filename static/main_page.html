@@ -84,7 +84,7 @@
         </div>
 
         <main>
-            <form id="bookForm" action="/library/all/" method="get" onsubmit="event.preventDefault(); applyFilters();">
+            <form id="bookForm" onsubmit="event.preventDefault(); applyFilters();">
                 <div class="mp-search-container">
                     <input name="name" id="keyword-input" type="text" class="mp-search-input" placeholder="Enter the title of the book..." aria-label="Enter the title of the book">
                     <span class="mp-search-icon"></span>
@@ -130,25 +130,29 @@
 
             <input type="range" class="form-range" id="customRange1" value="0">
 
-            <div class="mp-book-card">
-                <div class="mp-book-info">
-                    <h2>Name of really cool and long book</h2>
-                    <h3>Author of this wonderful book</h3>
-                    <p>
-                        Heaven Has No Favorites is a novel by the German writer Erich Maria Remarque.
-                        This novel is a story about passion and love, set in 1948 with a background
-                        of automobile racing. Inspired by racing driver Alfonso de Portago.
-                    </p>
-                    <div class="fr-list fr-list--left" role="group" aria-label="Book categories">
-                        <div class="fr-label">Label</div>
-                        <div class="fr-label">Label</div>
-                        <div class="fr-label">Label</div>
+            {{range .LastReleased}}
+                <div class="mp-book-card">
+                    <div class="mp-book-info">
+                        <h2>{{.Name}}</h2>
+                        <h3>{{.Author}}</h3>
+                        <p>{{.Description}}</p>
+                        <div class="fr-list fr-list--left" role="group" aria-label="Book categories">
+                            {{range .BookLabels}}
+                                <div class="fr-label">{{.Name}}</div>
+                            {{end}}
+                        </div>
+                    </div>
+                    <div class="bp-book-cover-wrapper">
+                        {{if .Cover}}
+                            <img src="{{.Cover}}" alt="Book cover" class="book-cover">
+                        {{else}}
+                            <div class="fr-blue-box">
+                                {{.Name}}
+                            </div>
+                        {{end}}
                     </div>
                 </div>
-                <div class="mp-book-image fr-blue-box">
-                    {{.Name}}
-                </div>
-            </div>
+            {{end}}
         </main>
     </div>
 </body>

@@ -145,13 +145,10 @@
     function addToFavorites(button) {
         var bookNameElement = `{{.Name}}`;
         var bookAuthorElement = `{{.Author}}`;
-        var bookId = `{{.BookID}}`;
+        var bookId = parseInt(`{{.BookID}}`);
 
         if (!bookNameElement || !bookAuthorElement || !bookId) {
-            console.log(bookNameElement)
-            console.log(bookAuthorElement)
-            console.log(bookId)
-            console.error("Ошибка: один из элементов не найден!");
+            console.error("One of the elements is missing !");
             return;
         }
 
@@ -168,7 +165,6 @@
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4) {
                 if (xhr.status === 201) {
-                    console.log("Server response:", xhr.responseText);
                     button.classList.add("clicked");
                 } else {
                     console.error("Error sending request:", xhr.status, xhr.responseText);

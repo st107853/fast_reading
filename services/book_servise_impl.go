@@ -34,8 +34,6 @@ func (bs *BookServiseImpl) InsertBook(book models.Book, file *multipart.FileHead
 	// Set the creator user ID before inserting
 	book.CreatorUserID = creatorUserID
 
-	fmt.Println(book)
-
 	if err := bs.collection.Create(&book).Error; err != nil {
 		return 0, fmt.Errorf("failed to insert book record: %w", err)
 	}
@@ -85,18 +83,6 @@ func (bs *BookServiseImpl) InsertBook(book models.Book, file *multipart.FileHead
 	}
 
 	return bookId, nil
-}
-
-// BookExist checks if a book exist and return bool.
-func (bs *BookServiseImpl) BookExist(bookName, bookAuthor string) (bool, error) {
-	var count int64
-
-	err := bs.collection.Model(&models.Book{}).Where("name = ? AND author = ?", bookName, bookAuthor).Count(&count).Error
-	if err != nil {
-		return false, fmt.Errorf("bsi: failed to count documents: %w", err)
-	}
-
-	return count > 0, nil
 }
 
 // FindBookByID finds and returns book by its ID.
@@ -255,24 +241,7 @@ func (bs *BookServiseImpl) InsertChapter(chapter models.Chapter) (uint, error) {
 }
 
 // FindChapterByID finds and returns chapter by its ID.
-func (bs *BookServiseImpl) FindChapterByID(id uint) (models.ChapterResponse, error) {
-	var chapterResponse models.ChapterResponse
-
-	err := bs.collection.First(&chapterResponse.Chapter, id).Error
-	if err != nil {
-		return chapterResponse, fmt.Errorf("bsi: failed to find chapter by ID: %w", err)
-	}
-
-	err = bs.collection.First(&chapterResponse.Book, chapterResponse.Chapter.BookID).Error
-	if err != nil {
-		return chapterResponse, fmt.Errorf("bsi: failed to find chapter by ID: %w", err)
-	}
-
-	return chapterResponse, nil
-}
-
-// FindChapterByID finds and returns chapter by its ID.
-func (bs *BookServiseImpl) FindChapterByIDStr(id string) (models.Chapter, error) {
+func (bs *BookServiseImpl) FindChapterByID(id string) (models.Chapter, error) {
 	var chapter models.Chapter
 
 	err := bs.collection.First(&chapter, id).Error
@@ -300,18 +269,6 @@ func (bs *BookServiseImpl) FindBooksChapterByIDs(bookId, chapterId string) (mode
 	return chapterResponse, nil
 }
 
-// FindChaptersByBookID finds and returns chapters by book ID.
-func (bs *BookServiseImpl) FindChaptersByBookID(bookID uint) ([]models.Chapter, error) {
-	var chapters []models.Chapter
-
-	err := bs.collection.Where("book_id = ?", bookID).Order("chapter_order ASC").Find(&chapters).Error
-	if err != nil {
-		return nil, fmt.Errorf("bsi: failed to find chapters by book ID: %w", err)
-	}
-
-	return chapters, nil
-}
-
 // DeleteAll deletes all books.
 func (bs *BookServiseImpl) DeleteAll() error {
 	return bs.collection.Exec("DELETE FROM books").Error
@@ -320,6 +277,7 @@ func (bs *BookServiseImpl) DeleteAll() error {
 // DeleteBook delete one book by its ID.
 func (bs *BookServiseImpl) DeleteBook(bookId uint) error {
 	if err := bs.collection.Unscoped().Delete(&models.Book{}, bookId).Error; err != nil {
+		os.RemoveAll(filepath.Join("covers", fmt.Sprintf("%d.jpeg", bookId)))
 		return fmt.Errorf("bsi: failed to hard delete book: %w", err)
 	}
 
@@ -378,49 +336,37 @@ func (bs *BookServiseImpl) ListAllLabels() ([]models.Label, error) {
 	return labels, nil
 }
 
-// ListAllLabels finds and returns all labels.
-func (bs *BookServiseImpl) ListAllBooksLabels(bookId string) ([]models.Label, error) {
-	var labels []models.Label
-
-	err := bs.collection.Joins("JOIN book_labels ON book_labels.label_id = labels.id").
-		Where("book_labels.book_id = ?", bookId).
-		Find(&labels).Error
-
+func (bs *BookServiseImpl) ListLastReleased(n int) ([]models.BookBase, error) {
+	var books []models.BookBase
+	err := bs.collection.Where("released = ?", true).Order("release_date DESC").Limit(n).Find(&books).Error
 	if err != nil {
-		return nil, fmt.Errorf("bsi: failed to find all labels: %w", err)
+		return nil, fmt.Errorf("bsi: failed to find last released books: %w", err)
 	}
 
-	return labels, nil
-}
+	for i := range books {
 
-// FindAll finds and returns books by its name.
-func (bs *BookServiseImpl) FindAllByName(bookName string) ([]models.SmallBookResponse, error) {
-	var books []models.BookResponse
-	var result []models.SmallBookResponse
-	err := bs.collection.Where("name = ?", bookName).Where("released = ?", true).Find(&books).Error
-	if err != nil {
-		return nil, fmt.Errorf("bsi: failed to find all books: %w", err)
-	}
-	result = make([]models.SmallBookResponse, len(books))
+		// Find book's labels
+		err = bs.collection.Joins("JOIN book_labels ON book_labels.label_id = labels.id").
+			Where("book_labels.book_id = ?", books[i].ID).
+			Find(&books[i].BookLabels).Error
 
-	for i, book := range books {
-		result[i] = models.SmallBookResponse{
-			ID:     book.ID,
-			Name:   book.Name,
-			Author: book.Author,
+		if err != nil {
+			return books, fmt.Errorf("bsi: failed to find all labels: %w", err)
 		}
-		if book.CoverPath != "" {
-			img, err := getCover(book.CoverPath)
+
+		if books[i].CoverPath != "" {
+			img, err := getCover(books[i].CoverPath)
 			if err == nil {
 				base64Str, err := imageToSafeBase64(img)
 				if err == nil {
-					result[i].Cover = base64Str
+					books[i].Cover = base64Str
 				}
 			}
 		}
 	}
 
-	return result, nil
+	return books, nil
+
 }
 
 // ReleaseBook sets the release status of a book to true.
@@ -459,7 +405,6 @@ func (bs *BookServiseImpl) UpdateBook(bookId uint, file *multipart.FileHeader, i
 		"author":           input.Author,
 		"publication_year": input.PublicationYear,
 		"description":      input.Description,
-		"released":         input.Released,
 	}
 
 	// Conditionally add CoverPath ONLY if it was set by the controller (i.e., a file was uploaded)
@@ -559,7 +504,7 @@ func (bs *BookServiseImpl) AddLabel(bookId uint, labelIds []uint) error {
 	return nil
 }
 
-func SearchScope(keyword string, labelIDs []uint) func(db *gorm.DB) *gorm.DB {
+func searchScope(keyword string, labelIDs []uint) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		// Search by keyword in book name (case-insensitive)
 		if keyword != "" {
@@ -586,7 +531,7 @@ func SearchScope(keyword string, labelIDs []uint) func(db *gorm.DB) *gorm.DB {
 func (bs *BookServiseImpl) SearchBooks(keyword string, labelIDs []uint) ([]models.Book, error) {
 	var books []models.Book
 
-	err := bs.collection.Scopes(SearchScope(keyword, labelIDs)).Where("released = ?", true).Find(&books).Error
+	err := bs.collection.Scopes(searchScope(keyword, labelIDs)).Where("released = ?", true).Find(&books).Error
 
 	if err != nil {
 		return nil, fmt.Errorf("bsi: failed to search books: %w", err)

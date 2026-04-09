@@ -95,7 +95,6 @@ h2 {
     font-weight: 500;
 
     margin-bottom: var(--spacing-sm);
-    margin-left: var(--spacing-lg);
 }
 
 
@@ -125,13 +124,18 @@ p {
     font-size: var(--font-size-sm);
     margin-top: 1rem;
     text-align: center;
+
 }
 
 a {
-    color: var(--secondary-color);
     cursor: pointer;
     text-decoration: none;
     color: transparent;
+}
+
+.link-clored {
+    color: var(--secondary-color);
+    text-decoration: underline;
 }
 
 label {

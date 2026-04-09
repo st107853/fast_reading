@@ -20,9 +20,10 @@ var addBook = template.Must(template.New("create_book_face.html").ParseFiles("./
 var addBookChapter = template.Must(template.New("create_book_chapter.html").ParseFiles("./static/create_book_chapter.html"))
 
 type BookData struct {
-	Title  string
-	Books  []models.SmallBookResponse
-	Labels []models.Label
+	Title        string
+	Books        []models.SmallBookResponse
+	Labels       []models.Label
+	LastReleased []models.BookBase
 }
 
 type BookController struct {
@@ -81,10 +82,17 @@ func (bc *BookController) AllBooks(c *gin.Context) {
 		return
 	}
 
+	lastReleased, err := bc.bookService.ListLastReleased(2)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	data := BookData{
-		Title:  "All what we have",
-		Books:  books,
-		Labels: labels,
+		Title:        "All what we have",
+		Books:        books,
+		Labels:       labels,
+		LastReleased: lastReleased,
 	}
 
 	// Execute the template and write the output to the response writer
@@ -170,7 +178,7 @@ func (bc *BookController) EditBookChapter(c *gin.Context) {
 	id := c.Param("chapter_id")
 	var chapter models.Chapter
 
-	chapter, err := bc.bookService.FindChapterByIDStr(id)
+	chapter, err := bc.bookService.FindChapterByID(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -244,76 +252,6 @@ func (bc *BookController) BookFavourite(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, book.Name)
-}
-
-// GetBooks retrieves all books from the database
-func (bc *BookController) GetBooksByName(c *gin.Context) {
-	var books []models.SmallBookResponse
-	name := c.Param("name")
-	books, err := bc.bookService.FindAllByName(name)
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	labels, err := bc.bookService.ListAllLabels()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	data := BookData{
-		Title:  "All what we have",
-		Books:  books,
-		Labels: labels,
-	}
-
-	// Execute the template and write the output to the response writer
-	if err := mainPage.Execute(c.Writer, data); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-}
-
-// GetCreatedBooks retrieves all books created by the user
-func (bc *BookController) GetCreatedBooks(c *gin.Context) {
-	var books []models.SmallBookResponse
-	cookie, err := c.Cookie("user_id")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found " + err.Error()})
-		return
-	}
-	userid, err := strconv.ParseUint(cookie, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	books, err = bc.bookService.FindBooksByCreatorID(uint(userid))
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	labels, err := bc.bookService.ListAllLabels()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	data := BookData{
-		Title:  "All what we have",
-		Books:  books,
-		Labels: labels,
-	}
-
-	// Execute the template and write the output to the response writer
-	if err := mainPage.Execute(c.Writer, data); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
 }
 
 // GetBook retrieves a book by its ID

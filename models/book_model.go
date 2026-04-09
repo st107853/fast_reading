@@ -28,12 +28,13 @@ type Book struct {
 type BookBase struct {
 	gorm.Model
 
-	Name          string   `json:"name" gorm:"column:name"`
-	Author        string   `json:"author" gorm:"column:author"`
-	Description   string   `json:"description" form:"description" gorm:"type:text"`
-	BookLabels    []*Label `json:"labels" gorm:"many2many:book_labels;"`
-	CreatorUserID uint     `json:"creator_user_id"`
-	CoverPath     string   `json:"cover_path" form:"cover_path"`
+	Name          string       `json:"name" gorm:"column:name"`
+	Author        string       `json:"author" gorm:"column:author"`
+	Description   string       `json:"description" form:"description" gorm:"type:text"`
+	BookLabels    []*Label     `json:"labels" gorm:"many2many:book_labels;"`
+	CreatorUserID uint         `json:"creator_user_id"`
+	CoverPath     string       `json:"cover_path" form:"cover_path"`
+	Cover         template.URL `json:"book_cover"`
 }
 
 func (BookBase) TableName() string {

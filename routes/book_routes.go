@@ -25,7 +25,6 @@ func (bc *BookRouteController) BookRoute(rg *gin.RouterGroup, bookService servic
 	rg.GET("/book/:book_id", bc.bookController.GetBook)
 	rg.GET("/book/:book_id/:chapter_id", bc.bookController.GetChapter)
 	rg.POST("/book/:book_id/favourite", bc.bookController.BookFavourite)
-	rg.GET("/all/:name", bc.bookController.GetBooksByName)
 	rg.GET("/addbook", bc.bookController.AddBook)
 	rg.GET("/addbook/:book_id", bc.bookController.EditBook)
 	rg.GET("/addbook/:book_id/chapter", bc.bookController.AddBookChapter)
