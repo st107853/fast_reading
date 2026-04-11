@@ -5,6 +5,7 @@ import (
 
 	"github.com/st107853/fast_reading/models"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type UserServiceImpl struct {
@@ -51,6 +52,28 @@ func (us *UserServiceImpl) AddBookToFavoriteBooks(email string, bookID string) e
 
 	// Otherwise, add
 	return us.collection.Model(&user).Association("FavoriteBooks").Append(&book)
+}
+
+func (us *UserServiceImpl) SaveBooksMark(userId uint, bookID uint, chapterID uint, lastIndex int) error {
+	progress := models.ReadingProgress{
+		UserID:    userId,
+		BookID:    bookID,
+		ChapterID: chapterID,
+		LastIndex: lastIndex,
+	}
+
+	return us.collection.WithContext(us.ctx).Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "user_id"}, {Name: "book_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"chapter_id", "last_index"}),
+	}).Create(&progress).Error
+}
+
+func (us *UserServiceImpl) GetBooksMark(userId uint, bookID uint) *models.ReadingProgress {
+	var progress models.ReadingProgress
+	progress.ChapterID = 1
+	us.collection.WithContext(us.ctx).Where("user_id = ? AND book_id = ?", userId, bookID).First(&progress)
+
+	return &progress
 }
 
 func (us *UserServiceImpl) IsBookFavorited(userID uint, bookID uint) (bool, error) {

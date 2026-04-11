@@ -254,6 +254,31 @@ func (bc *BookController) BookFavourite(c *gin.Context) {
 	c.JSON(http.StatusCreated, book.Name)
 }
 
+func (bc *BookController) BookMark(c *gin.Context) {
+	BookId := c.Param("book_id")
+	ChapterId := c.Param("chapter_id")
+	LastIndex := c.Param("last_index")
+
+	cookie, err := c.Cookie("user_id")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found " + err.Error()})
+		return
+	}
+
+	bookIdUint, _ := strconv.ParseUint(BookId, 10, 32)
+	chapterIdUint, _ := strconv.ParseUint(ChapterId, 10, 32)
+	userId, _ := strconv.ParseUint(cookie, 10, 32)
+	lastIndexInt, _ := strconv.Atoi(LastIndex)
+
+	err = bc.userService.SaveBooksMark(uint(userId), uint(bookIdUint), uint(chapterIdUint), lastIndexInt)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save book mark " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Book mark saved successfully"})
+}
+
 // GetBook retrieves a book by its ID
 func (bc *BookController) GetBook(c *gin.Context) {
 	id := c.Param("book_id")
@@ -263,6 +288,13 @@ func (bc *BookController) GetBook(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
+	}
+
+	book.Progress = models.ReadingProgress{
+		UserID:    0,
+		BookID:    book.BookID,
+		ChapterID: 1,
+		LastIndex: 0,
 	}
 
 	cookie, err := c.Cookie("user_id")
@@ -280,6 +312,9 @@ func (bc *BookController) GetBook(c *gin.Context) {
 			return
 		}
 
+		progress := bc.userService.GetBooksMark(uint(userid), book.BookID)
+
+		book.Progress = *progress
 		book.IsCreator = userid == uint64(book.CreatorUserID)
 	}
 

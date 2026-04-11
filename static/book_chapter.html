@@ -115,36 +115,83 @@
         const text = `{{.Chapter.Text}}`;
         const words = text.split(/\s+/);
         const play = document.getElementById('play');
-        let index = 0;
+
+        const pathParts = window.location.pathname.split('/');
+
+        
+        let bookId = parseInt(pathParts[3]) || 0;
+        let chapterId = parseInt(pathParts[4]) || 0;
+        let index = parseInt(pathParts[5]) || 0;
+
+        console.log("Parsed from URL - bookId:", bookId, ", chapterId:", chapterId, ", index:", index);
+
         let intervalId = null;
         let speed = 600;
+
+        console.log("Initial index from URL:", index);
+
+        if (index < words.length) {
+            document.getElementById("book-text").innerText = words[index];
+        }
 
         function updateText() {
             if (index < words.length) {
                 document.getElementById("book-text").innerText = words[index];
                 index++;
             } else {
-                clearInterval(intervalId);
-                intervalId = null;
+                stopReading();
+            }
+        }
+
+        async function saveProgress() {
+            
+            const url = `/library/${bookId}/${chapterId}/${index}`;
+
+            try {
+                const response = await fetch(url, { method: 'PUT' });
+                if (!response.ok) console.error("Failed to save progress");
+            } catch (err) {
+                console.error("Error saving progress:", err);
+            }
+        }
+
+        function stopReading() {
+            clearInterval(intervalId);
+            intervalId = null;
+            play.checked = false;
+            saveProgress();
+        }
+
+        function startReading() {
+            if (!intervalId) {
+                intervalId = setInterval(updateText, speed);
             }
         }
 
         play.addEventListener('change', (e) => {
             if (e.target.checked) {
-                intervalId = setInterval(updateText, speed);
+                startReading();
             } else {
-                clearInterval(intervalId);
-                intervalId = null;
+                stopReading();
             }
         });
 
         function updateSpeed() {
             speed = parseInt(document.getElementById("speed").value, 10);
             if (intervalId) {
-                stopReading();
-                startReading();
+                clearInterval(intervalId);
+                intervalId = setInterval(updateText, speed);
             }
         }
+
+        // Save progress when the user is about to leave the page 
+        window.addEventListener('beforeunload', () => {
+            const bookId = "{{.Book.ID}}";
+            const chapterId = "{{.Chapter.ID}}";
+            const url = `/library/bookmark/${bookId}/${chapterId}/${index}`;
+            
+            navigator.sendBeacon(url);
+        });
     </script>
 </body>
 </html>

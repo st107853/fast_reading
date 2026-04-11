@@ -14,7 +14,19 @@ type User struct {
 	Role     string `json:"role" gorm:"default:'user';not null"`
 	Verified bool   `json:"verified" gorm:"default:false;not null"`
 
-	FavoriteBooks []*Book `json:"favorite_books" gorm:"many2many:user_favorites;"`
+	FavoriteBooks   []*Book            `json:"favorite_books" gorm:"many2many:user_favorites;"`
+	ReadingProgress []*ReadingProgress `json:"reading_progress" gorm:"foreignKey:UserID"`
+}
+
+type ReadingProgress struct {
+	UserID    uint `gorm:"primaryKey"`
+	BookID    uint `gorm:"primaryKey"`
+	ChapterID uint `gorm:"not null"`
+	LastIndex int  `gorm:"not null"`
+}
+
+func (ReadingProgress) TableName() string {
+	return "reading_progress"
 }
 
 // SignUpInput specify the fields required to register a new user.

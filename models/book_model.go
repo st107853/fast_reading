@@ -46,18 +46,19 @@ func (BookResponse) TableName() string {
 }
 
 type GetBook struct {
-	BookID          uint         `json:"id" gorm:"column:id"`
-	Name            string       `json:"name" gorm:"column:name"`
-	Author          string       `json:"author" gorm:"column:author"`
-	PublicationYear int          `json:"publication_year" gorm:"column:publication_year"`
-	Description     string       `json:"description" form:"description" gorm:"type:text"`
-	BookLabels      []*Label     `json:"labels" gorm:"many2many:book_labels;"`
-	Chapters        []Chapter    `json:"chapter"`
-	IsFavorited     bool         `json:"is_favorited"`
-	IsCreator       bool         `json:"is_creator"`
-	CreatorUserID   uint         `json:"creator_user_id"`
-	AllLabels       []Label      `json:"all_labels"`
-	Cover           template.URL `json:"book_cover"`
+	BookID          uint            `json:"id" gorm:"column:id"`
+	Name            string          `json:"name" gorm:"column:name"`
+	Author          string          `json:"author" gorm:"column:author"`
+	PublicationYear int             `json:"publication_year" gorm:"column:publication_year"`
+	Description     string          `json:"description" form:"description" gorm:"type:text"`
+	BookLabels      []*Label        `json:"labels" gorm:"many2many:book_labels;"`
+	Chapters        []Chapter       `json:"chapter"`
+	IsFavorited     bool            `json:"is_favorited"`
+	IsCreator       bool            `json:"is_creator"`
+	CreatorUserID   uint            `json:"creator_user_id"`
+	AllLabels       []Label         `json:"all_labels"`
+	Cover           template.URL    `json:"book_cover"`
+	Progress        ReadingProgress `json:"progress" gorm:"column:reading_progress"`
 }
 
 type Chapter struct {
