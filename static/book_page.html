@@ -108,7 +108,7 @@
         </div>
 
         <div class="bp-action-buttons-wrapper">
-            <a href="/library/book/{{.BookID}}/1" class="fr-btn fr-btn--large">Start Reading</a>
+            <a href="/library/book/{{.BookID}}/{{.Progress.ChapterID}}/{{.Progress.LastIndex}}" class="fr-btn fr-btn--large">Start Reading</a>
 
             <label class="bp-switch fr-switch">
                 <input type="checkbox" id="favBtn" onclick="addToFavorites(this)" {{if .IsFavorited}}checked{{end}} />
@@ -135,7 +135,7 @@
         <ul class="fr-chapters-list">
             {{range .Chapters}}
             <li class="fr-chapter-item">
-                <a href="/library/book/{{.BookID}}/{{.ChapterOrder}}" class="fr-btn">{{.Title}}</a>
+                <a href="/library/book/{{.BookID}}/{{.ChapterOrder}}/0" class="fr-btn">{{.Title}}</a>
             </li>
             {{end}}
         </ul>
