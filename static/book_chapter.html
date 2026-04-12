@@ -183,15 +183,6 @@
                 intervalId = setInterval(updateText, speed);
             }
         }
-
-        // Save progress when the user is about to leave the page 
-        window.addEventListener('beforeunload', () => {
-            const bookId = "{{.Book.ID}}";
-            const chapterId = "{{.Chapter.ID}}";
-            const url = `/library/bookmark/${bookId}/${chapterId}/${index}`;
-            
-            navigator.sendBeacon(url);
-        });
     </script>
 </body>
 </html>

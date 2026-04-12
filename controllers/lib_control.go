@@ -31,6 +31,11 @@ type BookController struct {
 	userService services.UserService
 }
 
+// UpdateLabelsRequest represents the expected JSON structure for updating book labels
+type UpdateLabelsRequest struct {
+	LabelIDs []bool `json:"label_ids"`
+}
+
 func NewBookController(bookService services.BookService, userService services.UserService) BookController {
 	return BookController{bookService, userService}
 }
@@ -67,8 +72,6 @@ func (bc *BookController) ListAllBooks(c *gin.Context) {
 }
 
 func (bc *BookController) AllBooks(c *gin.Context) {
-	var books []models.SmallBookResponse
-
 	books, err := bc.bookService.ListAllBooks()
 
 	if err != nil {
@@ -147,18 +150,13 @@ func (bc *BookController) CreateChapter(c *gin.Context) {
 		return
 	}
 
-	// Try to get book id from the URL param first, fallback to cookie
-	var bookIdUint uint64
-	var err error
-	if param := c.Param("book_id"); param != "" {
-		bookIdUint, err = strconv.ParseUint(param, 10, 32)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Book ID param " + err.Error()})
-			return
-		}
+	var uri models.BookURI
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
 	}
 
-	chapter.BookID = uint(bookIdUint)
+	chapter.BookID = uint(uri.BookID)
 	// Persist chapter via service
 	if bc.bookService == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "book service not available"})
@@ -176,7 +174,6 @@ func (bc *BookController) CreateChapter(c *gin.Context) {
 
 func (bc *BookController) EditBookChapter(c *gin.Context) {
 	id := c.Param("chapter_id")
-	var chapter models.Chapter
 
 	chapter, err := bc.bookService.FindChapterByID(id)
 	if err != nil {
@@ -192,12 +189,7 @@ func (bc *BookController) EditBookChapter(c *gin.Context) {
 }
 
 func (bc *BookController) UpdateBookChapter(c *gin.Context) {
-	idParam := c.Param("chapter_id")
-	id, err := strconv.ParseUint(idParam, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid chapter ID"})
-		return
-	}
+	id := c.Param("chapter_id")
 
 	var inputData models.Chapter
 	if err := c.ShouldBindJSON(&inputData); err != nil {
@@ -205,7 +197,7 @@ func (bc *BookController) UpdateBookChapter(c *gin.Context) {
 		return
 	}
 
-	updatedChapter, err := bc.bookService.UpdateChapter(uint(id), inputData)
+	updatedChapter, err := bc.bookService.UpdateChapter(id, inputData)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -215,19 +207,16 @@ func (bc *BookController) UpdateBookChapter(c *gin.Context) {
 }
 
 func (bc *BookController) ReleaseBook(c *gin.Context) {
-	idParam := c.Param("book_id")
-	bookId, err := strconv.ParseUint(idParam, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
+	var uri models.BookURI
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
 		return
 	}
 
-	err = bc.bookService.ReleaseBook(uint(bookId))
-	if err != nil {
+	if err := bc.bookService.ReleaseBook(uri.BookID); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"message": "Book released successfully"})
 }
 
@@ -238,14 +227,14 @@ func (bc *BookController) BookFavourite(c *gin.Context) {
 		return
 	}
 
-	cookie, err := c.Cookie("email")
+	userEmail, err := c.Cookie("email")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found " + err.Error()})
 		return
 	}
 
 	// Call the function to add the book to favorite books
-	err = bc.userService.AddBookToFavoriteBooks(cookie, strconv.FormatUint(uint64(book.ID), 10))
+	err = bc.userService.AddBookToFavoriteBooks(userEmail, book.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add book to favorite books " + err.Error()})
 		return
@@ -255,22 +244,20 @@ func (bc *BookController) BookFavourite(c *gin.Context) {
 }
 
 func (bc *BookController) BookMark(c *gin.Context) {
-	BookId := c.Param("book_id")
-	ChapterId := c.Param("chapter_id")
-	LastIndex := c.Param("last_index")
+	var uri models.ReadingProgress
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
+	}
 
 	cookie, err := c.Cookie("user_id")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found " + err.Error()})
 		return
 	}
-
-	bookIdUint, _ := strconv.ParseUint(BookId, 10, 32)
-	chapterIdUint, _ := strconv.ParseUint(ChapterId, 10, 32)
 	userId, _ := strconv.ParseUint(cookie, 10, 32)
-	lastIndexInt, _ := strconv.Atoi(LastIndex)
 
-	err = bc.userService.SaveBooksMark(uint(userId), uint(bookIdUint), uint(chapterIdUint), lastIndexInt)
+	err = bc.userService.SaveBooksMark(uint(userId), uri.BookID, uri.ChapterID, uri.LastIndex)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save book mark " + err.Error()})
 		return
@@ -281,41 +268,40 @@ func (bc *BookController) BookMark(c *gin.Context) {
 
 // GetBook retrieves a book by its ID
 func (bc *BookController) GetBook(c *gin.Context) {
-	id := c.Param("book_id")
-	var book models.GetBook
+	var uri models.BookURI
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
+	}
 
-	book, err := bc.bookService.FindBookByID(id)
+	book, err := bc.bookService.FindBookByID(uri.BookID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
-	book.Progress = models.ReadingProgress{
-		UserID:    0,
-		BookID:    book.BookID,
-		ChapterID: 1,
-		LastIndex: 0,
-	}
+	book.Progress = models.ReadingProgress{}
 
 	cookie, err := c.Cookie("user_id")
 	if err == nil {
-		userid, err := strconv.ParseUint(cookie, 10, 32)
+		userId64, err := strconv.ParseUint(cookie, 10, 32)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+		userId := uint(userId64)
 
 		// Check if book is favorited by current user (if authenticated)
-		book.IsFavorited, err = bc.userService.IsBookFavorited(uint(userid), book.BookID)
+		book.IsFavorited, err = bc.userService.IsBookFavorited(userId, book.BookID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		progress := bc.userService.GetBooksMark(uint(userid), book.BookID)
+		progress := bc.userService.GetBooksMark(uint(userId), book.BookID)
 
 		book.Progress = *progress
-		book.IsCreator = userid == uint64(book.CreatorUserID)
+		book.IsCreator = userId == book.CreatorUserID
 	}
 
 	// Execute the bookPage template and write the output to the response writer
@@ -327,11 +313,13 @@ func (bc *BookController) GetBook(c *gin.Context) {
 
 // GetChapter retrieves a chapter by its ID
 func (bc *BookController) GetChapter(c *gin.Context) {
-	chapterId := c.Param("chapter_id")
-	bookId := c.Param("book_id")
-	var book models.ChapterResponse
+	var uri models.ReadingProgress
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-	book, err := bc.bookService.FindBooksChapterByIDs(bookId, chapterId)
+	book, err := bc.bookService.FindBooksChapterByIDs(uri.BookID, uri.ChapterID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -346,15 +334,13 @@ func (bc *BookController) GetChapter(c *gin.Context) {
 
 // UpdateBook handles the request, including file upload and service call.
 func (bc *BookController) UpdateBook(c *gin.Context) {
-	idParam := c.Param("book_id")
-	bookId, err := strconv.ParseUint(idParam, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
+	var uri models.BookURI
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
 		return
 	}
 
 	var input models.Book
-
 	if err := c.ShouldBind(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input data: " + err.Error()})
 		return
@@ -368,7 +354,7 @@ func (bc *BookController) UpdateBook(c *gin.Context) {
 	}
 
 	// Call Service
-	updatedBook, serviceErr := bc.bookService.UpdateBook(uint(bookId), file, input)
+	updatedBook, serviceErr := bc.bookService.UpdateBook(uri.BookID, file, input)
 	if serviceErr != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": serviceErr.Error()})
 		return
@@ -379,15 +365,14 @@ func (bc *BookController) UpdateBook(c *gin.Context) {
 
 // DeleteBook deletes a book by its ID
 func (bc *BookController) DeleteBook(c *gin.Context) {
-	id := c.Param("book_id")
+	var uri models.BookURI
 
-	idParsed, err := strconv.ParseUint(id, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
 		return
 	}
 
-	if err := bc.bookService.DeleteBook(uint(idParsed)); err != nil {
+	if err := bc.bookService.DeleteBook(uri.BookID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -398,13 +383,7 @@ func (bc *BookController) DeleteBook(c *gin.Context) {
 func (bc *BookController) DeleteChapter(c *gin.Context) {
 	id := c.Param("chapter_id")
 
-	idParsed, err := strconv.ParseUint(id, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	if err := bc.bookService.DeleteChapter(uint(idParsed)); err != nil {
+	if err := bc.bookService.DeleteChapter(id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -451,9 +430,14 @@ func (bc *BookController) AddBookChapter(c *gin.Context) {
 }
 
 func (bc *BookController) EditBook(c *gin.Context) {
-	id := c.Param("book_id")
-	var book models.GetBook
-	book, err := bc.bookService.FindBookByID(id)
+	var uri models.BookURI
+
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
+	}
+
+	book, err := bc.bookService.FindBookByID(uri.BookID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -472,16 +456,10 @@ func (bc *BookController) EditBook(c *gin.Context) {
 	}
 }
 
-// UpdateLabelsRequest represents the expected JSON structure for updating book labels
-type UpdateLabelsRequest struct {
-	LabelIDs []bool `json:"label_ids"`
-}
-
 func (bc *BookController) AddLabel(c *gin.Context) {
-	idParam := c.Param("book_id")
-	bookId, err := strconv.ParseUint(idParam, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
+	var uri models.BookURI
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
 		return
 	}
 
@@ -498,7 +476,7 @@ func (bc *BookController) AddLabel(c *gin.Context) {
 		}
 	}
 
-	err = bc.bookService.AddLabel(uint(bookId), labelIDs)
+	err := bc.bookService.AddLabel(uri.BookID, labelIDs)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

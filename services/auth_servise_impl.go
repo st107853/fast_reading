@@ -66,12 +66,11 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 
 	// Prepare response (no password)
 	dbResponse := &models.DBResponse{
-		ID:        newUser.ID,
-		Name:      newUser.Name,
-		Email:     newUser.Email,
-		Role:      newUser.Role,
-		Verified:  newUser.Verified,
-		CreatedAt: newUser.CreatedAt,
+		ID:       newUser.ID,
+		Name:     newUser.Name,
+		Email:    newUser.Email,
+		Role:     newUser.Role,
+		Verified: newUser.Verified,
 	}
 
 	return dbResponse, nil

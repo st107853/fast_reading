@@ -86,7 +86,7 @@ func (bs *BookServiseImpl) InsertBook(book models.Book, file *multipart.FileHead
 }
 
 // FindBookByID finds and returns book by its ID.
-func (bs *BookServiseImpl) FindBookByID(bookID string) (models.GetBook, error) {
+func (bs *BookServiseImpl) FindBookByID(bookID uint) (models.GetBook, error) {
 	var base models.Book
 	var result models.GetBook
 
@@ -253,7 +253,7 @@ func (bs *BookServiseImpl) FindChapterByID(id string) (models.Chapter, error) {
 }
 
 // FindBooksChapterByIDs finds n'th book's chapter.
-func (bs *BookServiseImpl) FindBooksChapterByIDs(bookId, chapterId string) (models.ChapterResponse, error) {
+func (bs *BookServiseImpl) FindBooksChapterByIDs(bookId, chapterId uint) (models.ChapterResponse, error) {
 	var chapterResponse models.ChapterResponse
 
 	err := bs.collection.Where("book_id = ? AND chapter_order = ?", bookId, chapterId).First(&chapterResponse.Chapter).Error
@@ -285,7 +285,7 @@ func (bs *BookServiseImpl) DeleteBook(bookId uint) error {
 }
 
 // DeleteChapter deletes one chapter by its ID.
-func (bs *BookServiseImpl) DeleteChapter(chapterId uint) error {
+func (bs *BookServiseImpl) DeleteChapter(chapterId string) error {
 	if err := bs.collection.Unscoped().Delete(&models.Chapter{}, chapterId).Error; err != nil {
 		return fmt.Errorf("bsi: failed to hard delete chapter: %w", err)
 	}
@@ -460,7 +460,7 @@ func (bs *BookServiseImpl) UpdateBook(bookId uint, file *multipart.FileHeader, i
 }
 
 // UpdateChapter find and updates a chapter's fields.
-func (bs *BookServiseImpl) UpdateChapter(chapterId uint, chapter models.Chapter) (models.Chapter, error) {
+func (bs *BookServiseImpl) UpdateChapter(chapterId string, chapter models.Chapter) (models.Chapter, error) {
 	var existingChapter models.Chapter
 	if err := bs.collection.First(&existingChapter, chapterId).Error; err != nil {
 		return models.Chapter{}, fmt.Errorf("bsi: chapter with id %d not found: %w", chapterId, err)

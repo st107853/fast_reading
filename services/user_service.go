@@ -7,8 +7,8 @@ import (
 type UserService interface {
 	FindUserById(string) (*models.User, error)
 	FindUserByEmail(string) (*models.User, error)
-	AddBookToFavoriteBooks(email string, bookID string) error
-	GetBooksMark(userId uint, bookID uint) *models.ReadingProgress
-	SaveBooksMark(userId uint, bookID uint, chapterID uint, lastIndex int) error
-	IsBookFavorited(userID uint, bookID uint) (bool, error)
+	AddBookToFavoriteBooks(email string, bookId uint) error
+	GetBooksMark(userId, bookId uint) *models.ReadingProgress
+	SaveBooksMark(userId, bookId, chapterId, lastIndex uint) error
+	IsBookFavorited(userId, bookId uint) (bool, error)
 }

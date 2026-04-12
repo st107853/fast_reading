@@ -25,6 +25,10 @@ type Book struct {
 	FavoritedBy []*User  `json:"favorited_by" gorm:"many2many:user_favorites;"`
 }
 
+type BookURI struct {
+	BookID uint `uri:"book_id" binding:"required"`
+}
+
 type BookBase struct {
 	gorm.Model
 

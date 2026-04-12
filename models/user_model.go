@@ -20,9 +20,9 @@ type User struct {
 
 type ReadingProgress struct {
 	UserID    uint `gorm:"primaryKey"`
-	BookID    uint `gorm:"primaryKey"`
-	ChapterID uint `gorm:"not null"`
-	LastIndex int  `gorm:"not null"`
+	BookID    uint `gorm:"primaryKey" uri:"book_id" binding:"required"`
+	ChapterID uint `gorm:"default:1" uri:"chapter_id" binding:"required"`
+	LastIndex uint `gorm:"default:0" uri:"last_index"`
 }
 
 func (ReadingProgress) TableName() string {
