@@ -84,8 +84,8 @@
 
     <div class="bp-book-card-container">
         <div class="bp-book-cover-wrapper">
-            {{if .Cover}}
-                <img src="{{.Cover}}" alt="Обложка книги" class="book-cover">
+            {{if .CoverPath}}
+                <img src="{{.CoverPath}}" alt="Обложка книги" class="book-cover">
             {{else}}
                 <div class="fr-blue-box">
                     {{.Name}}

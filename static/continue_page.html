@@ -84,7 +84,7 @@
         </div>
 
         <main>
-            <form id="bookForm" onsubmit="event.preventDefault(); applyFilters(false);">
+            <form id="bookForm" onsubmit="event.preventDefault(); applyFilters(true);">
                 <div class="mp-search-container">
                     <input name="name" id="keyword-input" type="text" class="mp-search-input" placeholder="Enter the title of the book..." aria-label="Enter the title of the book">
                     <span class="mp-search-icon"></span>
@@ -98,58 +98,33 @@
             </div>
 
             <div class="fr-list fr-list--left">
-                <button class="fr-btn--large fr-btn--chosed">All books</button>
-                <a href="/library/continue/" class="fr-btn fr-btn--large">Continue reading</a>
-                <button onclick="applyFilters(false)" class="fr-btn--large fr-btn-right">Apply Filters</button>
+                <a href="/library/" class="fr-btn fr-btn--large">All books</a>
+                <a href="/library/continue/" class="fr-btn fr-btn--large  fr-btn--chosed">Continue reading</a>
+                <button onclick="applyFilters(true)" class="fr-btn--large fr-btn-right">Apply Filters</button>
             </div>
             <hr>
 
             <div id="results-container" class="fr-card-list" id="cardList"></div>
 
-            <h1>Popular books</h1>
-            <div class="fr-card-list" id="cardList">
-                {{range .Books}}
+            <div>
+                <section class="objects fr-card-grid">
+                    {{range .Books}}
                     <div class="fr-card">
-                    <a href="/library/book/{{.BookID}}">
-                        {{if .CoverPath}}
-                            <img src="/covers/{{.CoverPath}}" alt="book cover" class="book-cover">
-                        {{else}}
-                            <div class="fr-blue-box">
-                                {{.Name}}
-                            </div>
-                        {{end}}
-                    </a>
-                    <div class="fr-card__title">{{.Name}}</div>
-                    <div class="fr-card__author">{{.Author}}</div>
-                    </div> 		 
-                {{end}}
-            </div>
-
-            <input type="range" class="form-range" id="customRange1" value="0">
-
-            {{range .LastReleased}}
-                <div class="mp-book-card">
-                    <div class="mp-book-info">
-                        <h2>{{.Name}}</h2>
-                        <h3>{{.Author}}</h3>
-                        <p>{{.Description}}</p>
-                        <div class="fr-list fr-list--left" role="group" aria-label="Book categories">
-                            {{range .BookLabels}}
-                                <div class="fr-label">{{.Name}}</div>
+                        <a href="/library/book/{{.ID}}">
+                            {{if .CoverPath}}
+                                <img src="/covers/{{.CoverPath}}" alt="Book cover" class="book-cover">
+                            {{else}}
+                                <div class="fr-blue-box">
+                                    {{.Name}}
+                                </div>
                             {{end}}
-                        </div>
-                    </div>
-                    <div class="bp-book-cover-wrapper">
-                        {{if .CoverPath}}
-                            <img src="/covers/{{.CoverPath}}" alt="Book cover" class="book-cover">
-                        {{else}}
-                            <div class="fr-blue-box">
-                                {{.Name}}
-                            </div>
-                        {{end}}
-                    </div>
-                </div>
-            {{end}}
+                        </a>
+                        <div class="fr-card__title">{{.Name}}</div>
+                        <div class="fr-card__author">{{.Author}}</div>
+                    </div> 
+                    {{end}}
+                </section>
+            </div>
         </main>
     </div>
 </body>

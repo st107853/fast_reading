@@ -18,8 +18,8 @@ type UserController struct {
 
 type UserData struct {
 	Name           string
-	FavouriteBooks []models.SmallBookResponse
-	CreatedBooks   []models.SmallBookResponse
+	FavouriteBooks []models.BookBase
+	CreatedBooks   []models.BookBase
 }
 
 func NewUserController(userService services.UserService, bookService services.BookService) UserController {
@@ -31,7 +31,7 @@ func (uc *UserController) GetMe(ctx *gin.Context) {
 
 	// Fetch books created by the current user. If the book service fails,
 	// log the error and render the page with favorites only.
-	var created []models.SmallBookResponse
+	var created []models.BookBase
 	if uc.bookService != nil {
 		if cb, err := uc.bookService.FindBooksByCreatorID(currentUser.ID); err == nil {
 			created = cb
@@ -41,9 +41,9 @@ func (uc *UserController) GetMe(ctx *gin.Context) {
 		}
 	}
 
-	var favorite []models.SmallBookResponse
+	var favorite []models.BookBase
 	if uc.bookService != nil {
-		if fb, err := uc.bookService.FindFavoriteBooksByUserEmail(currentUser.ID); err == nil {
+		if fb, err := uc.bookService.FindFavoriteBooksByUserID(currentUser.ID); err == nil {
 			favorite = fb
 		} else {
 			// don't break the page if favorite-books query fails; render created.

@@ -3,7 +3,6 @@ package controllers
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -134,7 +133,9 @@ func (ac *AuthController) RefreshAccessToken(ctx *gin.Context) {
 		return
 	}
 
-	user, err := ac.userService.FindUserById(fmt.Sprint(sub))
+	user_id := sub.(float64)
+
+	user, err := ac.userService.FindUserById(uint(user_id))
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "message": "the user belonging to this token no logger exists", "error": err.Error()})
 		return

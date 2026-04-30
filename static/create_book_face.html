@@ -88,7 +88,7 @@
 
         <button type="button" class="fr-btn--large fr-btn--chosed">Book face</button>
     
-        <a href="/library/addbook/{{.BookID}}/chapter" class="fr-btn fr-btn--large fr-btn-right">
+        <a href="/library/addbook/{{.Book.BookID}}/chapter" class="fr-btn fr-btn--large fr-btn-right">
         Add Chapter
         </a>
 
@@ -100,18 +100,18 @@
         <section class="cb-editor-info-grid">
             <div class="fr-input-container">
                 <label for="book-name">Book naming</label>
-                <input type="text" class="fr-form-input" id="book-name" value="{{.Name}}" required>
+                <input type="text" class="fr-form-input" id="book-name" value="{{.Book.Name}}" required>
             </div>
 
             <div class="fr-input-container">
                 <label for="author-name">Author</label>
-                <input type="text" class="fr-form-input" id="author-name" value="{{.Author}}" required>
+                <input type="text" class="fr-form-input" id="author-name" value="{{.Book.Author}}" required>
             </div>
 
             <div class="cb-year-and-labels">
                 <div class="fr-input-container">
                     <label for="publication-year">Year</label>
-                    <input type="number" id="publication-year" class="fr-form-input" value="{{.PublicationYear}}" required>
+                    <input type="number" id="publication-year" class="fr-form-input" value="{{.Book.PublicationYear}}" required>
                 </div>
 
                 <div class="fr-label-dropdown">
@@ -123,7 +123,7 @@
                     <div class="fr-dropdown-menu" id="dropdownMenu">
                         {{range .AllLabels}}
                             <div class="fr-dropdown-item" 
-                                onclick="toggleLabelUI('{{.ID}}', '{{.Name}}')">
+                                onclick="toggleLabelUI('{{.LabelID}}', '{{.Name}}')">
                                 {{.Name}}
                             </div>
                         {{end}}
@@ -131,8 +131,8 @@
                 </div>
 
                 <div class="fr-label-list" id="labelsList">
-                    {{range .BookLabels}}
-                        <div class="fr-label-item" data-id={{.ID}}>{{.Name}}</div>
+                    {{range .Book.BookLabels}}
+                        <div class="fr-label-item" data-id={{.LabelID}}>{{.Name}}</div>
                     {{end}}
                 </div>
             </div>
@@ -142,7 +142,7 @@
             
             <div class="cb-photo-placeholder" id="image-preview">
                 {{if .Cover}}
-                    <img src="{{.Cover}}" alt="Обложка книги" class="book-cover">
+                    <img src="{{.Cover}}" alt="Book cover" class="book-cover">
                 {{else}}
                     <div class="fr-blue-box">
                         Upload image
@@ -159,29 +159,29 @@
 
         <section class="cb-editor-description">
             <label for="book-description">Short book description</label>
-            <textarea class="cb-textarea-description" id="book-description">{{.Description}}</textarea>
+            <textarea class="cb-textarea-description" id="book-description">{{.Book.Description}}</textarea>
         </section>
 
         <section class="cb-editor-content-list">
             <div class="fr-chapters-section">
                 <h3>Chapters</h3>
                 <ul class="fr-chapters-list">
-                    {{range .Chapters}}
+                    {{range .Book.Chapters}}
                     <li class="fr-chapter-item">
-                        <a href="/library/addbook/{{.BookID}}/chapter/{{.ID}}" class="fr-btn">{{.Title}}</a>
+                        <a href="/library/addbook/{{.BookID}}/chapter/{{.ChapterID}}" class="fr-btn">{{.Title}}</a>
                     </li>
                     {{end}}
                 </ul>
                 <div class="fr-list" >   
-                    <a href="/library/addbook/{{.BookID}}/chapter" class="fr-list fr-btn fr-btn--large">Add Chapter</a>
+                    <a href="/library/addbook/{{.Book.BookID}}/chapter" class="fr-list fr-btn fr-btn--large">Add Chapter</a>
                 </div>
             </div>
         </section>
 
         <footer class="cb-editor-actions">
-            <button type="button" class="fr-btn--large" id="release-button" onclick="releaseBook(this,`{{.BookID}}`)">Publish</button>
-            <button type="button" class="fr-btn--large" id="save-button" onclick="saveUpdates(this, `{{.BookID}}`)">Save</button>
-            <button type="button" class="fr-btn--large" id="delete-button" onclick="deleteBook(`{{.BookID}}`)">Delete</button>
+            <button type="button" class="fr-btn--large" id="release-button" onclick="releaseBook(this,`{{.Book.BookID}}`)">Publish</button>
+            <button type="button" class="fr-btn--large" id="save-button" onclick="saveUpdates(this, `{{.Book.BookID}}`)">Save</button>
+            <button type="button" class="fr-btn--large" id="delete-button" onclick="deleteBook(`{{.Book.BookID}}`)">Delete</button>
         </footer>
     </form>
 </div>

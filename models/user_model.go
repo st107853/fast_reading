@@ -14,15 +14,21 @@ type User struct {
 	Role     string `json:"role" gorm:"default:'user';not null"`
 	Verified bool   `json:"verified" gorm:"default:false;not null"`
 
-	FavoriteBooks   []*Book            `json:"favorite_books" gorm:"many2many:user_favorites;"`
-	ReadingProgress []*ReadingProgress `json:"reading_progress" gorm:"foreignKey:UserID"`
+	FavoriteBooks   []*BookBase        `json:"favorite_books" gorm:"many2many:user_favorites;joinForeignKey:user_id;joinReferences:book_id"`
+	ReadingProgress []*ReadingProgress `json:"reading_progress" gorm:"foreignKey:UserID"joinForeignKey:user_id;joinReferences:book_id"`
 }
 
 type ReadingProgress struct {
 	UserID    uint `gorm:"primaryKey"`
 	BookID    uint `gorm:"primaryKey" uri:"book_id" binding:"required"`
-	ChapterID uint `gorm:"default:1" uri:"chapter_id" binding:"required"`
-	LastIndex uint `gorm:"default:0" uri:"last_index"`
+	ChapterID uint `uri:"chapter_id"`
+	LastIndex uint `uri:"last_index"`
+}
+
+func NewReadingProgress() *ReadingProgress {
+	return &ReadingProgress{
+		ChapterID: 1,
+	}
 }
 
 func (ReadingProgress) TableName() string {
@@ -48,16 +54,16 @@ type SignInInput struct {
 }
 
 type DBResponse struct {
-	ID              uint           `json:"id" gorm:"_id"`
-	Name            string         `json:"name" gorm:"name"`
-	Email           string         `json:"email" gorm:"email"`
-	Password        string         `json:"password" gorm:"password"`
-	PasswordConfirm string         `json:"passwordConfirm,omitempty" gorm:"passwordConfirm,omitempty"`
-	Favourite       []BookResponse `json:"favourite" gorm:"-"`
-	Role            string         `json:"role" gorm:"role"`
-	Verified        bool           `json:"verified" gorm:"verified"`
-	CreatedAt       time.Time      `json:"created_at" gorm:"created_at"`
-	UpdatedAt       time.Time      `json:"updated_at" gorm:"updated_at"`
+	ID              uint       `json:"id" gorm:"_id"`
+	Name            string     `json:"name" gorm:"name"`
+	Email           string     `json:"email" gorm:"email"`
+	Password        string     `json:"password" gorm:"password"`
+	PasswordConfirm string     `json:"passwordConfirm,omitempty" gorm:"passwordConfirm,omitempty"`
+	Favourite       []BookBase `json:"favourite" gorm:"-"`
+	Role            string     `json:"role" gorm:"role"`
+	Verified        bool       `json:"verified" gorm:"verified"`
+	CreatedAt       time.Time  `json:"created_at" gorm:"created_at"`
+	UpdatedAt       time.Time  `json:"updated_at" gorm:"updated_at"`
 }
 
 // UserResponse specify the fields that should be included in the JSON response.

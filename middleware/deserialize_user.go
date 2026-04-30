@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -27,7 +26,8 @@ func DeserializeUser(userService services.UserService) gin.HandlerFunc {
 		}
 
 		if access_token == "" {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "You are not logged in"})
+			ctx.Set("UserId", uint(0))
+			//ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "You are not logged in"})
 			return
 		}
 
@@ -38,13 +38,16 @@ func DeserializeUser(userService services.UserService) gin.HandlerFunc {
 			return
 		}
 
-		user, err := userService.FindUserById(fmt.Sprint(sub))
+		user_id := sub.(float64)
+		user_id_uint := uint(user_id)
+		user, err := userService.FindUserById(user_id_uint)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "The user belonging to this token no logger exists"})
 			return
 		}
 
 		ctx.Set("currentUser", user)
+		ctx.Set("UserId", user_id_uint)
 		ctx.Next()
 	}
 }

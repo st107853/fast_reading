@@ -73,7 +73,7 @@ function toggleLabel(event) {
 }
 
 // Main function to apply filters and fetch results
-async function applyFilters() {
+async function applyFilters(readingOnly) {
     const keyword = document.getElementById('keyword-input').value.trim();
     const resultsContainer = document.getElementById('results-container');
     
@@ -90,6 +90,8 @@ async function applyFilters() {
     if (selectedLabelIds.length > 0) {
         queryParams.append('labels', selectedLabelIds.join(','));
     }
+
+    queryParams.append('reading_only', readingOnly);
 
     const url = `/library/filter/?${queryParams.toString()}`;
 
@@ -124,7 +126,6 @@ function renderResults(books) {
         const bookElement = document.createElement('div');
         bookElement.className = 'fr-card bg-white rounded-xl shadow-md p-2 transition-shadow duration-300 hover:shadow-lg'; 
         
-        // Используем тернарный оператор для проверки наличия обложки
         bookElement.innerHTML = `
             <a href="/library/book/${book.id}">
                 ${book.cover_path

@@ -14,7 +14,7 @@
     <header class="up-user-header">
         <div class="header-group-left">
             <a href="/library/">
-            <div class="fr-icon-button fr-navbar__logo-btn" aria-label="Go to home page" action="/library/"></div>
+            <div class="fr-icon-button fr-navbar__logo-btn" aria-label="Go to home page"></div>
             </a>
 
             <button class="fr-icon-button fr-navbar__customize-btn fr-navbar-icon-btn fr-modal__opener" aria-label="Open settings menu" data-modal-target=".fr-modal--settings"></button>
@@ -111,9 +111,9 @@
       <section class="objects fr-card-grid">
         {{range .FavouriteBooks}}
         <div class="fr-card">
-            <a href="/library/book/{{.ID}}">
-                {{if .Cover}}
-                    <img src="{{.Cover}}" alt="Обложка книги" class="book-cover">
+            <a href="/library/book/{{.BookID}}">
+                {{if .CoverPath}}
+                    <img src="/covers/{{.CoverPath}}" alt="Book cover" class="book-cover">
                 {{else}}
                     <div class="fr-blue-box">
                         {{.Name}}
@@ -132,9 +132,9 @@
       <section class="objects fr-card-grid">
         {{range .CreatedBooks}}
         <div class="fr-card">
-            <a href="/library/book/{{.ID}}">
-                {{if .Cover}}
-                    <img src="{{.Cover}}" alt="Обложка книги" class="book-cover">
+            <a href="/library/book/{{.BookID}}">
+                {{if .CoverPath}}
+                    <img src="/covers/{{.CoverPath}}" alt="book cover" class="book-cover">
                 {{else}}
                     <div class="fr-blue-box">
                         {{.Name}}

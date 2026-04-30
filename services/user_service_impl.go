@@ -17,7 +17,7 @@ func NewUserServiceImpl(collection *gorm.DB, ctx context.Context) UserService {
 	return &UserServiceImpl{collection, ctx}
 }
 
-func (us *UserServiceImpl) FindUserById(id string) (*models.User, error) {
+func (us *UserServiceImpl) FindUserById(id uint) (*models.User, error) {
 	var user *models.User
 	if err := us.collection.WithContext(us.ctx).Where("id = ?", id).First(&user).Error; err != nil {
 		return nil, err
@@ -33,25 +33,31 @@ func (us *UserServiceImpl) FindUserByEmail(email string) (*models.User, error) {
 	return user, nil
 }
 
-func (us *UserServiceImpl) AddBookToFavoriteBooks(email string, bookId uint) error {
+func (us *UserServiceImpl) AddBookToFavoriteBooks(id, bookId uint) error {
 	var user models.User
-	var book models.Book
 
-	if err := us.collection.WithContext(us.ctx).Where("email = ?", email).First(&user).Error; err != nil {
-		return err
-	}
-	if err := us.collection.WithContext(us.ctx).First(&book, bookId).Error; err != nil {
+	if err := us.collection.WithContext(us.ctx).Where("id = ?", id).First(&user).Error; err != nil {
 		return err
 	}
 
-	// Check if already exists
-	if us.collection.Model(&user).Where("id = ?", bookId).Association("FavoriteBooks").Count() > 0 {
-		// Remove if exists
-		return us.collection.Model(&user).Association("FavoriteBooks").Delete(&book)
+	book := models.BookBase{
+		BookID: bookId,
 	}
 
-	// Otherwise, add
-	return us.collection.Model(&user).Association("FavoriteBooks").Append(&book)
+	association := us.collection.Model(&user).Association("FavoriteBooks")
+	exists := false
+
+	var count int64
+	us.collection.Table("user_favorites").Where("user_id = ? AND book_id = ?", user.ID, bookId).Count(&count)
+	if count > 0 {
+		exists = true
+	}
+
+	if exists {
+		return association.Delete(&book)
+	}
+
+	return association.Append(&book)
 }
 
 func (us *UserServiceImpl) SaveBooksMark(userId uint, bookId uint, chapterID uint, lastIndex uint) error {
@@ -69,11 +75,10 @@ func (us *UserServiceImpl) SaveBooksMark(userId uint, bookId uint, chapterID uin
 }
 
 func (us *UserServiceImpl) GetBooksMark(userId uint, bookId uint) *models.ReadingProgress {
-	var progress models.ReadingProgress
-	progress.ChapterID = 1
-	us.collection.WithContext(us.ctx).Where("user_id = ? AND book_id = ?", userId, bookId).First(&progress)
+	var progress = models.NewReadingProgress()
+	us.collection.WithContext(us.ctx).Where("user_id = ? AND book_id = ?", userId, bookId).Limit(1).Find(progress)
 
-	return &progress
+	return progress
 }
 
 func (us *UserServiceImpl) IsBookFavorited(userID uint, bookId uint) (bool, error) {

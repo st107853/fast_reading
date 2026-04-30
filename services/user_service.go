@@ -5,9 +5,9 @@ import (
 )
 
 type UserService interface {
-	FindUserById(string) (*models.User, error)
+	FindUserById(uint) (*models.User, error)
 	FindUserByEmail(string) (*models.User, error)
-	AddBookToFavoriteBooks(email string, bookId uint) error
+	AddBookToFavoriteBooks(id, bookId uint) error
 	GetBooksMark(userId, bookId uint) *models.ReadingProgress
 	SaveBooksMark(userId, bookId, chapterId, lastIndex uint) error
 	IsBookFavorited(userId, bookId uint) (bool, error)

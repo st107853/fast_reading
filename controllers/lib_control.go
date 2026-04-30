@@ -18,12 +18,13 @@ var bookPage = template.Must(template.New("book_page.html").ParseFiles("./static
 var bookChapter = template.Must(template.New("book_chapter.html").ParseFiles("./static/book_chapter.html"))
 var addBook = template.Must(template.New("create_book_face.html").ParseFiles("./static/create_book_face.html"))
 var addBookChapter = template.Must(template.New("create_book_chapter.html").ParseFiles("./static/create_book_chapter.html"))
+var continuePage = template.Must(template.New("continue_page.html").ParseFiles("./static/continue_page.html"))
 
 type BookData struct {
 	Title        string
-	Books        []models.SmallBookResponse
-	Labels       []models.Label
-	LastReleased []models.BookBase
+	Books        []models.BookBase
+	Labels       []*models.Label
+	LastReleased []models.Book
 }
 
 type BookController struct {
@@ -43,8 +44,16 @@ func NewBookController(bookService services.BookService, userService services.Us
 func (bc *BookController) ListAllBooks(c *gin.Context) {
 	keyword := c.Query("keyword")
 	labelIDsString := c.Query("labels")
+	readingOnly := c.Query("reading_only") == "true"
 
-	// Transform labelIDsString into []uint
+	userId, _ := c.Get("UserId")
+	uID, _ := userId.(uint)
+
+	if uID == 0 && readingOnly {
+		c.Redirect(http.StatusFound, "/library/auth/login")
+		return
+	}
+
 	var labelIDs []uint
 	if labelIDsString != "" {
 		idStrings := strings.Split(labelIDsString, ",")
@@ -55,19 +64,13 @@ func (bc *BookController) ListAllBooks(c *gin.Context) {
 		}
 	}
 
-	books, err := bc.bookService.SearchBooks(keyword, labelIDs)
+	books, err := bc.bookService.SearchBooks(keyword, labelIDs, readingOnly, uID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Search failed: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Return marshaled JSON data
-	jsonData, err := models.MarshalBookList(books)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to marshal books: " + err.Error()})
-		return
-	}
-
+	jsonData, _ := models.MarshalBookList(books)
 	c.Data(http.StatusOK, "application/json", jsonData)
 }
 
@@ -105,8 +108,40 @@ func (bc *BookController) AllBooks(c *gin.Context) {
 	}
 }
 
+func (bc *BookController) ContinueReading(c *gin.Context) {
+	userId, _ := c.Get("UserId")
+	uID, _ := userId.(uint)
+
+	books, err := bc.bookService.SearchBooks("", []uint{}, true, uID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	labels, err := bc.bookService.ListAllLabels()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	data := BookData{
+		Title:  "All what we have",
+		Labels: labels,
+		Books:  books,
+	}
+
+	// Execute the template and write the output to the response writer
+	if err := continuePage.Execute(c.Writer, data); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+}
+
 func (bc *BookController) CreateBook(c *gin.Context) {
 	var input models.Book
+	userId, _ := c.Get("UserId")
+	uID, _ := userId.(uint)
+
 	// c.ShouldBind() using binding/form for multipart/form-data
 	if err := c.ShouldBind(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input data or missing fields: " + err.Error()})
@@ -119,18 +154,7 @@ func (bc *BookController) CreateBook(c *gin.Context) {
 		return
 	}
 
-	cookie, err := c.Cookie("user_id")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found " + err.Error()})
-		return
-	}
-	creatorUserID, err := strconv.ParseUint(cookie, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	bookID, serviceErr := bc.bookService.InsertBook(input, file, uint(creatorUserID))
+	bookID, serviceErr := bc.bookService.InsertBook(input, file, uID)
 
 	if serviceErr != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to create book: %s", serviceErr.Error())})
@@ -221,20 +245,17 @@ func (bc *BookController) ReleaseBook(c *gin.Context) {
 }
 
 func (bc *BookController) BookFavourite(c *gin.Context) {
-	var book models.BookResponse
-	if err := c.ShouldBindJSON(&book); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	var book models.BookBase
+	userId, _ := c.Get("UserId")
+	uID, _ := userId.(uint)
 
-	userEmail, err := c.Cookie("email")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found " + err.Error()})
+	if err := c.ShouldBindUri(&book); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
 		return
 	}
 
 	// Call the function to add the book to favorite books
-	err = bc.userService.AddBookToFavoriteBooks(userEmail, book.ID)
+	err := bc.userService.AddBookToFavoriteBooks(uID, book.BookID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add book to favorite books " + err.Error()})
 		return
@@ -245,19 +266,19 @@ func (bc *BookController) BookFavourite(c *gin.Context) {
 
 func (bc *BookController) BookMark(c *gin.Context) {
 	var uri models.ReadingProgress
+	userId, _ := c.Get("UserId")
+	uID, _ := userId.(uint)
+
+	if uID == 0 {
+		return
+	}
+
 	if err := c.ShouldBindUri(&uri); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
 		return
 	}
 
-	cookie, err := c.Cookie("user_id")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID cookie not found " + err.Error()})
-		return
-	}
-	userId, _ := strconv.ParseUint(cookie, 10, 32)
-
-	err = bc.userService.SaveBooksMark(uint(userId), uri.BookID, uri.ChapterID, uri.LastIndex)
+	err := bc.userService.SaveBooksMark(uID, uri.BookID, uri.ChapterID, uri.LastIndex)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save book mark " + err.Error()})
 		return
@@ -269,6 +290,9 @@ func (bc *BookController) BookMark(c *gin.Context) {
 // GetBook retrieves a book by its ID
 func (bc *BookController) GetBook(c *gin.Context) {
 	var uri models.BookURI
+	userId, _ := c.Get("UserId")
+	uID, _ := userId.(uint)
+
 	if err := c.ShouldBindUri(&uri); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
 		return
@@ -280,29 +304,21 @@ func (bc *BookController) GetBook(c *gin.Context) {
 		return
 	}
 
-	book.Progress = models.ReadingProgress{}
+	progress := models.NewReadingProgress()
 
-	cookie, err := c.Cookie("user_id")
-	if err == nil {
-		userId64, err := strconv.ParseUint(cookie, 10, 32)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		userId := uint(userId64)
-
+	if uID != 0 {
 		// Check if book is favorited by current user (if authenticated)
-		book.IsFavorited, err = bc.userService.IsBookFavorited(userId, book.BookID)
+		book.IsFavorited, err = bc.userService.IsBookFavorited(uID, book.BookID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		progress := bc.userService.GetBooksMark(uint(userId), book.BookID)
-
-		book.Progress = *progress
+		progress = bc.userService.GetBooksMark(uID, book.BookID)
 		book.IsCreator = userId == book.CreatorUserID
 	}
+
+	book.Progress = *progress
 
 	// Execute the bookPage template and write the output to the response writer
 	if err := bookPage.Execute(c.Writer, book); err != nil {
@@ -443,14 +459,19 @@ func (bc *BookController) EditBook(c *gin.Context) {
 		return
 	}
 
-	book.AllLabels, err = bc.bookService.ListAllLabels()
+	labels, err := bc.bookService.ListAllLabels()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
+	templateData := gin.H{
+		"Book":      book,
+		"AllLabels": labels,
+	}
+
 	// Execute the bookPage template and write the output to the response writer
-	if err := addBook.Execute(c.Writer, book); err != nil {
+	if err := addBook.Execute(c.Writer, templateData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
