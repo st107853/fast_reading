@@ -15,7 +15,7 @@ type User struct {
 	Verified bool   `json:"verified" gorm:"default:false;not null"`
 
 	FavoriteBooks   []*BookBase        `json:"favorite_books" gorm:"many2many:user_favorites;joinForeignKey:user_id;joinReferences:book_id"`
-	ReadingProgress []*ReadingProgress `json:"reading_progress" gorm:"foreignKey:UserID"joinForeignKey:user_id;joinReferences:book_id"`
+	ReadingProgress []*ReadingProgress `json:"reading_progress" gorm:"foreignKey:UserID;joinForeignKey:user_id;joinReferences:book_id"`
 }
 
 type ReadingProgress struct {

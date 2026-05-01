@@ -23,7 +23,7 @@ type BookService interface {
 	ListLastReleased(n int) ([]models.Book, error)
 	ReleaseBook(bookId uint) error
 	UpdateBook(bookId uint, file *multipart.FileHeader, book models.Book) (models.Book, error)
-	UpdateChapter(chapterId string, chapter models.Chapter) (models.Chapter, error)
+	UpdateChapter(chapterId uint, chapter models.Chapter) (models.Chapter, error)
 	AddLabel(bookId uint, labelIds []uint) error
 	SearchBooks(keyword string, labelIds []uint, readingOnly bool, userID uint) ([]models.BookBase, error)
 }

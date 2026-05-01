@@ -92,8 +92,6 @@ func (bs *BookServiseImpl) FindBookByID(bookID uint) (models.GetBook, error) {
 		return result, fmt.Errorf("bsi: failed to find book: %w", err)
 	}
 
-	result.CoverPath = models.FormatCoverURL(string(result.CoverPath))
-
 	return result, nil
 }
 
@@ -302,6 +300,8 @@ func (bs *BookServiseImpl) UpdateBook(bookId uint, file *multipart.FileHeader, i
 		coverFileName := fmt.Sprintf("%d%s", bookId, ext)
 		targetPath := filepath.Join("covers", coverFileName)
 
+		finalDBURL := models.FormatCoverURL(coverFileName)
+
 		// Creation of 'covers' directory if it doesn't exist
 		if _, statErr := os.Stat("covers"); os.IsNotExist(statErr) {
 			if mkdirErr := os.MkdirAll("covers", os.ModePerm); mkdirErr != nil {
@@ -327,9 +327,10 @@ func (bs *BookServiseImpl) UpdateBook(bookId uint, file *multipart.FileHeader, i
 		}
 
 		// Updating the book record with the cover path
-		existingBook.CoverPath = models.FormatCoverURL(targetPath)
+		existingBook.CoverPath = finalDBURL
+		fmt.Println("Cover file saved to disk and URL set: ", finalDBURL)
 		// Saving changes to the database
-		if err := bs.collection.Model(&existingBook).Update("CoverPath", targetPath).Error; err != nil {
+		if err := bs.collection.Model(&existingBook).Update("CoverPath", finalDBURL).Error; err != nil {
 			// TODO: In case of an update error delete the saved cover file
 			return existingBook, fmt.Errorf("failed to update book with CoverPath: %w", err)
 		}
@@ -343,7 +344,7 @@ func (bs *BookServiseImpl) UpdateBook(bookId uint, file *multipart.FileHeader, i
 }
 
 // UpdateChapter find and updates a chapter's fields.
-func (bs *BookServiseImpl) UpdateChapter(chapterId string, chapter models.Chapter) (models.Chapter, error) {
+func (bs *BookServiseImpl) UpdateChapter(chapterId uint, chapter models.Chapter) (models.Chapter, error) {
 	var existingChapter models.Chapter
 	if err := bs.collection.First(&existingChapter, chapterId).Error; err != nil {
 		return models.Chapter{}, fmt.Errorf("bsi: chapter with id %d not found: %w", chapterId, err)

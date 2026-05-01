@@ -141,8 +141,8 @@
         <section class="cb-editor-photo-upload">
             
             <div class="cb-photo-placeholder" id="image-preview">
-                {{if .Cover}}
-                    <img src="{{.Cover}}" alt="Book cover" class="book-cover">
+                {{if .Book.CoverPath}}
+                    <img src="/covers/{{.Book.CoverPath}}" alt="Book cover" class="book-cover">
                 {{else}}
                     <div class="fr-blue-box">
                         Upload image

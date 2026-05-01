@@ -213,15 +213,18 @@ func (bc *BookController) EditBookChapter(c *gin.Context) {
 }
 
 func (bc *BookController) UpdateBookChapter(c *gin.Context) {
-	id := c.Param("chapter_id")
+	var chapter models.Chapter
+	if err := c.ShouldBindUri(&chapter); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
+	}
 
-	var inputData models.Chapter
-	if err := c.ShouldBindJSON(&inputData); err != nil {
+	if err := c.ShouldBindJSON(&chapter); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	updatedChapter, err := bc.bookService.UpdateChapter(id, inputData)
+	updatedChapter, err := bc.bookService.UpdateChapter(chapter.ChapterID, chapter)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return

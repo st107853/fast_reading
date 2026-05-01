@@ -74,7 +74,7 @@ func FormatCoverURL(path string) template.URL {
 		return template.URL("/static/default_cover.png")
 	}
 
-	return template.URL(StaticCoversPath + path)
+	return template.URL(path)
 }
 
 func MarshalBookList(books []BookBase) ([]byte, error) {
