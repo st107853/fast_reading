@@ -100,54 +100,47 @@
     </div>
     <hr class="up-hr">
 
-    <div class="fr-list fr-list--left">
-      <span class="fr-label">Label</span>
-      <span class="fr-label">Label</span>
-      <span class="fr-label">Label</span>
-      <span class="fr-label">Label</span>
-    </div>
-
     <div id="favBooks">
-      <section class="objects fr-card-grid">
+        <div class="fr-list fr-list--left">
+            {{range .FavouriteLabels}}
+                <span class="fr-label">{{.Name}}</span>
+            {{end}}
+        </div>
+
+        <section class="objects fr-card-grid">
         {{range .FavouriteBooks}}
-        <div class="fr-card">
-            <a href="/library/book/{{.BookID}}">
-                {{if .CoverPath}}
-                    <img src="/covers/{{.CoverPath}}" alt="Book cover" class="book-cover">
-                {{else}}
-                    <div class="fr-blue-box">
-                        {{.Name}}
-                    </div>
-                {{end}}
-            </a>
-            <div class="fr-card__title">{{.Name}}</div>
-            <div class="fr-card__author">{{.Author}}</div>
-        </div> 
+            {{template "bookCard" .}}
         {{end}}
       </section>
     </div>
 
     <div id="createdBooks" class="fr-hidden">
+        <div class="fr-list fr-list--left">
+            {{range .CreatedLabels}}
+                <span class="fr-label">{{.Name}}</span>
+            {{end}}
+        </div>
+
       <section class="objects fr-card-grid">
         {{range .CreatedBooks}}
-        <div class="fr-card">
-            <a href="/library/book/{{.BookID}}">
-                {{if .CoverPath}}
-                    <img src="/covers/{{.CoverPath}}" alt="book cover" class="book-cover">
-                {{else}}
-                    <div class="fr-blue-box">
-                        {{.Name}}
-                    </div>
-                {{end}}
-            </a>
-            <div class="fr-card__title">{{.Name}}</div>
-            <div class="fr-card__author">{{.Author}}</div>
-        </div>
-        {{else}}
-        <div class="fr-empty">You haven't create any books yet.</div>
+            {{template "bookCard" .}}
         {{end}}
       </section>
     </div>
 </div>
 </body>
 </html>
+
+{{define "bookCard"}}
+<div class="fr-card">
+    <a href="/library/book/{{.BookID}}">
+        {{if .CoverPath}}
+            <img src="/covers/{{.CoverPath}}" alt="Book cover" class="book-cover">
+        {{else}}
+            <div class="fr-blue-box">{{.Name}}</div>
+        {{end}}
+    </a>
+    <div class="fr-card__title">{{.Name}}</div>
+    <div class="fr-card__author">{{.Author}}</div>
+</div>
+{{end}}

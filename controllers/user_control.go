@@ -17,9 +17,11 @@ type UserController struct {
 }
 
 type UserData struct {
-	Name           string
-	FavouriteBooks []models.BookBase
-	CreatedBooks   []models.BookBase
+	Name            string
+	FavouriteBooks  []models.BookBase
+	FavouriteLabels []models.Label
+	CreatedBooks    []models.BookBase
+	CreatedLabels   []models.Label
 }
 
 func NewUserController(userService services.UserService, bookService services.BookService) UserController {
@@ -27,34 +29,18 @@ func NewUserController(userService services.UserService, bookService services.Bo
 }
 
 func (uc *UserController) GetMe(ctx *gin.Context) {
+	var err error
 	currentUser := ctx.MustGet("currentUser").(*models.User)
+	data := UserData{Name: currentUser.Name}
 
-	// Fetch books created by the current user. If the book service fails,
-	// log the error and render the page with favorites only.
-	var created []models.BookBase
 	if uc.bookService != nil {
-		if cb, err := uc.bookService.FindBooksByCreatorID(currentUser.ID); err == nil {
-			created = cb
-		} else {
-			// don't break the page if created-books query fails; render favorites.
+		if data.CreatedBooks, data.CreatedLabels, err = uc.bookService.FindBooksByCreatorID(currentUser.ID); err != nil {
 			ctx.Error(err)
 		}
 	}
 
-	var favorite []models.BookBase
-	if uc.bookService != nil {
-		if fb, err := uc.bookService.FindFavoriteBooksByUserID(currentUser.ID); err == nil {
-			favorite = fb
-		} else {
-			// don't break the page if favorite-books query fails; render created.
-			ctx.Error(err)
-		}
-	}
-
-	data := UserData{
-		Name:           currentUser.Name,
-		FavouriteBooks: favorite,
-		CreatedBooks:   created,
+	if data.FavouriteBooks, data.FavouriteLabels, err = uc.bookService.FindFavoriteBooksByUserID(currentUser.ID); err != nil {
+		ctx.Error(err)
 	}
 
 	// Execute the template and write the output to the response writer

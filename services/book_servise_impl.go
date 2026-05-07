@@ -26,12 +26,8 @@ func NewBookService(collection *gorm.DB, ctx context.Context) *BookServiseImpl {
 // InsertBook inserts a new book into the database and saves the cover file if provided.
 func (bs *BookServiseImpl) InsertBook(book models.Book, file *multipart.FileHeader, creatorUserID uint) (uint, error) {
 
-	fmt.Println("Got book: ", book)
-
 	// Set the creator user ID before inserting
 	book.CreatorUserID = creatorUserID
-
-	fmt.Println("Set creator id")
 
 	if err := bs.collection.Create(&book).Error; err != nil {
 		return 0, fmt.Errorf("failed to insert book record: %w", err)
@@ -39,32 +35,20 @@ func (bs *BookServiseImpl) InsertBook(book models.Book, file *multipart.FileHead
 
 	bookId := book.BookID
 
-	fmt.Println("Book inserted with ID: ", bookId)
-
 	// Save the cover file if provided
 	if file != nil {
-
-		fmt.Println("Started cover")
-
 		ext := filepath.Ext(file.Filename)
 
 		storageDir := "./covers"                          // Define a storage directory for covers
 		coverFileName := fmt.Sprintf("%d%s", bookId, ext) // Cover name = book ID + extension
 		dstPath := filepath.Join(storageDir, coverFileName)
 
-		fmt.Println("Cover file name: ", coverFileName)
-		fmt.Println("Destination path: ", dstPath)
-
 		if err := saveFileToDisk(file, dstPath); err != nil {
 			return bookId, err
 		}
 
-		fmt.Println("Cover file saved to disk")
-
 		// Updating the book record with the cover path
 		book.CoverPath = models.FormatCoverURL(coverFileName)
-
-		fmt.Println("Formatted cover URL: ", book.CoverPath)
 
 		err := bs.collection.Model(&book).Update("cover_path", coverFileName).Error
 		if err != nil {
@@ -96,29 +80,36 @@ func (bs *BookServiseImpl) FindBookByID(bookID uint) (models.GetBook, error) {
 }
 
 // FindBooksByCreatorID finds and returns books by the creator's ID.
-func (bs *BookServiseImpl) FindBooksByCreatorID(creatorID uint) ([]models.BookBase, error) {
+func (bs *BookServiseImpl) FindBooksByCreatorID(creatorID uint) ([]models.BookBase, []models.Label, error) {
 	var books []models.BookBase
+	var ids []uint
 
-	err := bs.collection.Where("creator_user_id = ?", creatorID).Find(&books).Error
+	bs.collection.Table("books").Where("creator_user_id = ?", creatorID).Pluck("id", &ids)
+
+	err := bs.collection.Where("id IN ?", ids).Find(&books).Error
 	if err != nil {
-		return nil, fmt.Errorf("bsi: failed to find all books: %w", err)
+		return nil, nil, fmt.Errorf("bsi: failed to find favorite books by user ID: %w", err)
 	}
 
-	return books, nil
+	labels, err := getLabels(bs, ids)
+
+	return books, labels, nil
 }
 
 // FindFavoriteBooksByUserEmail finds and returns favorite books by user ID.
-func (bs *BookServiseImpl) FindFavoriteBooksByUserID(userID uint) ([]models.BookBase, error) {
+func (bs *BookServiseImpl) FindFavoriteBooksByUserID(userID uint) ([]models.BookBase, []models.Label, error) {
 	var books []models.BookBase
+	var ids []uint
+	bs.collection.Table("user_favorites").Where("user_id = ?", userID).Pluck("book_id", &ids)
 
-	err := bs.collection.Joins("JOIN user_favorites ON user_favorites.book_id = books.id").
-		Where("user_favorites.user_id = ?", userID).
-		Find(&books).Error
+	err := bs.collection.Where("id IN ?", ids).Find(&books).Error
 	if err != nil {
-		return nil, fmt.Errorf("bsi: failed to find favorite books by user ID: %w", err)
+		return nil, nil, fmt.Errorf("bsi: failed to find favorite books by user ID: %w", err)
 	}
 
-	return books, nil
+	labels, err := getLabels(bs, ids)
+
+	return books, labels, nil
 }
 
 func (bs *BookServiseImpl) FindStartedBooks(userID uint) ([]models.BookBase, error) {
@@ -187,9 +178,9 @@ func (bs *BookServiseImpl) DeleteAll() error {
 // DeleteBook delete one book by its ID.
 func (bs *BookServiseImpl) DeleteBook(bookId uint) error {
 	if err := bs.collection.Unscoped().Delete(&models.Book{}, bookId).Error; err != nil {
-		os.RemoveAll(filepath.Join("covers", fmt.Sprintf("%d.jpeg", bookId)))
 		return fmt.Errorf("bsi: failed to hard delete book: %w", err)
 	}
+	os.Remove(filepath.Join("covers", fmt.Sprintf("%d.jpeg", bookId)))
 
 	return nil
 }
@@ -328,7 +319,6 @@ func (bs *BookServiseImpl) UpdateBook(bookId uint, file *multipart.FileHeader, i
 
 		// Updating the book record with the cover path
 		existingBook.CoverPath = finalDBURL
-		fmt.Println("Cover file saved to disk and URL set: ", finalDBURL)
 		// Saving changes to the database
 		if err := bs.collection.Model(&existingBook).Update("CoverPath", finalDBURL).Error; err != nil {
 			// TODO: In case of an update error delete the saved cover file
@@ -452,4 +442,17 @@ func saveFileToDisk(file *multipart.FileHeader, dstPath string) error {
 		return fmt.Errorf("failed to save file content: %w", err)
 	}
 	return nil
+}
+
+func getLabels(bs *BookServiseImpl, ids []uint) ([]models.Label, error) {
+	var labels []models.Label
+
+	err := bs.collection.
+		Table("labels").
+		Joins("JOIN book_labels ON book_labels.label_id = labels.id").
+		Where("book_labels.book_id IN ?", ids).
+		Distinct("labels.*").
+		Find(&labels).Error
+
+	return labels, err
 }
