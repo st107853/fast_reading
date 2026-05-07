@@ -13,12 +13,12 @@ import (
 )
 
 // Pages html
-var mainPage = template.Must(template.New("main_page.html").ParseFiles("./static/main_page.html"))
-var bookPage = template.Must(template.New("book_page.html").ParseFiles("./static/book_page.html"))
-var bookChapter = template.Must(template.New("book_chapter.html").ParseFiles("./static/book_chapter.html"))
-var addBook = template.Must(template.New("create_book_face.html").ParseFiles("./static/create_book_face.html"))
-var addBookChapter = template.Must(template.New("create_book_chapter.html").ParseFiles("./static/create_book_chapter.html"))
-var continuePage = template.Must(template.New("continue_page.html").ParseFiles("./static/continue_page.html"))
+var mainPage = template.Must(template.New("main_page.html").ParseFiles("./static/main_page.html", "./static/template.html"))
+var bookPage = template.Must(template.New("book_page.html").ParseFiles("./static/book_page.html", "./static/template.html"))
+var bookChapter = template.Must(template.New("book_chapter.html").ParseFiles("./static/book_chapter.html", "./static/template.html"))
+var addBook = template.Must(template.New("create_book_face.html").ParseFiles("./static/create_book_face.html", "./static/template.html"))
+var addBookChapter = template.Must(template.New("create_book_chapter.html").ParseFiles("./static/create_book_chapter.html", "./static/template.html"))
+var continuePage = template.Must(template.New("continue_page.html").ParseFiles("./static/continue_page.html", "./static/template.html"))
 
 type BookData struct {
 	Title        string

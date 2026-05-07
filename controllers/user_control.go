@@ -9,7 +9,7 @@ import (
 	"github.com/st107853/fast_reading/services"
 )
 
-var userPage = template.Must(template.New("user_page.html").ParseFiles("./static/user_page.html"))
+var userPage = template.Must(template.New("user_page.html").ParseFiles("./static/user_page.html", "./static/template.html"))
 
 type UserController struct {
 	userService services.UserService

@@ -11,77 +11,9 @@
 </head>
 <body>
     <div class="fr-container">
-
-    <nav class="fr-navbar">
-        <button class="fr-icon-button fr-navbar__customize-btn fr-navbar-icon-btn fr-modal__opener" aria-label="Open settings menu" data-modal-target=".fr-modal--settings"></button>
-        
-        <a href="/library/">
-        <div class="fr-icon-button fr-navbar__logo-btn" aria-label="Go to home page" action="/library/"></div>
-        </a>
-        
-        <button class="fr-icon-button fr-navbar__avatar-btn" id="avatarBtn" aria-label="User profile or login" onclick="login()"></button>
-    </nav>
-
-    <div id="settingsModal" class="fr-modal fr-modal--settings" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" tabindex="-1" aria-hidden="true">
-        <div class="fr-modal__content">
-            <header class="fr-modal-header">
-                <h2 id="settingsTitle">Settings</h2>
-                <button class="fr-btn--large fr-btn-right fr-modal__close-btn" aria-label="Close settings">&times;</button>
-            </header>
-
-            <div class="fr-settings-grid">
-                <section class="fr-settings-group--colour">
-                    <h3>Colour</h3> 
-                    <div class="fr-list" style="justify-content: left;">
-                        <div class="fr-swatch" style="background-color: #d84343;" data-color="#d84343" role="radio" aria-checked="false" tabindex="0"></div>
-                        <div class="fr-swatch" style="background-color: #4a90e2;" data-color="#4a90e2" role="radio" aria-checked="false" tabindex="0"></div>
-                        <div class="fr-swatch" style="background-color: #e0e0e0;" data-color="#e0e0e0" role="radio" aria-checked="false" tabindex="0"></div>
-                        <div class="fr-swatch" style="background-color: #1e3d59;" data-color="#1e3d59" role="radio" aria-checked="true" tabindex="0"></div>
-                        <div class="fr-swatch" style="background-color: #3f684c;" data-color="#3f684c" role="radio" aria-checked="false" tabindex="0"></div>
-                        <div class="fr-swatch" style="background-color: #f0e6e6;" data-color="#f0e6e6" role="radio" aria-checked="false" tabindex="0"></div>
-                    </div>
-                </section>
-
-                <section class="fr-settings-group--text">
-                    <h3>Font Style</h3>
-                    <!-- Font Family Select -->
-                    <select class="fr-form-select" id="fontFamilySelect" aria-label="Font Family">
-                        <option value="Inter, sans-serif">Inter (Default)</option>
-                        <option value="Georgia, serif">Georgia (Serif)</option>
-                        <option value="Helvetica, sans-serif">Helvetica (Sans-serif)</option>
-                        <option value="Verdana, sans-serif">Verdana</option>
-                        <option value="Montserrat, sans-serif">Montserrat</option>
-                        <option value="Space Mono, monospace">Space Mono</option>
-                    </select>
-                    <!-- Font Size Select -->
-                    <select class="fr-form-select" id="fontSizeSelect" aria-label="Font Size">
-                        <option value="1.0rem">Small (16px)</option>
-                        <option value="1.1rem">Medium (18px)</option>
-                        <option value="1.3rem">Large (21px)</option>
-                        <option value="1.5rem">Extra Large (24px)</option>
-                    </select>
-                </section>
-
-                <section class="fr-settings-group--example">
-                    <div id="example-text-preview">
-                        <h1>Text</h1>
-                        <h2>Text</h2>
-                        <h3>Text</h3>
-                        <p>Text</p>
-                    </div>
-                </section>
-
-                <section class="fr-settings-group--theme">
-                    <h3>Theme</h3>
-                    <label class="fr-switch">
-                        <input type="checkbox" id="theme-toggle" aria-label="Toggle dark theme">
-                        <span class="fr-switch__track fr-switch__track--round"></span>
-                    </label>
-                </section>
-
-            </div>
-        </div>
-    </div>
+    
+        {{template "navbar" .}}
+        {{template "settingsModal" .}}
 
     <nav class="fr-list" >
       <a href="/library/addbook/{{.BookID}}" class="fr-btn fr-btn--large">Book face</a>
