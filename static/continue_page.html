@@ -8,6 +8,7 @@
     <link rel="stylesheet" type="text/css" href="/static/main_page.css">
     <script src="/static/main_page.js"></script>
     <script src="/static/script.js" defer></script>
+    <script src="/static/labels.js" defer></script>
 </head>
 <body>
     <div class="fr-container">
@@ -16,7 +17,7 @@
         {{template "settingsModal" .}}
 
         <main>
-            <form id="bookForm" onsubmit="event.preventDefault(); applyFilters(true);">
+            <form id="bookForm" onsubmit="event.preventDefault(); applyFilters(1);">
                 <div class="mp-search-container">
                     <input name="name" id="keyword-input" type="text" class="mp-search-input" placeholder="Enter the title of the book..." aria-label="Enter the title of the book">
                     <span class="mp-search-icon"></span>
@@ -25,25 +26,21 @@
 
             <div class="fr-list" id="labels-container">
                 {{range .Labels}}
-                    <div class="fr-label" data-id="{{.LabelID}}" tabindex="0">{{.Name}}</div>
+                    <div class="fr-label fr-label--interactive" data-id="{{.LabelID}}" tabindex="0">{{.Name}}</div>
                 {{end}}
             </div>
 
             <div class="fr-list fr-list--left">
                 <a href="/library/" class="fr-btn fr-btn--large">All books</a>
                 <a href="/library/continue/" class="fr-btn fr-btn--large  fr-btn--chosed">Continue reading</a>
-                <button onclick="applyFilters(true)" class="fr-btn--large fr-btn-right">Apply Filters</button>
+                <button onclick="applyFilters(1)" class="fr-btn--large fr-btn-right">Apply Filters</button>
             </div>
             <hr>
 
-            <div id="results-container" class="fr-card-list" id="cardList"></div>
-
-            <div>
-                <section class="objects fr-card-grid">
-                    {{range .Books}}
-                        {{template "bookCard" .}}
-                    {{end}}
-                </section>
+            <div id="results-container" class="fr-card-list" id="cardList">
+                {{range .Books}}
+                    {{template "bookCard" .}}
+                {{end}}
             </div>
         </main>
     </div>

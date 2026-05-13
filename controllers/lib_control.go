@@ -44,15 +44,10 @@ func NewBookController(bookService services.BookService, userService services.Us
 func (bc *BookController) ListAllBooks(c *gin.Context) {
 	keyword := c.Query("keyword")
 	labelIDsString := c.Query("labels")
-	readingOnly := c.Query("reading_only") == "true"
+	filterCode := c.Query("code")
 
 	userId, _ := c.Get("UserId")
 	uID, _ := userId.(uint)
-
-	if uID == 0 && readingOnly {
-		c.Redirect(http.StatusFound, "/library/auth/login")
-		return
-	}
 
 	var labelIDs []uint
 	if labelIDsString != "" {
@@ -64,7 +59,7 @@ func (bc *BookController) ListAllBooks(c *gin.Context) {
 		}
 	}
 
-	books, err := bc.bookService.SearchBooks(keyword, labelIDs, readingOnly, uID)
+	books, err := bc.bookService.SearchBooks(keyword, labelIDs, filterCode, uID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -112,7 +107,7 @@ func (bc *BookController) ContinueReading(c *gin.Context) {
 	userId, _ := c.Get("UserId")
 	uID, _ := userId.(uint)
 
-	books, err := bc.bookService.SearchBooks("", []uint{}, true, uID)
+	books, err := bc.bookService.SearchBooks("", []uint{}, "1", uID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

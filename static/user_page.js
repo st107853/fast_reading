@@ -31,6 +31,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 var show = document.querySelector(target);
                 if (show) show.classList.remove('fr-hidden');
 
+                // clear selected filter labels when switching tab
+                if (typeof clearSelectedLabels === 'function') {
+                    clearSelectedLabels();
+                }
+
                 // update active state on buttons
                 tabButtons.forEach(function (b) { b.classList.remove('fr-btn--chosed'); b.setAttribute('aria-pressed', 'false'); });
                 btn.classList.add('fr-btn--chosed');
