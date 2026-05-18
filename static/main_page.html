@@ -17,7 +17,7 @@
         {{template "settingsModal" .}}
 
         <main>
-            <form id="bookForm" onsubmit="event.preventDefault(); applyFilters(false);">
+            <form id="bookForm" onsubmit="event.preventDefault(); applyFilters(0);">
                 <div class="mp-search-container">
                     <input name="name" id="keyword-input" type="text" class="mp-search-input" placeholder="Enter the title of the book..." aria-label="Enter the title of the book">
                     <span class="mp-search-icon"></span>
@@ -32,7 +32,9 @@
 
             <div class="fr-list fr-list--left">
                 <button class="fr-btn--large fr-btn--chosed">All books</button>
-                <a href="/library/continue/" class="fr-btn fr-btn--large">Continue reading</a>
+
+                <a href="/library/continue/" class="fr-btn fr-btn--large" onclick="handleProtectedLink(event)">Continue reading</a>
+
                 <button onclick="applyFilters(0)" class="fr-btn--large fr-btn-right">Apply Filters</button>
             </div>
             <hr>

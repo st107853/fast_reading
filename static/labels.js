@@ -90,7 +90,8 @@ function getResultsContainer(code) {
     if (code === 3) {
         return document.getElementById('fav-results-container');
     }
-    return document.querySelector('#favBooks:not(.fr-hidden) #fav-results-container, #createdBooks:not(.fr-hidden) #created-results-container');
+
+    return document.getElementById('results-container');
 }
 
 function clearSelectedLabels() {

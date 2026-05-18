@@ -209,15 +209,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Expose login as a global function so inline onclick handlers work across pages.
-window.login = function() {
-    function getCookie(name) {
-        let matches = document.cookie.match(new RegExp(
-            "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
-        ));
-        return matches ? decodeURIComponent(matches[1]) : undefined;
+// Expose login helper functions as globals so inline onclick handlers and other frontend code can use them.
+window.getCookie = function(name) {
+    let matches = document.cookie.match(new RegExp(
+        "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+    ));
+    return matches ? decodeURIComponent(matches[1]) : undefined;
+};
+
+window.isLoggedIn = function() {
+    return window.getCookie('logged_in') === 'true';
+};
+
+window.handleProtectedLink = function(event) {
+    if (!window.isLoggedIn()) {
+        event.preventDefault();
+        window.location.href = '/library/auth/login';
     }
-    if (getCookie('logged_in') === 'true') {
+};
+
+window.login = function() {
+    if (window.isLoggedIn()) {
         window.location.href = '/library/users/me';
     } else {
         window.location.href = '/library/auth/login';

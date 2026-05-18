@@ -363,8 +363,6 @@ func (bs *BookServiseImpl) AddLabel(bookId uint, labelIds []uint) error {
 		return fmt.Errorf("bsi: book with id %d not found: %w", bookId, err)
 	}
 
-	fmt.Printf("Adding labels %v to book %d\n", labelIds, bookId)
-
 	var labels []models.Label
 	if len(labelIds) > 0 {
 		if err := bs.collection.Find(&labels, labelIds).Error; err != nil {
