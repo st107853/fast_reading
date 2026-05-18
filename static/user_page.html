@@ -8,6 +8,7 @@
     <link rel="stylesheet" type="text/css" href="/static/user_page.css">
     <script src="/static/user_page.js"></script>
     <script src="/static/script.js" defer></script>
+    <script src="/static/labels.js" defer></script>
 </head>
 <body>
   <div class="up-container">
@@ -27,7 +28,7 @@
         <div class="up-header-group-right">
             <div class="up-user-info">
                 <h3 class="up-user-name">{{.Name}}</h3>
-                <span class="fr-label">100 Coins</span>
+                <!-- <span class="fr-label">100 Coins</span> -->
             </div>
         </div>
     </header>
@@ -45,11 +46,11 @@
     <div id="favBooks">
         <div class="fr-list fr-list--left">
             {{range .FavouriteLabels}}
-                <span class="fr-label">{{.Name}}</span>
+                <span class="fr-label fr-label--interactive" data-id="{{.LabelID}}" onclick="event.preventDefault(); applyFilters(3);">{{.Name}}</span>
             {{end}}
         </div>
 
-        <section class="objects fr-card-grid">
+        <section id="fav-results-container" class="objects fr-card-grid">
         {{range .FavouriteBooks}}
             {{template "bookCard" .}}
         {{end}}
@@ -59,11 +60,11 @@
     <div id="createdBooks" class="fr-hidden">
         <div class="fr-list fr-list--left">
             {{range .CreatedLabels}}
-                <span class="fr-label">{{.Name}}</span>
+                <span class="fr-label fr-label--interactive" data-id="{{.LabelID}}" onclick="event.preventDefault(); applyFilters(2);">{{.Name}}</span>
             {{end}}
         </div>
 
-      <section class="objects fr-card-grid">
+      <section id="created-results-container" class="objects fr-card-grid">
         {{range .CreatedBooks}}
             {{template "bookCard" .}}
         {{end}}

@@ -8,6 +8,7 @@
     <link rel="stylesheet" type="text/css" href="/static/main_page.css">
     <script src="/static/main_page.js"></script>
     <script src="/static/script.js" defer></script>
+    <script src="/static/labels.js" defer></script>
 </head>
 <body>
     <div class="fr-container">
@@ -16,7 +17,7 @@
         {{template "settingsModal" .}}
 
         <main>
-            <form id="bookForm" onsubmit="event.preventDefault(); applyFilters(false);">
+            <form id="bookForm" onsubmit="event.preventDefault(); applyFilters(0);">
                 <div class="mp-search-container">
                     <input name="name" id="keyword-input" type="text" class="mp-search-input" placeholder="Enter the title of the book..." aria-label="Enter the title of the book">
                     <span class="mp-search-icon"></span>
@@ -25,14 +26,14 @@
 
             <div class="fr-list" id="labels-container">
                 {{range .Labels}}
-                    <div class="fr-label" data-id="{{.LabelID}}" tabindex="0">{{.Name}}</div>
+                    <div class="fr-label fr-label--interactive" data-id="{{.LabelID}}" tabindex="0">{{.Name}}</div>
                 {{end}}
             </div>
 
             <div class="fr-list fr-list--left">
                 <button class="fr-btn--large fr-btn--chosed">All books</button>
-                <a href="/library/continue/" class="fr-btn fr-btn--large">Continue reading</a>
-                <button onclick="applyFilters(false)" class="fr-btn--large fr-btn-right">Apply Filters</button>
+                <a href="/library/continue/" class="fr-btn fr-btn--large" onclick="handleProtectedLink(event)">Continue reading</a>
+                <button onclick="applyFilters(0)" class="fr-btn--large fr-btn-right">Apply Filters</button>
             </div>
             <hr>
 
@@ -50,9 +51,11 @@
             {{range .LastReleased}}
                 <div class="mp-book-card">
                     <div class="mp-book-info">
-                        <h2>{{.Name}}</h2>
-                        <h3>{{.Author}}</h3>
-                        <p>{{.Description}}</p>
+                        <a class="link-standart-color" href="/library/book/{{.BookID}}">
+                            <h2>{{.Name}}</h2>
+                            <h3>{{.Author}}</h3>
+                            <p>{{.Description}}</p>
+                        </a>
                         <div class="fr-list fr-list--left" role="group" aria-label="Book categories">
                             {{range .BookLabels}}
                                 <div class="fr-label">{{.Name}}</div>

@@ -363,8 +363,6 @@ func (bs *BookServiseImpl) AddLabel(bookId uint, labelIds []uint) error {
 		return fmt.Errorf("bsi: book with id %d not found: %w", bookId, err)
 	}
 
-	fmt.Printf("Adding labels %v to book %d\n", labelIds, bookId)
-
 	var labels []models.Label
 	if len(labelIds) > 0 {
 		if err := bs.collection.Find(&labels, labelIds).Error; err != nil {
@@ -403,20 +401,35 @@ func searchScope(keyword string, labelIDs []uint) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-func (bs *BookServiseImpl) SearchBooks(keyword string, labelIDs []uint, readingOnly bool, userID uint) ([]models.BookBase, error) {
+// Filter code:
+// 0 - regular
+// 1 - continue reading
+// 2 - created
+// 3 - favourite
+
+func (bs *BookServiseImpl) SearchBooks(keyword string, labelIDs []uint, filterCode string, userID uint) ([]models.BookBase, error) {
 	var books []models.BookBase
 
 	query := bs.collection.Model(&models.BookBase{})
 
-	if readingOnly {
+	switch filterCode {
+	case "0":
+		query = query.Where("released = ?", true)
+	case "1":
 		query = query.Joins("JOIN reading_progress ON reading_progress.book_id = books.id").
 			Where("reading_progress.user_id = ?", userID).
 			Distinct("books.*")
+	case "2":
+		query = query.
+			Where("creator_user_id = ?", userID).
+			Distinct("books.*")
+	case "3":
+		query = query.Joins("JOIN user_favorites ON user_favorites.book_id = books.id").
+			Where("user_favorites.user_id = ?", userID).
+			Distinct("books.*")
 	}
 
-	err := query.Scopes(searchScope(keyword, labelIDs)).
-		Where("released = ?", true).
-		Find(&books).Error
+	err := query.Scopes(searchScope(keyword, labelIDs)).Find(&books).Error
 
 	if err != nil {
 		return nil, fmt.Errorf("bsi: failed to search books: %w", err)

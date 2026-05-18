@@ -75,6 +75,10 @@
 </body>
 <script>
     function addToFavorites(button) {
+        if (!window.isLoggedIn()) {
+            return;
+        }
+
         var bookNameElement = `{{.Name}}`;
         var bookAuthorElement = `{{.Author}}`;
         var bookId = parseInt(`{{.BookID}}`);

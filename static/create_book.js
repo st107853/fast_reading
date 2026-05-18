@@ -187,7 +187,7 @@ async function saveUpdates(button, bookId) {
     const url = bookId ? `/library/${bookId}` : `/library/`;
     
     button.disabled = true;
-    button.textContent = 'Отправка...';
+    button.textContent = 'Sending...';
 
     try {
         const response = await fetch(url, { method, body: formData });

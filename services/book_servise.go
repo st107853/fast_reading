@@ -25,5 +25,5 @@ type BookService interface {
 	UpdateBook(bookId uint, file *multipart.FileHeader, book models.Book) (models.Book, error)
 	UpdateChapter(chapterId uint, chapter models.Chapter) (models.Chapter, error)
 	AddLabel(bookId uint, labelIds []uint) error
-	SearchBooks(keyword string, labelIds []uint, readingOnly bool, userID uint) ([]models.BookBase, error)
+	SearchBooks(keyword string, labelIds []uint, filterCode string, userID uint) ([]models.BookBase, error)
 }
