@@ -90,6 +90,7 @@ function getResultsContainer(code) {
     if (code === 3) {
         return document.getElementById('fav-results-container');
     }
+    
     return document.getElementById('results-container');
 }
 
