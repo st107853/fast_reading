@@ -72,7 +72,6 @@
             {{end}}
         </ul>
     </div>
-</body>
 <script>
     function addToFavorites(button) {
         if (!window.isLoggedIn()) {
@@ -97,7 +96,6 @@
         var xhr = new XMLHttpRequest();
         xhr.open("POST", "/library/book/"+bookId+"/favourite", true);
         xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.send(JSON.stringify(dict));
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4) {
                 if (xhr.status === 201) {
@@ -107,6 +105,8 @@
                 }
             }
         };
+        xhr.send(JSON.stringify(dict));
     }
 </script>
+</body>
 </html>

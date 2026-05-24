@@ -45,30 +45,61 @@
     </div>
     <script>
         const text = `{{.Chapter.Text}}`;
-        const words = text.split(/\s+/);
+        
+        const words = text.split(/\s+/).filter(Boolean);
+
         const play = document.getElementById('play');
+        const wordBox = document.getElementById('book-text');
+        const textArea = document.getElementById('scrollable-content-reading');
 
         const pathParts = window.location.pathname.split('/');
-
-        
-        let bookId = parseInt(pathParts[3]) || 0;
+        let bookId   = parseInt(pathParts[3]) || 0;
         let chapterId = parseInt(pathParts[4]) || 0;
-        let index = parseInt(pathParts[5]) || 0;
-
-        console.log("Parsed from URL - bookId:", bookId, ", chapterId:", chapterId, ", index:", index);
+        let index    = parseInt(pathParts[5]) || 0;
 
         let intervalId = null;
         let speed = 600;
 
-        console.log("Initial index from URL:", index);
+        // Wrap every word in a <span data-index="N">
+        textArea.innerHTML = words
+            .map((w, i) => `<span class="bp-text-word" data-index="${i}">${w}</span>`)
+            .join(' ');
 
+        // Click a word → jump reader to that index
+        textArea.addEventListener('click', (e) => {
+            const span = e.target.closest('.bp-text-word');
+            if (!span) return;
+
+            index = parseInt(span.dataset.index) || 0;
+            wordBox.innerText = words[index];   // update the bp-word-box immediately
+            highlightCurrent();                 // sync highlight
+        });
+
+        // Mark the word in the text area matching bp-word-box ───────
+        function highlightCurrent() {
+            // Remove previous highlight
+            const prev = textArea.querySelector('.bp-word-highlight');
+            if (prev) prev.classList.remove('bp-word-highlight');
+
+            // Highlight the span at current index
+            const current = textArea.querySelector(`[data-index="${index}"]`);
+            if (current) {
+                current.classList.add('bp-word-highlight');
+                // Auto-scroll the text area to keep the highlighted word visible
+                current.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        }
+
+        // Show initial word
         if (index < words.length) {
-            document.getElementById("book-text").innerText = words[index];
+            wordBox.innerText = words[index];
+            highlightCurrent();
         }
 
         function updateText() {
             if (index < words.length) {
-                document.getElementById("book-text").innerText = words[index];
+                wordBox.innerText = words[index];
+                highlightCurrent();
                 index++;
             } else {
                 stopReading();
@@ -76,9 +107,7 @@
         }
 
         async function saveProgress() {
-            
             const url = `/library/${bookId}/${chapterId}/${index}`;
-
             try {
                 const response = await fetch(url, { method: 'PUT' });
                 if (!response.ok) console.error("Failed to save progress");
@@ -101,20 +130,25 @@
         }
 
         play.addEventListener('change', (e) => {
-            if (e.target.checked) {
-                startReading();
-            } else {
-                stopReading();
-            }
+            e.target.checked ? startReading() : stopReading();
         });
 
         function updateSpeed() {
-            speed = parseInt(document.getElementById("speed").value, 10);
+            speed = Math.max(100, parseInt(document.getElementById("speed").value, 10) || 600);
             if (intervalId) {
                 clearInterval(intervalId);
                 intervalId = setInterval(updateText, speed);
             }
         }
+
+        window.addEventListener('beforeunload', () => {
+            if (intervalId) saveProgress();
+        });
+
+        document.getElementById('scrollRange').addEventListener('input', (e) => {
+            const pct = e.target.value / 100;
+            textArea.scrollTop = pct * (textArea.scrollHeight - textArea.clientHeight);
+        });
     </script>
 </body>
 </html>

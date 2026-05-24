@@ -118,6 +118,22 @@
     width: 100%;
 }
 
+/* Current word highlight in the text area */
+.bp-text-word {
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.1s;
+}
+
+.bp-text-word:hover {
+    background: var(--neutral-2-color);
+}
+
+.bp-word-highlight {
+    background: var(--neutral-3-color);       /* or your theme's accent colour */
+    border-radius: 3px;
+}
+
 .bp-controls {
     grid-area: controls;
 
