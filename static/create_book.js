@@ -108,15 +108,7 @@ function handleImageUpload() {
 }
 
 async function releaseBook(button, bookId) {
-    const bookName = document.getElementById('book-name');
-    const bookAuthor = document.getElementById('author-name');
-    const publicationYear = document.getElementById('publication-year');
-    const bookText = document.getElementById('book-description');
-
-    if (!bookName || !bookAuthor || !publicationYear || !bookText) {
-        showMessage("Error: Could not find one of the required form elements.", 'error');
-        return;
-    }
+    saveUpdates(button, bookId); // Save any unsaved changes before releasing
 
     const method = "PUT";
     const url = `/library/release/${bookId}`;

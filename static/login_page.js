@@ -23,58 +23,75 @@ toggleLink.addEventListener("click", () => {
     }
 });
 
-loginForm.addEventListener("submit", (e) => {
+loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+    
     const email = document.getElementById("login-email").value;
     const password = document.getElementById("login-password").value;
 
-    var dict = {
-        "email": email,
-        "password": password
-    };
+    try {
+        const response = await fetch("/library/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
 
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/library/auth/login", true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.send(JSON.stringify(dict));
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 201)) {
-            window.location.href = "/library/users/me";
+        if (!response.ok) {
+            const data = await response.json();
+            alert(data.error || "Invalid email or password");
+            return;
         }
-    };
-    // Here you can send data to the server
+
+        window.location.href = "/library/users/me";
+
+    } catch (err) {
+        alert("Something went wrong, please try again");
+        console.error(err);
+    }
 });
 
-registerForm.addEventListener("submit", (e) => {
+registerForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+    
     const email = document.getElementById("register-email").value;
     const name = document.getElementById("register-name").value;
     const password = document.getElementById("register-password").value;
     const passwordConfirm = document.getElementById("register-confirm-password").value;
 
-    var dict = {
-        "email": email,
-        "name": name,
-        "password": password,
-        "passwordConfirm": passwordConfirm
-    };
+    if (password !== passwordConfirm) {
+        alert("Passwords do not match");
+        return;
+    }
 
-    console.log("Sended to server data:", dict);
+    try {
+        const registerResponse = await fetch("/library/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, name, password, passwordConfirm })
+        });
 
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/library/auth/register", true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.send(JSON.stringify(dict));
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 201)) {
-            xhr.open("POST", "/library/auth/login", true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.send(JSON.stringify(dict));
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 201)) {
-                    window.location.href = "/library/users/me";
-                }
-            };    
+        if (!registerResponse.ok) {
+            const data = await registerResponse.json();
+            alert(data.error || "Registration failed");
+            return;
         }
-    };
+
+        const loginResponse = await fetch("/library/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
+
+        if (!loginResponse.ok) {
+            const data = await loginResponse.json();
+            alert(data.error || "Login after registration failed");
+            return;
+        }
+
+        window.location.href = "/library/users/me";
+
+    } catch (err) {
+        alert("Something went wrong, please try again");
+        console.error(err);
+    }
 });

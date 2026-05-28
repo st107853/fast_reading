@@ -14,54 +14,67 @@ import (
 	"gorm.io/gorm"
 )
 
-type BookServiseImpl struct {
+type BookServiceImpl struct {
 	collection *gorm.DB
 	ctx        context.Context
 }
 
-func NewBookService(collection *gorm.DB, ctx context.Context) *BookServiseImpl {
-	return &BookServiseImpl{collection: collection, ctx: ctx}
+func NewBookService(collection *gorm.DB, ctx context.Context) *BookServiceImpl {
+	return &BookServiceImpl{collection: collection, ctx: ctx}
 }
 
 // InsertBook inserts a new book into the database and saves the cover file if provided.
-func (bs *BookServiseImpl) InsertBook(book models.Book, file *multipart.FileHeader, creatorUserID uint) (uint, error) {
-
-	// Set the creator user ID before inserting
+func (bs *BookServiceImpl) InsertBook(book models.Book, file *multipart.FileHeader, creatorUserID uint) (uint, error) {
 	book.CreatorUserID = creatorUserID
 
-	if err := bs.collection.Create(&book).Error; err != nil {
-		return 0, fmt.Errorf("failed to insert book record: %w", err)
+	// Wrap the entire DB work in a transaction
+	var bookID uint
+	err := bs.collection.Transaction(func(tx *gorm.DB) error {
+
+		if err := tx.Create(&book).Error; err != nil {
+			return fmt.Errorf("failed to insert book: %w", err)
+		}
+		bookID = book.BookID
+
+		if file == nil {
+			return nil
+		}
+
+		// Prepare the cover path and update inside the same transaction
+		ext := filepath.Ext(file.Filename)
+		coverFileName := fmt.Sprintf("%d%s", bookID, ext)
+
+		if err := tx.Model(&book).Update("cover_path", coverFileName).Error; err != nil {
+			return fmt.Errorf("failed to update cover_path: %w", err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return 0, err
 	}
 
-	bookId := book.BookID
-
-	// Save the cover file if provided
+	// Write file ONLY after transaction committed successfully
 	if file != nil {
 		ext := filepath.Ext(file.Filename)
-
-		storageDir := "./covers"                          // Define a storage directory for covers
-		coverFileName := fmt.Sprintf("%d%s", bookId, ext) // Cover name = book ID + extension
-		dstPath := filepath.Join(storageDir, coverFileName)
+		coverFileName := fmt.Sprintf("%d%s", bookID, ext)
+		dstPath := filepath.Join("./covers", coverFileName)
 
 		if err := saveFileToDisk(file, dstPath); err != nil {
-			return bookId, err
-		}
+			bs.collection.Model(&models.Book{}).
+				Where("id = ?", bookID).
+				Update("cover_path", nil)
 
-		// Updating the book record with the cover path
-		book.CoverPath = models.FormatCoverURL(coverFileName)
-
-		err := bs.collection.Model(&book).Update("cover_path", coverFileName).Error
-		if err != nil {
-			os.Remove(dstPath)
-			return bookId, fmt.Errorf("failed to update book with cover_path: %w", err)
+			return bookID, fmt.Errorf("book created but cover upload failed: %w", err)
 		}
 	}
 
-	return bookId, nil
+	return bookID, nil
 }
 
 // FindBookByID finds and returns book by its ID.
-func (bs *BookServiseImpl) FindBookByID(bookID uint) (models.GetBook, error) {
+func (bs *BookServiceImpl) FindBookByID(bookID uint) (models.GetBook, error) {
 	var result models.GetBook
 
 	err := bs.collection.Model(&models.Book{}).
@@ -80,7 +93,7 @@ func (bs *BookServiseImpl) FindBookByID(bookID uint) (models.GetBook, error) {
 }
 
 // FindBooksByCreatorID finds and returns books by the creator's ID.
-func (bs *BookServiseImpl) FindBooksByCreatorID(creatorID uint) ([]models.BookBase, []models.Label, error) {
+func (bs *BookServiceImpl) FindBooksByCreatorID(creatorID uint) ([]models.BookBase, []models.Label, error) {
 	var books []models.BookBase
 	var ids []uint
 
@@ -97,7 +110,7 @@ func (bs *BookServiseImpl) FindBooksByCreatorID(creatorID uint) ([]models.BookBa
 }
 
 // FindFavoriteBooksByUserEmail finds and returns favorite books by user ID.
-func (bs *BookServiseImpl) FindFavoriteBooksByUserID(userID uint) ([]models.BookBase, []models.Label, error) {
+func (bs *BookServiceImpl) FindFavoriteBooksByUserID(userID uint) ([]models.BookBase, []models.Label, error) {
 	var books []models.BookBase
 	var ids []uint
 	bs.collection.Table("user_favorites").Where("user_id = ?", userID).Pluck("book_id", &ids)
@@ -109,10 +122,10 @@ func (bs *BookServiseImpl) FindFavoriteBooksByUserID(userID uint) ([]models.Book
 
 	labels, err := getLabels(bs, ids)
 
-	return books, labels, nil
+	return books, labels, err
 }
 
-func (bs *BookServiseImpl) FindStartedBooks(userID uint) ([]models.BookBase, error) {
+func (bs *BookServiceImpl) FindStartedBooks(userID uint) ([]models.BookBase, error) {
 	var books []models.BookBase
 	err := bs.collection.Joins("JOIN reading_progress ON reading_progress.book_id = books.id").
 		Where("reading_progress.user_id = ?", userID).
@@ -125,7 +138,7 @@ func (bs *BookServiseImpl) FindStartedBooks(userID uint) ([]models.BookBase, err
 }
 
 // InsertChapter inserts a new chapter into the database and assigns an order if not set.
-func (bs *BookServiseImpl) InsertChapter(chapter models.Chapter) (uint, error) {
+func (bs *BookServiceImpl) InsertChapter(chapter models.Chapter) (uint, error) {
 	// If no order provided, calculate next order for the book
 	if chapter.ChapterOrder == 0 {
 		var count int64
@@ -142,7 +155,7 @@ func (bs *BookServiseImpl) InsertChapter(chapter models.Chapter) (uint, error) {
 }
 
 // FindChapterByID finds and returns chapter by its ID.
-func (bs *BookServiseImpl) FindChapterByID(id string) (models.Chapter, error) {
+func (bs *BookServiceImpl) FindChapterByID(id string) (models.Chapter, error) {
 	var chapter models.Chapter
 
 	err := bs.collection.First(&chapter, id).Error
@@ -154,7 +167,7 @@ func (bs *BookServiseImpl) FindChapterByID(id string) (models.Chapter, error) {
 }
 
 // FindBooksChapterByIDs finds n'th book's chapter.
-func (bs *BookServiseImpl) FindBooksChapterByIDs(bookId, chapterId uint) (models.ChapterResponse, error) {
+func (bs *BookServiceImpl) FindBooksChapterByIDs(bookId, chapterId uint) (models.ChapterResponse, error) {
 	var chapterResponse models.ChapterResponse
 
 	err := bs.collection.Where("book_id = ? AND chapter_order = ?", bookId, chapterId).First(&chapterResponse.Chapter).Error
@@ -171,12 +184,12 @@ func (bs *BookServiseImpl) FindBooksChapterByIDs(bookId, chapterId uint) (models
 }
 
 // DeleteAll deletes all books.
-func (bs *BookServiseImpl) DeleteAll() error {
+func (bs *BookServiceImpl) DeleteAll() error {
 	return bs.collection.Exec("DELETE FROM books").Error
 }
 
 // DeleteBook delete one book by its ID.
-func (bs *BookServiseImpl) DeleteBook(bookId uint) error {
+func (bs *BookServiceImpl) DeleteBook(bookId uint) error {
 	if err := bs.collection.Unscoped().Delete(&models.Book{}, bookId).Error; err != nil {
 		return fmt.Errorf("bsi: failed to hard delete book: %w", err)
 	}
@@ -186,7 +199,7 @@ func (bs *BookServiseImpl) DeleteBook(bookId uint) error {
 }
 
 // DeleteChapter deletes one chapter by its ID.
-func (bs *BookServiseImpl) DeleteChapter(chapterId string) error {
+func (bs *BookServiceImpl) DeleteChapter(chapterId string) error {
 	if err := bs.collection.Unscoped().Delete(&models.Chapter{}, chapterId).Error; err != nil {
 		return fmt.Errorf("bsi: failed to hard delete chapter: %w", err)
 	}
@@ -195,7 +208,7 @@ func (bs *BookServiseImpl) DeleteChapter(chapterId string) error {
 }
 
 // ListAllBooks finds and returns all books.
-func (bs *BookServiseImpl) ListAllBooks() ([]models.BookBase, error) {
+func (bs *BookServiceImpl) ListAllBooks() ([]models.BookBase, error) {
 	var books []models.BookBase
 
 	err := bs.collection.Limit(20).Where("released = ?", true).Find(&books).Error
@@ -207,7 +220,7 @@ func (bs *BookServiseImpl) ListAllBooks() ([]models.BookBase, error) {
 }
 
 // ListAllLabels finds and returns all labels.
-func (bs *BookServiseImpl) ListAllLabels() ([]*models.Label, error) {
+func (bs *BookServiceImpl) ListAllLabels() ([]*models.Label, error) {
 	var labels []*models.Label
 
 	err := bs.collection.Find(&labels).Error
@@ -218,7 +231,7 @@ func (bs *BookServiseImpl) ListAllLabels() ([]*models.Label, error) {
 	return labels, nil
 }
 
-func (bs *BookServiseImpl) ListLastReleased(n int) ([]models.Book, error) {
+func (bs *BookServiceImpl) ListLastReleased(n int) ([]models.Book, error) {
 	var books []models.Book
 	err := bs.collection.Where("released = ?", true).Order("release_date DESC").Limit(n).Find(&books).Error
 	if err != nil {
@@ -242,7 +255,7 @@ func (bs *BookServiseImpl) ListLastReleased(n int) ([]models.Book, error) {
 }
 
 // ReleaseBook sets the release status of a book to true.
-func (bs *BookServiseImpl) ReleaseBook(bookId uint) error {
+func (bs *BookServiceImpl) ReleaseBook(bookId uint) error {
 	var book models.Book
 
 	if err := bs.collection.First(&book, bookId).Error; err != nil {
@@ -265,7 +278,7 @@ func (bs *BookServiseImpl) ReleaseBook(bookId uint) error {
 }
 
 // UpdateBook find and updates a book's fields.
-func (bs *BookServiseImpl) UpdateBook(bookId uint, file *multipart.FileHeader, input models.Book) (models.Book, error) {
+func (bs *BookServiceImpl) UpdateBook(bookId uint, file *multipart.FileHeader, input models.Book) (models.Book, error) {
 	var existingBook models.Book
 
 	if err := bs.collection.First(&existingBook, bookId).Error; err != nil {
@@ -334,7 +347,7 @@ func (bs *BookServiseImpl) UpdateBook(bookId uint, file *multipart.FileHeader, i
 }
 
 // UpdateChapter find and updates a chapter's fields.
-func (bs *BookServiseImpl) UpdateChapter(chapterId uint, chapter models.Chapter) (models.Chapter, error) {
+func (bs *BookServiceImpl) UpdateChapter(chapterId uint, chapter models.Chapter) (models.Chapter, error) {
 	var existingChapter models.Chapter
 	if err := bs.collection.First(&existingChapter, chapterId).Error; err != nil {
 		return models.Chapter{}, fmt.Errorf("bsi: chapter with id %d not found: %w", chapterId, err)
@@ -356,7 +369,7 @@ func (bs *BookServiseImpl) UpdateChapter(chapterId uint, chapter models.Chapter)
 	return existingChapter, nil
 }
 
-func (bs *BookServiseImpl) AddLabel(bookId uint, labelIds []uint) error {
+func (bs *BookServiceImpl) AddLabel(bookId uint, labelIds []uint) error {
 	var book models.Book
 
 	if err := bs.collection.First(&book, bookId).Error; err != nil {
@@ -407,7 +420,7 @@ func searchScope(keyword string, labelIDs []uint) func(db *gorm.DB) *gorm.DB {
 // 2 - created
 // 3 - favourite
 
-func (bs *BookServiseImpl) SearchBooks(keyword string, labelIDs []uint, filterCode string, userID uint) ([]models.BookBase, error) {
+func (bs *BookServiceImpl) SearchBooks(keyword string, labelIDs []uint, filterCode string, userID uint) ([]models.BookBase, error) {
 	var books []models.BookBase
 
 	query := bs.collection.Model(&models.BookBase{})
@@ -457,7 +470,7 @@ func saveFileToDisk(file *multipart.FileHeader, dstPath string) error {
 	return nil
 }
 
-func getLabels(bs *BookServiseImpl, ids []uint) ([]models.Label, error) {
+func getLabels(bs *BookServiceImpl, ids []uint) ([]models.Label, error) {
 	var labels []models.Label
 
 	err := bs.collection.

@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -42,13 +41,20 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 	user.Password = hashedPassword
 
 	// Check for existing user (email must be unique)
-	var existing models.User
-	if err := uc.collection.WithContext(uc.ctx).
+	var count int64
+
+	err = uc.collection.WithContext(uc.ctx).
+		Model(&models.User{}).
 		Where("email = ?", user.Email).
-		First(&existing).Error; err == nil {
-		return nil, fmt.Errorf("user with that email already exists")
-	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		Count(&count).Error
+
+	if err != nil {
 		return nil, fmt.Errorf("failed to check existing user: %w", err)
+	}
+
+	// Если count > 0, значит пользователь существует
+	if count > 0 {
+		return nil, fmt.Errorf("user with that email already exists")
 	}
 
 	// Create user
