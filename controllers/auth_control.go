@@ -5,7 +5,6 @@ import (
 	"errors"
 	"html/template"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -21,10 +20,11 @@ var loginPage = template.Must(template.New("login_page.html").ParseFiles("./stat
 type AuthController struct {
 	authService services.AuthService
 	userService services.UserService
+	config      config.Config
 }
 
-func NewAuthController(authService services.AuthService, userService services.UserService) AuthController {
-	return AuthController{authService, userService}
+func NewAuthController(authService services.AuthService, userService services.UserService, cfg config.Config) AuthController {
+	return AuthController{authService, userService, cfg}
 }
 
 // LoginPage renders the login page.
@@ -87,32 +87,21 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 		return
 	}
 
-	config, err := config.LoadConfig(".")
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "error": "Could not load config " + err.Error()})
-		return
-	}
-
 	// Generate Tokens
-	access_token, err := utils.CreateToken(config.AccessTokenExpiresIn, user.ID, config.AccessTokenPrivateKey)
+	access_token, err := utils.CreateToken(ac.config.AccessTokenExpiresIn, user.ID, ac.config.AccessTokenPrivateKey)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "error": err.Error()})
 		return
 	}
 
-	refresh_token, err := utils.CreateToken(config.RefreshTokenExpiresIn, user.ID, config.RefreshTokenPrivateKey)
+	refresh_token, err := utils.CreateToken(ac.config.RefreshTokenExpiresIn, user.ID, ac.config.RefreshTokenPrivateKey)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "error": err.Error()})
 		return
 	}
 
-	id_string := strconv.Itoa(int(user.ID))
-
-	ctx.SetCookie("access_token", access_token, config.AccessTokenMaxAge*60, "/", config.Host, false, true)
-	ctx.SetCookie("refresh_token", refresh_token, config.RefreshTokenMaxAge*60, "/", config.Host, false, true)
-	ctx.SetCookie("logged_in", "true", config.AccessTokenMaxAge*60, "/", config.Host, false, false)
-	ctx.SetCookie("email", credentials.Email, config.AccessTokenMaxAge*60, "/", config.Host, false, false)
-	ctx.SetCookie("user_id", id_string, config.AccessTokenMaxAge*60, "/", config.Host, false, false)
+	ctx.SetCookie("access_token", access_token, ac.config.AccessTokenMaxAge*60, "/", ac.config.Host, false, true)
+	ctx.SetCookie("refresh_token", refresh_token, ac.config.RefreshTokenMaxAge*60, "/", ac.config.Host, false, true)
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "access_token": access_token})
 }
@@ -125,9 +114,7 @@ func (ac *AuthController) RefreshAccessToken(ctx *gin.Context) {
 		return
 	}
 
-	config, _ := config.LoadConfig(".")
-
-	sub, err := utils.ValidateToken(cookie, config.RefreshTokenPublicKey)
+	sub, err := utils.ValidateToken(cookie, ac.config.RefreshTokenPublicKey)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "error": err.Error()})
 		return
@@ -141,25 +128,23 @@ func (ac *AuthController) RefreshAccessToken(ctx *gin.Context) {
 		return
 	}
 
-	access_token, err := utils.CreateToken(config.AccessTokenExpiresIn, user.ID, config.AccessTokenPrivateKey)
+	access_token, err := utils.CreateToken(ac.config.AccessTokenExpiresIn, user.ID, ac.config.AccessTokenPrivateKey)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "error": err.Error()})
 		return
 	}
 
-	ctx.SetCookie("access_token", access_token, config.AccessTokenMaxAge*60, "/", config.Host, false, true)
-	ctx.SetCookie("logged_in", "true", config.AccessTokenMaxAge*60, "/", config.Host, false, false)
+	ctx.SetCookie("access_token", access_token, ac.config.AccessTokenMaxAge*60, "/", ac.config.Host, false, true)
+	ctx.SetCookie("logged_in", "true", ac.config.AccessTokenMaxAge*60, "/", ac.config.Host, false, false)
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "access_token": access_token})
 }
 
 // LogoutUser sends expired cookies to the user’s browser or client to log them out.
 func (ac *AuthController) LogoutUser(ctx *gin.Context) {
-	conf, _ := config.LoadConfig(".")
 
-	ctx.SetCookie("access_token", "", -1, "/", conf.Host, false, true)
-	ctx.SetCookie("refresh_token", "", -1, "/", conf.Host, false, true)
-	ctx.SetCookie("logged_in", "", -1, "/", conf.Host, false, true)
+	ctx.SetCookie("access_token", "", -1, "/", ac.config.Host, false, true)
+	ctx.SetCookie("refresh_token", "", -1, "/", ac.config.Host, false, true)
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success"})
 }

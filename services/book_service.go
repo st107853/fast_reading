@@ -10,6 +10,7 @@ type BookService interface {
 	InsertBook(input models.Book, file *multipart.FileHeader, creatorUserID uint) (uint, error)
 	FindBookByID(bookId uint) (models.GetBook, error)
 	FindBooksByCreatorID(creatorId uint) ([]models.BookBase, []models.Label, error)
+	IsBookCreator(bookID, userID uint) bool
 	FindFavoriteBooksByUserID(userId uint) ([]models.BookBase, []models.Label, error)
 	FindStartedBooks(userID uint) ([]models.BookBase, error)
 	InsertChapter(chapter models.Chapter) (uint, error)

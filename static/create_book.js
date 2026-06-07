@@ -108,78 +108,95 @@ function handleImageUpload() {
 }
 
 async function releaseBook(button, bookId) {
-    saveUpdates(button, bookId); // Save any unsaved changes before releasing
 
-    const method = "PUT";
-    const url = `/library/release/${bookId}`;
-    
-    // Mocking the fetch call for demonstration purposes in Canvas
+    const savedId = await saveUpdates(null, bookId);
+
+    if (!savedId) {
+        showMessage("Could not publish: book failed to save.", 'error');
+        return;
+    }
+
     button.disabled = true;
     button.textContent = 'Publishing...';
 
-   try {
-        const response = await fetch(url, {
-            method,
+    try {
+        const response = await fetch(`/library/release/${savedId}`, {
+            method: "PUT",
         });
-        if (response.status === 200) {
-            // button.classList.add("clicked");
+
+        if (response.ok) {
             showMessage("Book successfully published!", 'success');
-        } 
-        else {
+            button.textContent = 'Published';
+        } else {
             const errorText = await response.text();
             throw new Error(errorText);
         }
-    } catch (err) {
-        console.error("Error during fetch:", err);
-        showMessage("Error: " + err.message, 'error');
-    } finally {
-        //button.classList.remove("clicked");
-    }
-    
-    button.disabled = false;
-    button.textContent = 'Publish';
 
-    
+    } catch (err) {
+        console.error("Publish error:", err);
+        showMessage("Error publishing: " + err.message, 'error');
+        button.textContent = 'Publish';
+
+    } finally {
+        button.disabled = false;
+    }
 }
 
+async function addChapter(button, bookId) {
+    button.disabled = true;
+    button.textContent = 'Saving...';
+
+    const savedId = await saveUpdates(null, bookId);
+
+    if (!savedId) {
+        showMessage("Could not navigate: book failed to save.", 'error');
+        button.disabled = false;
+        button.textContent = 'Add Chapter';
+        return;
+    }
+
+    // Navigate to the chapter page with the confirmed book id
+    window.location.href = `/library/addbook/${savedId}/chapter`;
+}
+
+// static/create_book.js
+
+// Returns the bookId (existing or newly created) on success, null on failure.
 async function saveUpdates(button, bookId) {
-    const savedImageURL = window.tempCoverImageBase64; 
     const bookName = document.getElementById('book-name');
     const bookAuthor = document.getElementById('author-name');
     const publicationYear = document.getElementById('publication-year');
-    const bookText = document.getElementById('book-description');
+    const bookDescription = document.getElementById('book-description');
 
-    if (!bookName || !bookAuthor || !publicationYear || !bookText) {
-        showMessage("Please fill in all required fields.", 'error');
-        return;
+    if (!bookName?.value.trim() || !bookAuthor?.value.trim()) {
+        showMessage("Book name and author are required.", 'error');
+        return null;
     }
-    
+
     const formData = new FormData();
     formData.append('name', bookName.value.trim());
     formData.append('author', bookAuthor.value.trim());
     formData.append('publication_year', publicationYear.value.trim());
-    formData.append('description', bookText.value.trim());
+    formData.append('description', bookDescription.value.trim());
 
-    console.log("FormData entries:");
-    for (let pair of formData.entries()) {
-        console.log(pair[0]+ ': ' + pair[1]);
-    }
-
-    if (savedImageURL) {
+    if (window.tempCoverImageBase64) {
         try {
-            const imageBlob = dataURLtoBlob(savedImageURL);
-            let extension = imageBlob.type.split('/')[1] || 'jpg';
+            const imageBlob = dataURLtoBlob(window.tempCoverImageBase64);
+            const extension = imageBlob.type.split('/')[1] || 'jpg';
             formData.append('cover_image', imageBlob, `cover.${extension}`);
         } catch (e) {
             console.error("Blob error:", e);
         }
     }
 
-    const method = bookId ? "PUT" : "POST";
-    const url = bookId ? `/library/${bookId}` : `/library/`;
-    
-    button.disabled = true;
-    button.textContent = 'Sending...';
+    const isNew = !bookId || bookId === '0' || bookId === '';
+    const method = isNew ? "POST" : "PUT";
+    const url = isNew ? `/library/` : `/library/${bookId}`;
+
+    if (button) {
+        button.disabled = true;
+        button.textContent = 'Saving...';
+    }
 
     try {
         const response = await fetch(url, { method, body: formData });
@@ -187,31 +204,25 @@ async function saveUpdates(button, bookId) {
 
         if (!response.ok) throw new Error(result.error || "Server error");
 
-        // Creating new book
-        if (response.status === 201) {
-            const newBookId = result.book_id;
-
-            if (selectedLabels && selectedLabels.length > 0) {
-                await saveAllLabels(newBookId); 
-            }
-
-            window.location.href = `/library/addbook/${newBookId}`; 
-        } 
-        
-        // Updating existing book
-        else if (response.status === 200) {
-            if (selectedLabels && selectedLabels.length > 0) {
-                await saveAllLabels(bookId);
-            }
-            button.textContent = 'Saved';
+        // Save labels for both new and existing books
+        const savedId = isNew ? result.book_id : bookId;
+        if (selectedLabels && selectedLabels.some(Boolean)) {
+            await saveAllLabels(savedId);
         }
+
+        if (button) button.textContent = 'Saved';
+
+        // Return the id so callers can use it for navigation
+        return savedId;
 
     } catch (err) {
         console.error(err);
-        showMessage("Error: " + err.message, 'error');
-        button.textContent = 'Error';
+        showMessage("Error saving: " + err.message, 'error');
+        if (button) button.textContent = 'Save';
+        return null;
+
     } finally {
-        button.disabled = false;
+        if (button) button.disabled = false;
     }
 }
 
@@ -280,8 +291,8 @@ async function submitChapter(button, bookId, chapterId) {
     }
 
     // Set URL and method
-    const method = chapterId ? "PUT" : "POST";
-    const url = chapterId
+    const method = chapterId != 0 ? "PUT" : "POST";
+    const url = chapterId != 0
         ? `/library/addbook/${encodeURIComponent(bookId)}/chapter/${encodeURIComponent(chapterId)}`
         : `/library/addbook/${encodeURIComponent(bookId)}/chapter`;
 
@@ -299,15 +310,18 @@ async function submitChapter(button, bookId, chapterId) {
             body: JSON.stringify(payload)
         });
 
+        const result = await response.json();
+        const id = result.chapter_id || chapterId;
+
         // Create chapter
-        if (!chapterId && response.status === 201) {
+        if (response.status === 201) {
             button.classList.add('clicked');
-            window.location.href = `/library/addbook/${encodeURIComponent(bookId)}`;
+            window.location.href = `/library/addbook/${encodeURIComponent(bookId)}/chapter/${id}`;
             return;
         }
 
         // Update chapter
-        if (chapterId && response.status === 200) {
+        if (response.status === 200) {
             button.classList.add('clicked');
             return;
         }

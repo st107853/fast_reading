@@ -81,9 +81,3 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 
 	return dbResponse, nil
 }
-
-// SignInUser authenticates a user based on their credentials.
-// (Currently not implemented.)
-func (uc *AuthServiceImpl) SignInUser(*models.SignInInput) (*models.DBResponse, error) {
-	return nil, nil
-}

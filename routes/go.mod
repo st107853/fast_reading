@@ -16,6 +16,7 @@ replace github.com/st107853/fast_reading/config => ../config
 
 require (
 	github.com/gin-gonic/gin v1.10.0
+	github.com/st107853/fast_reading/config v0.0.0-00010101000000-000000000000
 	github.com/st107853/fast_reading/controllers v0.0.0-00010101000000-000000000000
 	github.com/st107853/fast_reading/middleware v0.0.0-00010101000000-000000000000
 	github.com/st107853/fast_reading/services v0.0.0-00010101000000-000000000000
@@ -58,7 +59,6 @@ require (
 	github.com/spf13/cast v1.7.1 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/spf13/viper v1.20.1 // indirect
-	github.com/st107853/fast_reading/config v0.0.0-00010101000000-000000000000 // indirect
 	github.com/st107853/fast_reading/models v0.0.0-00010101000000-000000000000 // indirect
 	github.com/st107853/fast_reading/utils v0.0.0-00010101000000-000000000000 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect

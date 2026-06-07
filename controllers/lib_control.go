@@ -21,6 +21,7 @@ var addBookChapter = template.Must(template.New("create_book_chapter.html").Pars
 var continuePage = template.Must(template.New("continue_page.html").ParseFiles("./static/continue_page.html", "./static/template.html"))
 
 type BookData struct {
+	IsLoggedIn   bool
 	Title        string
 	Books        []models.BookBase
 	Labels       []*models.Label
@@ -90,13 +91,13 @@ func (bc *BookController) AllBooks(c *gin.Context) {
 	}
 
 	data := BookData{
+		IsLoggedIn:   NewUserStatus(c).IsLoggedIn,
 		Title:        "All what we have",
 		Books:        books,
 		Labels:       labels,
 		LastReleased: lastReleased,
 	}
 
-	// Execute the template and write the output to the response writer
 	if err := mainPage.Execute(c.Writer, data); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -120,9 +121,10 @@ func (bc *BookController) ContinueReading(c *gin.Context) {
 	}
 
 	data := BookData{
-		Title:  "All what we have",
-		Labels: labels,
-		Books:  books,
+		IsLoggedIn: NewUserStatus(c).IsLoggedIn,
+		Title:      "All what we have",
+		Labels:     labels,
+		Books:      books,
 	}
 
 	// Execute the template and write the output to the response writer
@@ -184,11 +186,15 @@ func (bc *BookController) CreateChapter(c *gin.Context) {
 
 	id, err := bc.bookService.InsertChapter(chapter)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save chapter: " + err.Error()})
+		fmt.Println("Error inserting chapter:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save chapter: " + err.Error(), "chapter_id": id})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"chapter_id": id})
+	c.JSON(http.StatusCreated, gin.H{
+		"message":    "Chapter created successfully",
+		"chapter_id": id,
+	})
 }
 
 func (bc *BookController) EditBookChapter(c *gin.Context) {
@@ -200,8 +206,13 @@ func (bc *BookController) EditBookChapter(c *gin.Context) {
 		return
 	}
 
+	data := gin.H{
+		"Chapter":    chapter,
+		"IsLoggedIn": NewUserStatus(c).IsLoggedIn,
+	}
+
 	// Execute the bookPage template and write the output to the response writer
-	if err := addBookChapter.Execute(c.Writer, chapter); err != nil {
+	if err := addBookChapter.Execute(c.Writer, data); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -318,8 +329,12 @@ func (bc *BookController) GetBook(c *gin.Context) {
 
 	book.Progress = *progress
 
-	// Execute the bookPage template and write the output to the response writer
-	if err := bookPage.Execute(c.Writer, book); err != nil {
+	data := gin.H{
+		"Book":       book,
+		"IsLoggedIn": NewUserStatus(c).IsLoggedIn,
+	}
+
+	if err := bookPage.Execute(c.Writer, data); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -339,8 +354,12 @@ func (bc *BookController) GetChapter(c *gin.Context) {
 		return
 	}
 
-	// Execute the bookPage template and write the output to the response writer
-	if err := bookChapter.Execute(c.Writer, book); err != nil {
+	data := gin.H{
+		"Book":       book,
+		"IsLoggedIn": NewUserStatus(c).IsLoggedIn,
+	}
+
+	if err := bookChapter.Execute(c.Writer, data); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -349,8 +368,16 @@ func (bc *BookController) GetChapter(c *gin.Context) {
 // UpdateBook handles the request, including file upload and service call.
 func (bc *BookController) UpdateBook(c *gin.Context) {
 	var uri models.BookURI
+	userId, _ := c.Get("UserId")
+	uID, _ := userId.(uint)
+
 	if err := c.ShouldBindUri(&uri); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
+	}
+
+	if !bc.bookService.IsBookCreator(uri.BookID, uID) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You are not the creator of this book"})
 		return
 	}
 
@@ -380,9 +407,16 @@ func (bc *BookController) UpdateBook(c *gin.Context) {
 // DeleteBook deletes a book by its ID
 func (bc *BookController) DeleteBook(c *gin.Context) {
 	var uri models.BookURI
+	userId, _ := c.Get("UserId")
+	uID, _ := userId.(uint)
 
 	if err := c.ShouldBindUri(&uri); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
+	}
+
+	if !bc.bookService.IsBookCreator(uri.BookID, uID) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You are not the creator of this book"})
 		return
 	}
 
@@ -419,7 +453,8 @@ func (bc *BookController) AddBook(c *gin.Context) {
 		return
 	}
 
-	templateData := gin.H{
+	data := gin.H{
+		"IsLoggedIn":  NewUserStatus(c).IsLoggedIn,
 		"Name":        "Book title*",
 		"Author":      "Book author*",
 		"Description": "Book description*",
@@ -427,17 +462,28 @@ func (bc *BookController) AddBook(c *gin.Context) {
 		"AllLabels":   labels,
 	}
 
-	if err := addBook.Execute(c.Writer, templateData); err != nil {
+	if err := addBook.Execute(c.Writer, data); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 }
 
 func (bc *BookController) AddBookChapter(c *gin.Context) {
-	templateData := gin.H{
-		"BookID": c.Param("book_id"),
+	var uri models.BookURI
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
 	}
-	if err := addBookChapter.Execute(c.Writer, templateData); err != nil {
+
+	chapter := models.Chapter{
+		BookID: uint(uri.BookID),
+	}
+
+	data := gin.H{
+		"Chapter":    chapter,
+		"IsLoggedIn": NewUserStatus(c).IsLoggedIn,
+	}
+	if err := addBookChapter.Execute(c.Writer, data); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -463,13 +509,13 @@ func (bc *BookController) EditBook(c *gin.Context) {
 		return
 	}
 
-	templateData := gin.H{
-		"Book":      book,
-		"AllLabels": labels,
+	data := gin.H{
+		"IsLoggedIn": NewUserStatus(c).IsLoggedIn,
+		"Book":       book,
+		"AllLabels":  labels,
 	}
 
-	// Execute the bookPage template and write the output to the response writer
-	if err := addBook.Execute(c.Writer, templateData); err != nil {
+	if err := addBook.Execute(c.Writer, data); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

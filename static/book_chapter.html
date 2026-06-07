@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href="/static/style.css">
     <link rel="stylesheet" type="text/css" href="/static/book_page.css">
     <script src="/static/script.js" defer></script>
+    <script src="/static/scroll.js" defer></script>
 </head>
 <body>
     <div class="fr-container">
@@ -16,8 +17,8 @@
 
         <div class="bp-book-header">
             <div class="bp-title-block">
-                <h2>{{.BookBase.Name}}</h2>
-                <h4>{{.Chapter.Title}}</h4>
+                <h2>{{.Book.BookBase.Name}}</h2>
+                <h4>{{.Book.Chapter.Title}}</h4>
             </div>
         </div>
         <div class="bp-reading-grid">
@@ -35,7 +36,7 @@
            
 
             <section class="bp-book-text-area">
-                <div class="fr-book-text" id="scrollable-content-reading">{{.Chapter.Text}}</div>
+                <div class="fr-book-text" id="scrollable-content-reading">{{.Book.Chapter.Text}}</div>
             </section>
 
             <section class="bp-book-scroll-control">
@@ -44,7 +45,7 @@
         </div>
     </div>
     <script>
-        const text = `{{.Chapter.Text}}`;
+        const text = `{{.Book.Chapter.Text}}`;
         
         const words = text.split(/\s+/).filter(Boolean);
 

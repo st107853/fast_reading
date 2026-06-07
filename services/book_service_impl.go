@@ -106,7 +106,20 @@ func (bs *BookServiceImpl) FindBooksByCreatorID(creatorID uint) ([]models.BookBa
 
 	labels, err := getLabels(bs, ids)
 
-	return books, labels, nil
+	return books, labels, err
+}
+
+func (bs *BookServiceImpl) IsBookCreator(bookID, userID uint) bool {
+	var count int64
+	err := bs.collection.Model(&models.Book{}).
+		Where("id = ? AND creator_user_id = ?", bookID, userID).
+		Count(&count).Error
+
+	if err != nil {
+		return false
+	}
+
+	return count > 0
 }
 
 // FindFavoriteBooksByUserEmail finds and returns favorite books by user ID.
@@ -426,8 +439,6 @@ func (bs *BookServiceImpl) SearchBooks(keyword string, labelIDs []uint, filterCo
 	query := bs.collection.Model(&models.BookBase{})
 
 	switch filterCode {
-	case "0":
-		query = query.Where("released = ?", true)
 	case "1":
 		query = query.Joins("JOIN reading_progress ON reading_progress.book_id = books.id").
 			Where("reading_progress.user_id = ?", userID).
@@ -440,6 +451,8 @@ func (bs *BookServiceImpl) SearchBooks(keyword string, labelIDs []uint, filterCo
 		query = query.Joins("JOIN user_favorites ON user_favorites.book_id = books.id").
 			Where("user_favorites.user_id = ?", userID).
 			Distinct("books.*")
+	default:
+		query = query.Where("released = ?", true)
 	}
 
 	err := query.Scopes(searchScope(keyword, labelIDs)).Find(&books).Error

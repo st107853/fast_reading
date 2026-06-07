@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/st107853/fast_reading/config"
 	"github.com/st107853/fast_reading/controllers"
 	"github.com/st107853/fast_reading/middleware"
 	"github.com/st107853/fast_reading/services"
@@ -15,9 +16,9 @@ func NewRouteUserController(userController controllers.UserController) UserRoute
 	return UserRouteController{userController}
 }
 
-func (uc *UserRouteController) UserRoute(rg *gin.RouterGroup, userService services.UserService) {
+func (uc *UserRouteController) UserRoute(rg *gin.RouterGroup, userService services.UserService, cfg config.Config) {
 
 	router := rg.Group("users")
-	router.Use(middleware.DeserializeUser(userService))
+	router.Use(middleware.DeserializeUser(userService, cfg))
 	router.GET("/me", uc.userController.GetMe)
 }

@@ -104,8 +104,8 @@
                     </li>
                     {{end}}
                 </ul>
-                <div class="fr-list" >   
-                    <a href="/library/addbook/{{.Book.BookID}}/chapter" class="fr-list fr-btn fr-btn--large">Add Chapter</a>
+                <div class="fr-list" >
+                    <button type="button" class="fr-btn--large" id="add-chapter-button" onclick="addChapter(this,`{{.Book.BookID}}`)">Add Chapter</button>
                 </div>
             </div>
         </section>

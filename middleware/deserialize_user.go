@@ -11,7 +11,7 @@ import (
 )
 
 // DeserializeUser extracts and validats the access token from either the Cookies object or Authorization header.
-func DeserializeUser(userService services.UserService) gin.HandlerFunc {
+func DeserializeUser(userService services.UserService, cfg config.Config) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var access_token string
 		cookie, err := ctx.Cookie("access_token")
@@ -31,8 +31,7 @@ func DeserializeUser(userService services.UserService) gin.HandlerFunc {
 			return
 		}
 
-		config, _ := config.LoadConfig(".")
-		sub, err := utils.ValidateToken(access_token, config.AccessTokenPublicKey)
+		sub, err := utils.ValidateToken(access_token, cfg.AccessTokenPublicKey)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": err.Error()})
 			return

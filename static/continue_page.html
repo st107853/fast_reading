@@ -11,13 +11,13 @@
     <script src="/static/labels.js" defer></script>
 </head>
 <body>
-    <div class="fr-container">
+    <div class="fr-container" data-filter-code="1">
 
         {{template "navbar" .}}
         {{template "settingsModal" .}}
 
         <main>
-            <form id="bookForm" onsubmit="event.preventDefault(); applyFilters(1);">
+            <form id="bookForm" onsubmit="event.preventDefault(); applyFilters();">
                 <div class="mp-search-container">
                     <input name="name" id="keyword-input" type="text" class="mp-search-input" placeholder="Enter the title of the book..." aria-label="Enter the title of the book">
                     <span class="mp-search-icon"></span>
@@ -33,7 +33,7 @@
             <div class="fr-list fr-list--left">
                 <a href="/library/" class="fr-btn fr-btn--large">All books</a>
                 <a href="/library/continue/" class="fr-btn fr-btn--large  fr-btn--chosed">Continue reading</a>
-                <button onclick="applyFilters(1)" class="fr-btn--large fr-btn-right">Apply Filters</button>
+                <button onclick="applyFilters()" class="fr-btn--large fr-btn-right">Apply Filters</button>
             </div>
             <hr>
 

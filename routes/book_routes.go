@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/st107853/fast_reading/config"
 	"github.com/st107853/fast_reading/controllers"
 	"github.com/st107853/fast_reading/middleware"
 	"github.com/st107853/fast_reading/services"
@@ -15,8 +16,8 @@ func NewBookRouteController(bookController controllers.BookController) BookRoute
 	return BookRouteController{bookController}
 }
 
-func (bc *BookRouteController) BookRoute(rg *gin.RouterGroup, bookService services.BookService, userService services.UserService) {
-	rg.Use(middleware.DeserializeUser(userService))
+func (bc *BookRouteController) BookRoute(rg *gin.RouterGroup, bookService services.BookService, userService services.UserService, cfg config.Config) {
+	rg.Use(middleware.DeserializeUser(userService, cfg))
 	rg.POST("/", bc.bookController.CreateBook)
 	rg.PUT("/:book_id", bc.bookController.UpdateBook)
 	rg.PUT("/:book_id/:chapter_id/:last_index", bc.bookController.BookMark)

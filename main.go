@@ -64,7 +64,7 @@ func init() {
 	bookService = services.NewBookService(gdb, ctx)
 
 	// Create controllers and route controllers
-	AuthController = controllers.NewAuthController(authService, userService)
+	AuthController = controllers.NewAuthController(authService, userService, conf)
 	AuthRouteController = routes.NewAuthRouteController(AuthController)
 
 	UserController = controllers.NewUserController(userService, bookService)
@@ -93,9 +93,9 @@ func main() {
 
 	router := server.Group("/library")
 
-	AuthRouteController.AuthRoute(router, userService)
-	UserRouteController.UserRoute(router, userService)
-	BookRouteController.BookRoute(router, bookService, userService)
+	AuthRouteController.AuthRoute(router, userService, conf)
+	UserRouteController.UserRoute(router, userService, conf)
+	BookRouteController.BookRoute(router, bookService, userService, conf)
 
 	log.Println("Registered routes:")
 	for _, route := range server.Routes() {

@@ -8,6 +8,7 @@
     <link rel="stylesheet" type="text/css" href="/static/create_book.css">
     <script src="/static/create_book.js" defer></script>
     <script src="/static/script.js" defer></script>
+    <script src="/static/scroll.js" defer></script>
 </head>
 <body>
     <div class="fr-container">
@@ -16,7 +17,7 @@
         {{template "settingsModal" .}}
 
     <nav class="fr-list" >
-      <a href="/library/addbook/{{.BookID}}" class="fr-btn fr-btn--large">Book face</a>
+      <a href="/library/addbook/{{.Chapter.BookID}}" class="fr-btn fr-btn--large">Book face</a>
       <button class="fr-btn fr-btn--large fr-btn--chosed fr-btn-right">Add chapter</button>
     </nav>
     <hr>
@@ -24,7 +25,7 @@
     <div class="fr-list">
         <div class="fr-input-container">
             <label for="chapter-name">Chapter's name</label>
-            <input type="text" id="chapter-name" class="fr-form-input" value='{{.Title}}'>
+            <input type="text" id="chapter-name" class="fr-form-input" value='{{.Chapter.Title}}'>
         </div>
 
         <div class="fr-btn-right">
@@ -41,7 +42,7 @@
     <div class="cb-text-grid">
         <section class="cb-book-text-area">
             <label for="scrollable-content-reading">Chapter text</label>
-            <textarea class="fr-book-text fr-book-text--big" id="scrollable-content-reading" >'{{.Text}}'</textarea>
+            <textarea class="fr-book-text fr-book-text--big" id="scrollable-content-reading" >'{{.Chapter.Text}}'</textarea>
         </section>
 
         <section class="cb-book-scroll-control">
@@ -50,8 +51,8 @@
     </div>
 
     <footer class="cb-editor-actions">
-        <button type="button" class="fr-btn--large" onclick="submitChapter(this,`{{.BookID}}`,`{{.ChapterID}}`)">Save</button>
-        <button type="button" class="fr-btn--large" id="delete-button" onclick="deleteChapter(`{{.ChapterID}}`)">Delete</button>
+        <button type="button" class="fr-btn--large" onclick="submitChapter(this,`{{.Chapter.BookID}}`,`{{.Chapter.ChapterID}}`)">Save</button>
+        <button type="button" class="fr-btn--large" id="delete-button" onclick="deleteChapter(`{{.Chapter.ChapterID}}`)">Delete</button>
     </footer>
 </div>
 </body>

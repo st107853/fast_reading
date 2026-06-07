@@ -24,45 +24,28 @@ func OpenDbConnectionWithConfig(host, dbname, user, password string) (*gorm.DB, 
 	dsn := fmt.Sprintf("host=%s dbname=%s user=%s password=%s",
 		host, dbname, user, password)
 
-	// 2. Настраиваем GORM Logger (лучше, чем fmt.Println)
-	// newLogger := logger.New(
-	// 	log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
-	// 	logger.Config{
-	// 		SlowThreshold: time.Second, // Порог медленного SQL-запроса
-	// 		LogLevel:      logger.Info, // Уровень логгирования
-	// 		Colorful:      true,
-	// 	},
-	// )
-
-	// 3. Открываем соединение
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: nil, // Используем настроенный логгер
+		Logger: nil,
 	})
 
 	if err != nil {
-		// Ошибка подключения - возвращаем ее
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
-
-	// 4. Запускаем AutoMigrate
-	// (Используем новую модель User)
 
 	log.Println("Database connection successful and migrated.")
 	DB = db
 
-	// 5. Возвращаем 'db', а не ошибку
 	return db, nil
 }
 
 // Delete the database after running testing cases.
 func RemoveDb(db *gorm.DB) error {
-	sqlDB, err := db.DB() // Получаем *sql.DB из *gorm.DB
+	sqlDB, err := db.DB()
 	if err != nil {
 		fmt.Println("Error getting sql.DB from gorm.DB:", err)
 		return err
 	}
 
-	// Закрываем соединение с базой
 	err = sqlDB.Close()
 	return err
 }

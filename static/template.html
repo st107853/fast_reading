@@ -69,7 +69,15 @@
         <div class="fr-icon-button fr-navbar__logo-btn" aria-label="Go to home page" action="/library/"></div>
         </a>
 
-        <button class="fr-icon-button fr-navbar__avatar-btn" id="avatarBtn" aria-label="User profile or login" onclick="login()"></button>
+        {{if .IsLoggedIn}}
+            <a href="/library/users/me" aria-label="My profile">
+                <div class="fr-icon-button fr-navbar__avatar-btn"></div>
+            </a>
+        {{else}}
+            <a href="/library/auth/login" aria-label="Log in">
+                <div class="fr-icon-button fr-navbar__avatar-btn"></div>
+            </a>
+        {{end}}
     </nav>
 {{end}}
 

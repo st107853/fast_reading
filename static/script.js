@@ -209,71 +209,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Expose login helper functions as globals so inline onclick handlers and other frontend code can use them.
 window.getCookie = function(name) {
     let matches = document.cookie.match(new RegExp(
         "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
     ));
     return matches ? decodeURIComponent(matches[1]) : undefined;
 };
-
-window.isLoggedIn = function() {
-    return window.getCookie('logged_in') === 'true';
-};
-
-window.handleProtectedLink = function(event) {
-    if (!window.isLoggedIn()) {
-        event.preventDefault();
-        window.location.href = '/library/auth/login';
-    }
-};
-
-window.login = function() {
-    if (window.isLoggedIn()) {
-        window.location.href = '/library/users/me';
-    } else {
-        window.location.href = '/library/auth/login';
-    }
-};
-
-// Scroll synchronization logic
-document.addEventListener('DOMContentLoaded', initializeScrollSync);
-
-function initializeScrollSync() {
-    const contentArea = document.getElementById('scrollable-content-reading');
-    const scrollRange = document.getElementById('scrollRange');
-    
-    startSync(contentArea, scrollRange);
-}
-
-function startSync(scrollableElement, scrollRange) {
-    
-    // 1. SCROLL SYNC: Text scroll -> Slider update
-    scrollableElement.addEventListener('scroll', () => {
-        const maxScroll = scrollableElement.scrollHeight - scrollableElement.clientHeight;
-        const currentScroll = scrollableElement.scrollTop;
-
-        if (maxScroll > 0) {
-            // Calculate scroll percentage (0 to 100)
-            const scrollPercentage = (currentScroll / maxScroll) * 100;
-            scrollRange.value = scrollPercentage.toFixed(2);
-        } else {
-            scrollRange.value = 0;
-        }
-    });
-
-    // 2. SCROLL SYNC: Slider -> Text scroll
-    scrollRange.addEventListener('input', () => {
-        const sliderValue = parseFloat(scrollRange.value);
-        const maxScroll = scrollableElement.scrollHeight - scrollableElement.clientHeight;
-        
-        if (maxScroll > 0) {
-            // Calculate new scrollTop value
-            const newScrollTop = (sliderValue / 100) * maxScroll;
-            scrollableElement.scrollTop = newScrollTop;
-        }
-    });
-    
-    // Set initial value
-    scrollableElement.dispatchEvent(new Event('scroll'));
-}

@@ -43,10 +43,10 @@
     </div>
     <hr class="up-hr">
 
-    <div id="favBooks">
+    <div id="favBooks" data-filter-code="3">
         <div class="fr-list fr-list--left">
             {{range .FavouriteLabels}}
-                <span class="fr-label fr-label--interactive" data-id="{{.LabelID}}" onclick="event.preventDefault(); applyFilters(3);">{{.Name}}</span>
+                <span class="fr-label fr-label--interactive" data-id="{{.LabelID}}" onclick="event.preventDefault(); applyFilters();">{{.Name}}</span>
             {{end}}
         </div>
 
@@ -57,10 +57,10 @@
       </section>
     </div>
 
-    <div id="createdBooks" class="fr-hidden">
+    <div id="createdBooks" data-filter-code="2" class="fr-hidden">
         <div class="fr-list fr-list--left">
             {{range .CreatedLabels}}
-                <span class="fr-label fr-label--interactive" data-id="{{.LabelID}}" onclick="event.preventDefault(); applyFilters(2);">{{.Name}}</span>
+                <span class="fr-label fr-label--interactive" data-id="{{.LabelID}}" onclick="event.preventDefault(); applyFilters();">{{.Name}}</span>
             {{end}}
         </div>
 
