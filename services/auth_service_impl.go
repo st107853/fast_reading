@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -36,7 +35,7 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 	// Hash password
 	hashedPassword, err := utils.HashPassword(user.Password)
 	if err != nil {
-		return nil, fmt.Errorf("failed to hash password: %w", err)
+		return nil, ErrDomainWithMsg("failed to hash password", err)
 	}
 	user.Password = hashedPassword
 
@@ -49,12 +48,12 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 		Count(&count).Error
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to check existing user: %w", err)
+		return nil, ErrDomainWithMsg("failed to check existing user", err)
 	}
 
 	// Если count > 0, значит пользователь существует
 	if count > 0 {
-		return nil, fmt.Errorf("user with that email already exists")
+		return nil, ErrUser("user with that email already exists", nil)
 	}
 
 	// Create user
@@ -67,7 +66,7 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 	}
 
 	if err := uc.collection.WithContext(uc.ctx).Create(&newUser).Error; err != nil {
-		return nil, fmt.Errorf("failed to create user: %w", err)
+		return nil, ErrDomainWithMsg("failed to create user", err)
 	}
 
 	// Prepare response (no password)

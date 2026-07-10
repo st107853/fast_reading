@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
+	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/st107853/fast_reading/config"
 	"github.com/st107853/fast_reading/controllers"
+	"github.com/st107853/fast_reading/logger"
 	"github.com/st107853/fast_reading/models"
 	"github.com/st107853/fast_reading/routes"
 	"github.com/st107853/fast_reading/services"
@@ -47,15 +50,17 @@ func init() {
 	// Initialize GORM via models helper (returns *gorm.DB)
 	gdb, err := models.OpenDbConnectionWithConfig(conf.Host, conf.DBname, conf.DBuser, conf.DBpassword)
 	if err != nil {
-		log.Fatalf("models.OpenDbConnection failed: %v", err)
+		logger.Log.Error("database connection failed", slog.Any("error", err))
+		os.Exit(1)
 	}
 	if gdb == nil {
-		log.Fatal("models.OpenDbConnection returned nil *gorm.DB")
+		logger.Log.Error("models.OpenDbConnection returned nil *gorm.DB")
 	}
 
 	// Auto-migrate core models (safe no-op if tables exist)
 	if err := gdb.AutoMigrate(&models.Book{}, &models.User{}, &models.ReadingProgress{}); err != nil {
-		log.Fatalf("Failed to migrate models: %v", err)
+		logger.Log.Error("failed to migrate models", slog.Any("error", err))
+		os.Exit(1)
 	}
 
 	// Wire services with GORM-backed implementations
@@ -73,6 +78,21 @@ func init() {
 	BookController := controllers.NewBookController(bookService, userService)
 	BookRouteController = routes.NewBookRouteController(BookController)
 
+	var level slog.Level
+	if err := level.UnmarshalText([]byte(conf.LogLevel)); err != nil {
+		level = slog.LevelInfo // safe default
+	}
+
+	logger.Init(logger.Config{
+		Level:  level,
+		Format: conf.LogFormat,
+	})
+
+	logger.Log.Info("starting Fast Reading API",
+		slog.String("log_level", conf.LogLevel),
+		slog.String("log_format", conf.LogFormat),
+	)
+
 	server = gin.New()
 	server.Use(gin.Logger())   // Add Logger middleware explicitly
 	server.Use(gin.Recovery()) // Add Recovery middleware explicitly
@@ -86,7 +106,7 @@ func main() {
 	server.Static("/covers", "./covers")
 
 	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{"http://localhost:8080", "http://localhost:3000"}
+	corsConfig.AllowOrigins = []string{conf.CORS1, conf.CORS2}
 	corsConfig.AllowCredentials = true
 
 	server.Use(cors.New(corsConfig))
@@ -99,7 +119,7 @@ func main() {
 
 	log.Println("Registered routes:")
 	for _, route := range server.Routes() {
-		log.Printf("Method: %s, Path: %s", route.Method, route.Path)
+		logger.Log.Info("Route registered", slog.String("method", route.Method), slog.String("path", route.Path))
 	}
 
 	log.Fatal(server.Run(":" + conf.Port))

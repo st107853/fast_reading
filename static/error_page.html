@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log in / Sign up</title>
+  <link rel="stylesheet" type="text/css" href="/static/style.css">
+  <script src="/static/login_page.js" defer></script>
+</head>
+<body>
+
+  {{template "navbar" .}}
+  {{template "settingsModal" .}}
+
+  <div class="fr-container" style="text-align: center;">
+    <h2 id="form-title">Error</h2>
+
+    <div>
+      {{.UserMsg}}
+    </div>
+
+  </div>
+</body>
+</html>

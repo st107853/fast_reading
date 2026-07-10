@@ -20,6 +20,10 @@ type Config struct {
 	RefreshTokenExpiresIn  time.Duration `mapstructure:"REFRESH_TOKEN_EXPIRED_IN"`
 	AccessTokenMaxAge      int           `mapstructure:"ACCESS_TOKEN_MAXAGE"`
 	RefreshTokenMaxAge     int           `mapstructure:"REFRESH_TOKEN_MAXAGE"`
+	CORS1                  string        `mapstructure:"CORS_ORIGINS_1"`
+	CORS2                  string        `mapstructure:"CORS_ORIGINS_2"`
+	LogLevel               string        `mapstructure:"LOG_LEVEL"`  // "debug"|"info"|"warn"|"error"
+	LogFormat              string        `mapstructure:"LOG_FORMAT"` // "json"|"text"
 }
 
 func LoadConfig(path string) (config Config, err error) {

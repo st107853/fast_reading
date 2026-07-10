@@ -71,7 +71,7 @@ type Label struct {
 
 func FormatCoverURL(path string) template.URL {
 	if path == "" || path == "null" {
-		return template.URL("/static/default_cover.png")
+		return template.URL("")
 	}
 
 	return template.URL(path)

@@ -20,7 +20,7 @@ func NewUserServiceImpl(collection *gorm.DB, ctx context.Context) UserService {
 func (us *UserServiceImpl) FindUserById(id uint) (*models.User, error) {
 	var user *models.User
 	if err := us.collection.WithContext(us.ctx).Where("id = ?", id).First(&user).Error; err != nil {
-		return nil, err
+		return nil, ErrNotFound("User", err)
 	}
 	return user, nil
 }
@@ -28,7 +28,7 @@ func (us *UserServiceImpl) FindUserById(id uint) (*models.User, error) {
 func (us *UserServiceImpl) FindUserByEmail(email string) (*models.User, error) {
 	var user *models.User
 	if err := us.collection.WithContext(us.ctx).Where("email = ?", email).First(&user).Error; err != nil {
-		return nil, err
+		return nil, ErrNotFound("User", err)
 	}
 	return user, nil
 }
@@ -37,7 +37,7 @@ func (us *UserServiceImpl) AddBookToFavoriteBooks(id, bookId uint) error {
 	var user models.User
 
 	if err := us.collection.WithContext(us.ctx).Where("id = ?", id).First(&user).Error; err != nil {
-		return err
+		return ErrNotFound("User", err)
 	}
 
 	book := models.BookBase{
@@ -68,10 +68,16 @@ func (us *UserServiceImpl) SaveBooksMark(userId uint, bookId uint, chapterID uin
 		LastIndex: lastIndex,
 	}
 
-	return us.collection.WithContext(us.ctx).Clauses(clause.OnConflict{
+	err := us.collection.WithContext(us.ctx).Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "user_id"}, {Name: "book_id"}},
 		DoUpdates: clause.AssignmentColumns([]string{"chapter_id", "last_index"}),
 	}).Create(&progress).Error
+
+	if err != nil {
+		return ErrDomainWithMsg("failed to save reading progress", err)
+	}
+
+	return nil
 }
 
 func (us *UserServiceImpl) GetBooksMark(userId uint, bookId uint) *models.ReadingProgress {
@@ -84,7 +90,7 @@ func (us *UserServiceImpl) GetBooksMark(userId uint, bookId uint) *models.Readin
 func (us *UserServiceImpl) IsBookFavorited(userID uint, bookId uint) (bool, error) {
 	var user models.User
 	if err := us.collection.WithContext(us.ctx).First(&user, userID).Error; err != nil {
-		return false, err
+		return false, ErrNotFound("User", err)
 	}
 
 	count := us.collection.Model(&user).Where("id = ?", bookId).Association("FavoriteBooks").Count()

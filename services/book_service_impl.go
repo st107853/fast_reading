@@ -32,7 +32,7 @@ func (bs *BookServiceImpl) InsertBook(book models.Book, file *multipart.FileHead
 	err := bs.collection.Transaction(func(tx *gorm.DB) error {
 
 		if err := tx.Create(&book).Error; err != nil {
-			return fmt.Errorf("failed to insert book: %w", err)
+			return ErrDomainWithMsg("Failed to create book.", err)
 		}
 		bookID = book.BookID
 
@@ -45,14 +45,14 @@ func (bs *BookServiceImpl) InsertBook(book models.Book, file *multipart.FileHead
 		coverFileName := fmt.Sprintf("%d%s", bookID, ext)
 
 		if err := tx.Model(&book).Update("cover_path", coverFileName).Error; err != nil {
-			return fmt.Errorf("failed to update cover_path: %w", err)
+			return ErrDomainWithMsg("Failed to update cover path.", err)
 		}
 
 		return nil
 	})
 
 	if err != nil {
-		return 0, err
+		return 0, ErrInternal(err)
 	}
 
 	// Write file ONLY after transaction committed successfully
@@ -66,7 +66,7 @@ func (bs *BookServiceImpl) InsertBook(book models.Book, file *multipart.FileHead
 				Where("id = ?", bookID).
 				Update("cover_path", nil)
 
-			return bookID, fmt.Errorf("book created but cover upload failed: %w", err)
+			return bookID, ErrDomainWithMsg("Book created but cover upload failed", err)
 		}
 	}
 
@@ -86,7 +86,7 @@ func (bs *BookServiceImpl) FindBookByID(bookID uint) (models.GetBook, error) {
 		First(&result).Error
 
 	if err != nil {
-		return result, fmt.Errorf("bsi: failed to find book: %w", err)
+		return result, ErrDomainWithMsg("bsi: failed to find book", err)
 	}
 
 	return result, nil
@@ -101,7 +101,7 @@ func (bs *BookServiceImpl) FindBooksByCreatorID(creatorID uint) ([]models.BookBa
 
 	err := bs.collection.Where("id IN ?", ids).Find(&books).Error
 	if err != nil {
-		return nil, nil, fmt.Errorf("bsi: failed to find favorite books by user ID: %w", err)
+		return nil, nil, ErrDomainWithMsg("bsi: failed to find favorite books by user ID", err)
 	}
 
 	labels, err := getLabels(bs, ids)
@@ -130,7 +130,7 @@ func (bs *BookServiceImpl) FindFavoriteBooksByUserID(userID uint) ([]models.Book
 
 	err := bs.collection.Where("id IN ?", ids).Find(&books).Error
 	if err != nil {
-		return nil, nil, fmt.Errorf("bsi: failed to find favorite books by user ID: %w", err)
+		return nil, nil, ErrDomainWithMsg("bsi: failed to find favorite books by user ID", err)
 	}
 
 	labels, err := getLabels(bs, ids)
@@ -144,7 +144,7 @@ func (bs *BookServiceImpl) FindStartedBooks(userID uint) ([]models.BookBase, err
 		Where("reading_progress.user_id = ?", userID).
 		Find(&books).Error
 	if err != nil {
-		return nil, fmt.Errorf("bsi: failed to find started books by user ID: %w", err)
+		return nil, ErrDomainWithMsg("bsi: failed to find started books by user ID", err)
 	}
 
 	return books, nil
@@ -161,7 +161,7 @@ func (bs *BookServiceImpl) InsertChapter(chapter models.Chapter) (uint, error) {
 	}
 
 	if err := bs.collection.Create(&chapter).Error; err != nil {
-		return 0, fmt.Errorf("bsi: failed to insert chapter: %w", err)
+		return 0, ErrDomainWithMsg("bsi: failed to insert chapter", err)
 	}
 
 	return chapter.ChapterID, nil
@@ -173,7 +173,7 @@ func (bs *BookServiceImpl) FindChapterByID(id string) (models.Chapter, error) {
 
 	err := bs.collection.First(&chapter, id).Error
 	if err != nil {
-		return chapter, fmt.Errorf("bsi: failed to find chapter by ID: %w", err)
+		return chapter, ErrDomainWithMsg("bsi: failed to find chapter by ID", err)
 	}
 
 	return chapter, nil
@@ -185,12 +185,12 @@ func (bs *BookServiceImpl) FindBooksChapterByIDs(bookId, chapterId uint) (models
 
 	err := bs.collection.Where("book_id = ? AND chapter_order = ?", bookId, chapterId).First(&chapterResponse.Chapter).Error
 	if err != nil {
-		return chapterResponse, fmt.Errorf("bsi: failed to find chapter by ID: %w", err)
+		return chapterResponse, ErrDomainWithMsg("bsi: failed to find chapter by ID", err)
 	}
 
 	err = bs.collection.First(&chapterResponse.BookBase, chapterResponse.Chapter.BookID).Error
 	if err != nil {
-		return chapterResponse, fmt.Errorf("bsi: failed to find chapter by ID: %w", err)
+		return chapterResponse, ErrDomainWithMsg("bsi: failed to find chapter by ID", err)
 	}
 
 	return chapterResponse, nil
@@ -204,9 +204,15 @@ func (bs *BookServiceImpl) DeleteAll() error {
 // DeleteBook delete one book by its ID.
 func (bs *BookServiceImpl) DeleteBook(bookId uint) error {
 	if err := bs.collection.Unscoped().Delete(&models.Book{}, bookId).Error; err != nil {
-		return fmt.Errorf("bsi: failed to hard delete book: %w", err)
+		return ErrDomainWithMsg("bsi: failed to hard delete book", err)
 	}
-	os.Remove(filepath.Join("covers", fmt.Sprintf("%d.jpeg", bookId)))
+
+	covers, err := filepath.Glob(filepath.Join("covers", fmt.Sprintf("%d.*", bookId)))
+	if err == nil {
+		for _, coverPath := range covers {
+			_ = os.Remove(coverPath)
+		}
+	}
 
 	return nil
 }
@@ -214,7 +220,7 @@ func (bs *BookServiceImpl) DeleteBook(bookId uint) error {
 // DeleteChapter deletes one chapter by its ID.
 func (bs *BookServiceImpl) DeleteChapter(chapterId string) error {
 	if err := bs.collection.Unscoped().Delete(&models.Chapter{}, chapterId).Error; err != nil {
-		return fmt.Errorf("bsi: failed to hard delete chapter: %w", err)
+		return ErrDomainWithMsg("bsi: failed to hard delete chapter", err)
 	}
 
 	return nil
@@ -226,7 +232,7 @@ func (bs *BookServiceImpl) ListAllBooks() ([]models.BookBase, error) {
 
 	err := bs.collection.Limit(20).Where("released = ?", true).Find(&books).Error
 	if err != nil {
-		return nil, fmt.Errorf("bsi: failed to find all books: %w", err)
+		return nil, ErrDomainWithMsg("bsi: failed to find all books", err)
 	}
 
 	return books, nil
@@ -238,7 +244,7 @@ func (bs *BookServiceImpl) ListAllLabels() ([]*models.Label, error) {
 
 	err := bs.collection.Find(&labels).Error
 	if err != nil {
-		return nil, fmt.Errorf("bsi: failed to find all labels: %w", err)
+		return nil, ErrDomainWithMsg("bsi: failed to find all labels", err)
 	}
 
 	return labels, nil
@@ -248,7 +254,7 @@ func (bs *BookServiceImpl) ListLastReleased(n int) ([]models.Book, error) {
 	var books []models.Book
 	err := bs.collection.Where("released = ?", true).Order("release_date DESC").Limit(n).Find(&books).Error
 	if err != nil {
-		return nil, fmt.Errorf("bsi: failed to find last released books: %w", err)
+		return nil, ErrDomainWithMsg("bsi: failed to find last released books", err)
 	}
 
 	for i := range books {
@@ -259,7 +265,7 @@ func (bs *BookServiceImpl) ListLastReleased(n int) ([]models.Book, error) {
 			Find(&books[i].BookLabels).Error
 
 		if err != nil {
-			return books, fmt.Errorf("bsi: failed to find all labels: %w", err)
+			return books, ErrDomainWithMsg("bsi: failed to find all labels", err)
 		}
 	}
 
@@ -272,7 +278,7 @@ func (bs *BookServiceImpl) ReleaseBook(bookId uint) error {
 	var book models.Book
 
 	if err := bs.collection.First(&book, bookId).Error; err != nil {
-		return fmt.Errorf("bsi: book not found: %w", err)
+		return ErrDomainWithMsg("bsi: book not found", err)
 	}
 
 	updates := map[string]interface{}{
@@ -284,7 +290,7 @@ func (bs *BookServiceImpl) ReleaseBook(bookId uint) error {
 	}
 
 	if err := bs.collection.Model(&book).Updates(updates).Error; err != nil {
-		return fmt.Errorf("bsi: failed to update book status: %w", err)
+		return ErrDomainWithMsg("bsi: failed to update book status", err)
 	}
 
 	return nil
@@ -295,65 +301,80 @@ func (bs *BookServiceImpl) UpdateBook(bookId uint, file *multipart.FileHeader, i
 	var existingBook models.Book
 
 	if err := bs.collection.First(&existingBook, bookId).Error; err != nil {
-		return models.Book{}, fmt.Errorf("bsi: book with id %d not found: %w", bookId, err)
+		return models.Book{}, ErrDomainWithMsg("bsi: book with id %d not found", err)
 	}
 
-	updateData := map[string]interface{}{
-		"name":             input.Name,
-		"author":           input.Author,
-		"publication_year": input.PublicationYear,
-		"description":      input.Description,
-	}
-
-	// Conditionally add CoverPath ONLY if it was set by the controller (i.e., a file was uploaded)
-	if input.CoverPath != "" {
-		updateData["cover_path"] = input.CoverPath
-	}
+	// Determine the new cover filename before the transaction,
+	// so we can store it in the DB and write the file after commit.
+	var newCoverFileName string
+	var oldCoverPath string = string(existingBook.CoverPath)
 
 	if file != nil {
 		ext := filepath.Ext(file.Filename)
+		if ext == "" {
+			ext = ".jpg"
+		}
+		newCoverFileName = fmt.Sprintf("%d%s", bookId, ext)
+	}
 
-		// Cover name = book ID + extension
-		coverFileName := fmt.Sprintf("%d%s", bookId, ext)
-		targetPath := filepath.Join("covers", coverFileName)
+	// --- Step 1: Update everything inside a transaction ---
+	err := bs.collection.Transaction(func(tx *gorm.DB) error {
+		updateData := map[string]interface{}{
+			"name":             input.Name,
+			"author":           input.Author,
+			"publication_year": input.PublicationYear,
+			"description":      input.Description,
+		}
 
-		finalDBURL := models.FormatCoverURL(coverFileName)
+		if newCoverFileName != "" {
+			updateData["cover_path"] = newCoverFileName
+		}
 
-		// Creation of 'covers' directory if it doesn't exist
-		if _, statErr := os.Stat("covers"); os.IsNotExist(statErr) {
-			if mkdirErr := os.MkdirAll("covers", os.ModePerm); mkdirErr != nil {
-				return existingBook, fmt.Errorf("failed to create storage directory for cover: %w", mkdirErr)
+		if err := tx.Model(&existingBook).Updates(updateData).Error; err != nil {
+			return ErrDomainWithMsg("failed to update book fields", err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		// DB failed — no file was touched, nothing to clean up
+		return models.Book{}, err
+	}
+
+	// --- Step 2: Write file ONLY after transaction committed ---
+	if file != nil {
+		dstPath := filepath.Join("covers", newCoverFileName)
+
+		if err := os.MkdirAll("covers", os.ModePerm); err != nil {
+			return existingBook, ErrDomainWithMsg("failed to create covers directory", err)
+		}
+
+		if err := saveFileToDisk(file, dstPath); err != nil {
+			// File write failed AFTER DB commit — DB has the new filename
+			// but file doesn't exist yet. Roll back just the cover_path in DB.
+			rollbackErr := bs.collection.
+				Model(&existingBook).
+				Update("cover_path", oldCoverPath).
+				Error
+			if rollbackErr != nil {
+				// Log both errors — this needs manual intervention
+				return existingBook, ErrDomainWithMsg("CRITICAL: file save failed AND cover_path rollback failed — book has stale cover_path in DB", err)
+			}
+			return existingBook, ErrDomainWithMsg("cover upload failed, cover_path restored to previous value", err)
+		}
+
+		// --- Step 3: Clean up the OLD cover file if extension changed ---
+		// e.g. old was .png, new is .jpg — delete the orphaned old file
+		if oldCoverPath != "" && oldCoverPath != newCoverFileName {
+			oldFilePath := filepath.Join("covers", oldCoverPath)
+			if removeErr := os.Remove(oldFilePath); removeErr != nil && !os.IsNotExist(removeErr) {
+				// Non-fatal: log but don't fail the request
+				ErrDomainWithMsg("warning: could not remove old cover file ", removeErr)
 			}
 		}
 
-		// Copying the file
-		src, openErr := file.Open()
-		if openErr != nil {
-			return existingBook, fmt.Errorf("failed to open uploaded file: %w", openErr)
-		}
-		defer src.Close()
-
-		dst, createErr := os.Create(targetPath)
-		if createErr != nil {
-			return existingBook, fmt.Errorf("failed to create destination file for cover: %w", createErr)
-		}
-		defer dst.Close()
-
-		if _, copyErr := io.Copy(dst, src); copyErr != nil {
-			return existingBook, fmt.Errorf("failed to save file content: %w", copyErr)
-		}
-
-		// Updating the book record with the cover path
-		existingBook.CoverPath = finalDBURL
-		// Saving changes to the database
-		if err := bs.collection.Model(&existingBook).Update("CoverPath", finalDBURL).Error; err != nil {
-			// TODO: In case of an update error delete the saved cover file
-			return existingBook, fmt.Errorf("failed to update book with CoverPath: %w", err)
-		}
-	}
-
-	if err := bs.collection.Model(&existingBook).Updates(updateData).Error; err != nil {
-		return models.Book{}, fmt.Errorf("bsi: failed to update book: %w", err)
+		existingBook.CoverPath = models.FormatCoverURL(newCoverFileName)
 	}
 
 	return existingBook, nil
@@ -363,7 +384,7 @@ func (bs *BookServiceImpl) UpdateBook(bookId uint, file *multipart.FileHeader, i
 func (bs *BookServiceImpl) UpdateChapter(chapterId uint, chapter models.Chapter) (models.Chapter, error) {
 	var existingChapter models.Chapter
 	if err := bs.collection.First(&existingChapter, chapterId).Error; err != nil {
-		return models.Chapter{}, fmt.Errorf("bsi: chapter with id %d not found: %w", chapterId, err)
+		return models.Chapter{}, ErrDomainWithMsg("bsi: chapter with id %d not found", err)
 	}
 
 	updateData := map[string]interface{}{
@@ -376,7 +397,7 @@ func (bs *BookServiceImpl) UpdateChapter(chapterId uint, chapter models.Chapter)
 	}
 
 	if err := bs.collection.Model(&existingChapter).Updates(updateData).Error; err != nil {
-		return models.Chapter{}, fmt.Errorf("bsi: failed to update chapter: %w", err)
+		return models.Chapter{}, ErrDomainWithMsg("bsi: failed to update chapter", err)
 	}
 
 	return existingChapter, nil
@@ -386,19 +407,19 @@ func (bs *BookServiceImpl) AddLabel(bookId uint, labelIds []uint) error {
 	var book models.Book
 
 	if err := bs.collection.First(&book, bookId).Error; err != nil {
-		return fmt.Errorf("bsi: book with id %d not found: %w", bookId, err)
+		return ErrDomainWithMsg("bsi: book with id %d not found", err)
 	}
 
 	var labels []models.Label
 	if len(labelIds) > 0 {
 		if err := bs.collection.Find(&labels, labelIds).Error; err != nil {
-			return fmt.Errorf("bsi: failed to fetch labels: %w", err)
+			return ErrDomainWithMsg("bsi: failed to fetch labels", err)
 		}
 	}
 
 	err := bs.collection.Model(&book).Association("BookLabels").Replace(labels)
 	if err != nil {
-		return fmt.Errorf("bsi: failed to replace labels for book %d: %w", bookId, err)
+		return ErrDomainWithMsg("bsi: failed to replace labels for book %d", err)
 	}
 	return nil
 }
@@ -458,7 +479,7 @@ func (bs *BookServiceImpl) SearchBooks(keyword string, labelIDs []uint, filterCo
 	err := query.Scopes(searchScope(keyword, labelIDs)).Find(&books).Error
 
 	if err != nil {
-		return nil, fmt.Errorf("bsi: failed to search books: %w", err)
+		return nil, ErrDomainWithMsg("bsi: failed to search books", err)
 	}
 
 	return books, nil
@@ -467,18 +488,18 @@ func (bs *BookServiceImpl) SearchBooks(keyword string, labelIDs []uint, filterCo
 func saveFileToDisk(file *multipart.FileHeader, dstPath string) error {
 	src, err := file.Open()
 	if err != nil {
-		return fmt.Errorf("failed to open uploaded file: %w", err)
+		return ErrDomainWithMsg("failed to open uploaded file", err)
 	}
 	defer src.Close()
 
 	dst, err := os.Create(dstPath)
 	if err != nil {
-		return fmt.Errorf("failed to create destination file: %w", err)
+		return ErrDomainWithMsg("failed to create destination file", err)
 	}
 	defer dst.Close()
 
 	if _, err = io.Copy(dst, src); err != nil {
-		return fmt.Errorf("failed to save file content: %w", err)
+		return ErrDomainWithMsg("failed to save file content", err)
 	}
 	return nil
 }
