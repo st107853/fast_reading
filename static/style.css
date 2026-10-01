@@ -44,12 +44,14 @@ body {
     --navbar-height: 60px;
 
     --neutral-1-color: #FFFFFF;
-    --neutral-2-alpha: color-mix(in srgb, var(--neutral-2-color) 80%, transparent);
+    /* --neutral-2-alpha: color-mix(in srgb, var(--neutral-2-color) 80%, transparent); */
+    --neutral-2-alpha:rgba(225, 229, 242, 0.8);
     --neutral-2-color: #E1E5F2;
     --neutral-3-color: #BFDBF7;
     --neutral-4-color: #6C7A89;
     --primary-color: #022B3A;
     --secondary-color: #1F7A8C;
+    --error-color: #880e0e;
 
     --button-height: 50px;
 
@@ -57,6 +59,13 @@ body {
     --spacing-md: 16px;
     --spacing-sm: 8px;
     --spacing-xs: 4px;
+
+    --padding-lg: 0 30px;
+    --padding-md: 0 20px;
+    --padding-sm: 0 14px;
+
+    --width-changing: 80%;
+    
 }
 
 
@@ -67,6 +76,9 @@ body {
     line-height: 1.5;
 
     background-image: url(back1.jpg);
+    background-attachment: fixed;
+    background-size: cover;
+    
     color: var(--primary-color);
     font-family: var(--font-family-base);
 }
@@ -86,7 +98,6 @@ h1 {
     font-weight: 700;
 
     margin-bottom: var(--spacing-md);
-    margin-left: var(--spacing-lg);
 }
 
 
@@ -119,6 +130,17 @@ p {
     margin-bottom: var(--spacing-md);
 }
 
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    white-space: nowrap;
+    border: 0;
+    clip-path: inset(50%);
+}
 
 .fr-toggle {
     font-size: var(--font-size-sm);
@@ -149,6 +171,9 @@ label {
     font-size: var(--font-size-sm);
 }
 
+.fr-text--white {
+    color: var(--neutral-1-color);
+}
 
 hr {
     border: none;
@@ -188,7 +213,7 @@ hr {
     margin: 0 auto;
     padding: var(--spacing-lg);
     padding-top: calc(var(--navbar-height) + var(--spacing-lg));
-    width: 80%;
+    width: var(--width-changing);
 
     background: var(--neutral-2-alpha);
 }
@@ -240,7 +265,7 @@ hr {
     max-width: 901px;
     height: var(--navbar-height);
     padding: 0 var(--spacing-md);
-    width: 80%;
+    width: var(--width-changing);
 
     background-color: var(--primary-color);
 }
@@ -306,7 +331,7 @@ button, .fr-btn {
     align-items: center;
     font-size: 1.2rem;
     height: var(--button-height);
-    padding: 0px 30px;
+    padding: var(--padding-lg);
 
     background-color: transparent;
     border: 2px solid var(--primary-color);
@@ -347,7 +372,7 @@ button, .fr-btn {
     color: var(--neutral-1-color);
 }
 
-.fr-btn--large.fr-theme--white:active {
+.fr-btn--large.fr-btn-chosed--white {
     border: 2px solid var(--neutral-1-color);
     
     background-color: var(--neutral-1-color);
@@ -361,7 +386,7 @@ button, .fr-btn {
     transition: 0.2s;
 
     font-size: var(--font-size-sm);
-    padding: 3px 15px;
+    padding: var(--padding-sm);
 
     background-color: var(--neutral-1-color);
     border: 1px solid var(--primary-color);
@@ -388,22 +413,20 @@ button, .fr-btn {
 /* Icon Button (Generic) */
 
 .fr-btn-with-icon {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    margin-top: 15px;
-    margin-bottom: 15px;
     
     cursor: pointer;
     transition: background-color 0.3s;
 
     gap: 10px;
     height: fit-content;
-    padding: 10px 25px 10px 20px;
+    padding: var(--spacing-sm) var(--spacing-md);
 
     background-color: var(--secondary-color);
     border-radius: var(--border-radius-lg);
     color: var(--neutral-1-color);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-md);
 }
 
 
@@ -466,7 +489,8 @@ button, .fr-btn {
 
 .fr-form-input {
     font-size: var(--font-size-sm);
-    padding: 10px 20px;
+    padding: var(--spacing-sm) var(--spacing-md);
+
     width: 100%;
 
     border: 1px solid var(--primary-color);
@@ -543,6 +567,16 @@ input[type=number] {
     background: var(--neutral-3-color);
 }
 
+.fr-dropdown-item:focus-visible {
+    background: var(--neutral-3-color);
+    outline: 2px solid var(--primary-color);
+    outline-offset: -2px;
+}
+
+.fr-dropdown-item[aria-selected="true"] {
+    background: var(--neutral-2-color);
+}
+
 /* Existing labels */
 .fr-label-list {
     margin-top: 12px;
@@ -552,7 +586,7 @@ input[type=number] {
 }
 
 .fr-label-item {
-    padding: 6px 16px;
+    padding: var(--padding-sm);
     font-size: var(--font-size-sm);
     cursor: pointer;
     transition: 0.2s;
@@ -619,14 +653,12 @@ input[type="range"].fr-scroll-slider--vertical {
     width: 50px;
 }
 
-
 .fr-switch input {
     height: 0;
     width: 0;
 
     opacity: 0;
 }
-
 
 .fr-switch__track {
     position: absolute;
@@ -641,7 +673,6 @@ input[type="range"].fr-scroll-slider--vertical {
 
     background-color: var(--neutral-1-color);
 }
-
 
 .fr-switch__track:before {
     position: absolute;
@@ -667,11 +698,9 @@ input:checked + .fr-switch__track:before {
 }
 
 /* Rounded sliders */
-
 .fr-switch__track--round {
     border-radius: 34px;
 }
-
 
 .fr-switch__track--round:before {
     border-bottom: 4px solid var(--primary-color);
@@ -695,7 +724,7 @@ input:checked + .fr-switch__track:before {
     
     min-height: 250px;
     max-height: 400px;
-    padding: 20px;
+    padding: var(--spacing-lg);
     width: 100%;
     
     background: var(--neutral-1-color);
@@ -708,14 +737,11 @@ input:checked + .fr-switch__track:before {
     height: 70vh;
 }
 
-
-
 /*
 |-----------------------------------------------------------
 | || 8. COMPONENTS: MODAL SETTINGS
 |-----------------------------------------------------------
 */
-
 
 .fr-modal-header {
     display: flex;
@@ -724,7 +750,6 @@ input:checked + .fr-switch__track:before {
 
     margin-bottom: var(--spacing-lg);
 }
-
 
 .fr-modal {
     position: fixed;
@@ -739,13 +764,11 @@ input:checked + .fr-switch__track:before {
     display: none;
 }
 
-
 .fr-modal.active {
     display: flex;
     justify-content: center;
     align-items: center;
 }
-
 
 .fr-modal__content {
     transition: transform 0.3s ease-out;
@@ -760,7 +783,6 @@ input:checked + .fr-switch__track:before {
 }
 
 /* Settings Grid Layout */
-
 .fr-settings-grid {
     display: grid;
     
@@ -771,7 +793,6 @@ input:checked + .fr-switch__track:before {
 }
 
 /* Swatches, Text Groups, etc. (Standardized Group Naming) */
-
 .fr-settings-group--colour {
     grid-area: colour;
 }
@@ -789,7 +810,6 @@ input:checked + .fr-switch__track:before {
     text-align: center;
 }
 
-
 .fr-swatch {
     cursor: pointer;
     transition: border-color 0.2s;
@@ -800,7 +820,6 @@ input:checked + .fr-switch__track:before {
     border: 2px solid transparent;
     border-radius: 4px;
 }
-
 
 .fr-swatch[aria-checked="true"] {
     border-color: var(--primary-color);
@@ -834,7 +853,7 @@ input:checked + .fr-switch__track:before {
     
     gap: 12px;
     margin: 20px 0;
-    padding: 0 20px;
+    padding: var(--padding-md);
 }
 
 .fr-card {
@@ -878,10 +897,9 @@ input:checked + .fr-switch__track:before {
     justify-content: center;
     margin-bottom: var(--spacing-sm);
 
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-md);
     overflow: hidden;
 }
-
 
 .fr-card__title,
 .fr-card__author {
@@ -893,12 +911,10 @@ input:checked + .fr-switch__track:before {
     margin-bottom: 0;
 }
 
-
 .fr-card__title {
     font-size: var(--font-size-sm);
     font-weight: 500;
 }
-
 
 .fr-card__author {
     font-size: var(--font-size-xs);
@@ -911,12 +927,11 @@ input:checked + .fr-switch__track:before {
 |-----------------------------------------------------------
 */
 
-
 .fr-chapters-section {
     align-items: stretch;
 
     margin: 40px auto;
-    width: 80%;
+    width: var(--width-changing);
 }
 
 .fr-chapters-list {
@@ -929,13 +944,12 @@ input:checked + .fr-switch__track:before {
 }
 
 .fr-chapter-item {
-    background-color: var(--neutral-2-alpha);
-    border-radius: 8px;
+    padding-left: 20px;
+    transition: background-color 0.2s, transform 0.2s;
 }
 
 .fr-chapter-item:hover {
-
-    padding-left: 20px;
+    transform: translateX(4px);
 }
 
 /*
@@ -945,6 +959,25 @@ input:checked + .fr-switch__track:before {
 */
 
 @media (max-width: 700px) {
+    :root {
+        --text-font-size: 0.9rem;
+
+        --navbar-height: 60px;
+
+        --button-height: 36px;
+
+        --spacing-lg: 16px;
+        --spacing-md: 12px;
+        --spacing-sm: 4px;
+        --spacing-xs: 0px;
+
+        --padding-lg: 0 16px;
+        --padding-md: 0 10px;
+        --padding-sm: 0 8px;
+
+        --width-changing: 100%;
+    }
+
     .fr-settings-grid {
         grid-template-areas:
             "colour"
@@ -954,14 +987,14 @@ input:checked + .fr-switch__track:before {
             "example";
         grid-template-columns: 1fr;
     }
-    .fr-modal__content {
-        width: 95%;
-    }
-    .fr-navbar, .fr-container {
-        max-width: none;
-        width: 100%;
-    }
+    
     .fr-card-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .fr-card{
+        width: calc((100vw - 4 * var(--spacing-md)) / 2);
+        height: auto;
+        flex: 0 0 auto;
     }
 }

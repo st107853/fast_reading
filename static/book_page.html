@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href="/static/style.css">
     <link rel="stylesheet" type="text/css" href="/static/book_page.css">
     <script src="/static/script.js" defer></script>
+    <script src="/static/book_page.js" defer></script>
 </head>
 <body>
     <div class="fr-container">
@@ -15,46 +16,61 @@
         {{template "settingsModal" .}}
 
     <div class="bp-book-card-container">
+
         <div class="bp-book-cover-wrapper">
             {{if .Book.CoverPath}}
-                <img src="/covers/{{.Book.CoverPath}}" alt="Обложка книги" class="book-cover">
+                <img src="/covers/{{.Book.CoverPath}}" 
+                    alt="Cover of {{.Book.Name}}">
             {{else}}
                 <div class="fr-blue-box">
                     {{.Book.Name}}
                 </div>
             {{end}}
         </div>
-        
+
         <div class="bp-book-info-wrapper">
-        
-        <h2>{{.Book.Name}}</h2>
-        <h3>{{.Book.Author}}</h3>
+            <h1>{{.Book.Name}}</h1>
+            <h2>{{.Book.Author}}</h2>
 
-        <div class="bp-book-section">
-            <label for="labels">Labels</label>
-            <div class="fr-list fr-list--left" id="labels" role="group" aria-label="Book tags">
-                {{range .Book.BookLabels}}
-                    <div class="fr-label">{{.Name}}</div>
-                {{end}}
+            <section aria-labelledby="tags-heading" >
+                <h2 id="tags-heading" class="visually-hidden">Tags</h2>
+                <ul class="fr-list fr-list--left">
+                    {{range .Book.BookLabels}}
+                        <li class="fr-label">{{.Name}}</li>
+                    {{end}}
+                </ul>
+            </section>
+
+            <div class="bp-action-buttons-wrapper">
+                <a href="/library/book/{{.Book.BookID}}/{{.Book.Progress.ChapterID}}/{{.Book.Progress.LastIndex}}" 
+                class="fr-btn fr-btn--large">
+                    Start Reading
+                </a>
+
+                <label class="bp-switch fr-switch">
+                    <input
+                        class="visually-hidden"
+                        type="checkbox"
+                        id="favBtn"
+                        aria-label="Add book to favourites"
+                        data-book-id="{{.Book.BookID}}"
+                        data-logged-in="{{.IsLoggedIn}}"
+                        {{if .Book.IsFavorited}}checked{{end}}>
+                    <span class="bp-switch-mark" aria-hidden="true"></span>
+                </label>
+                <span id="favStatus" role="status" aria-live="polite"></span>
             </div>
-        </div>
 
-        <div class="bp-action-buttons-wrapper">
-            <a href="/library/book/{{.Book.BookID}}/{{.Book.Progress.ChapterID}}/{{.Book.Progress.LastIndex}}" class="fr-btn fr-btn--large">Start Reading</a>
-
-            <label class="bp-switch fr-switch">
-                <input type="checkbox" id="favBtn" onclick="addToFavorites(this)" {{if .Book.IsFavorited}}checked{{end}} />
-                <span class="bp-switch-mark"></span>
-            </label>
-        </div>
-        <div {{if not .Book.IsCreator}}style="display: none;"{{end}}>
-            <a href="/library/addbook/{{.Book.BookID}}"><button class="fr-btn-with-icon" id="edit-btn">
-                <img src="/static/edit.svg" alt="edit icon" class="fr-icon">
+            {{if .Book.IsCreator}}
+            <a class="fr-btn-with-icon" id="edit-btn" href="/library/addbook/{{.Book.BookID}}">
+                <img src="/static/edit.svg" class="fr-icon" alt="" aria-hidden="true">
                 <span>Edit</span>
-            </button></a>
+            </a>
+            {{end}}
         </div>
+
     </div>
-    </div>
+
     <div class="bp-book-description">
         <h3>Book description</h3>
         <p>
@@ -72,41 +88,6 @@
             {{end}}
         </ul>
     </div>
-<script>
-    function addToFavorites(button) {
-        if (`{{.IsLoggedIn}}` === `false`) {
-            return;
-        }
-
-        var bookNameElement = `{{.Book.Name}}`;
-        var bookAuthorElement = `{{.Book.Author}}`;
-        var bookId = parseInt(`{{.Book.BookID}}`);
-
-        if (!bookNameElement || !bookAuthorElement || !bookId) {
-            console.error("One of the elements is missing !");
-            return;
-        }
-
-        var dict = {
-            "name": bookNameElement,
-            "author": bookAuthorElement,
-            "id": bookId
-        };
-
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/library/book/"+bookId+"/favourite", true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 201) {
-                    button.classList.add("clicked");
-                } else {
-                    console.error("Error sending request:", xhr.status, xhr.responseText);
-                }
-            }
-        };
-        xhr.send(JSON.stringify(dict));
-    }
-</script>
+    </div>
 </body>
 </html>

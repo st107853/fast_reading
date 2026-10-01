@@ -23,7 +23,6 @@ require (
 	github.com/st107853/fast_reading/models v0.0.0-20251024022424-d4caeadd37e6
 	github.com/st107853/fast_reading/routes v0.0.0-20251024022424-d4caeadd37e6
 	github.com/st107853/fast_reading/services v0.0.0-20251024022424-d4caeadd37e6
-	gorm.io/gorm v1.31.0
 )
 
 require (
@@ -81,6 +80,7 @@ require (
 	golang.org/x/text v0.34.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 	gorm.io/driver/postgres v1.6.0 // indirect
+	gorm.io/gorm v1.31.0 // indirect
 )
 
 replace github.com/st107853/fast_reading/controllers => ./controllers

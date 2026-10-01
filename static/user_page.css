@@ -11,7 +11,7 @@
     min-height: 100vh;
     padding: var(--spacing-lg);
     padding-top: 20px;
-    width: 80%;
+    width: var(--width-changing);
 
     background: var(--primary-color);
     max-width: 900px;
@@ -82,4 +82,44 @@
 
 .up-hr {
     border-top: 1px solid var(--neutral-1-color);
+}
+
+/*
+|-----------------------------------------------------------
+| || 5. ADD BUTTON
+|-----------------------------------------------------------
+*/
+
+.up-add-btn {
+    display: none;             /* hidden until Created books is active */
+    align-items: center;
+    justify-content: center;
+
+    /* round shape */
+    width: var(--button-height);
+    height: var(--button-height);
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    /* colours — matches fr-btn-with-icon */
+    background-color: var(--secondary-color);
+    color: var(--neutral-1-color);
+
+    /* + symbol */
+    font-size: 28px;
+    line-height: 1;
+    text-decoration: none;
+
+    transition: background-color 0.2s, transform 0.2s;
+    margin-left: auto; /* pushes it to the right like fr-btn-right */
+}
+
+.up-add-btn:hover {
+    background-color: var(--neutral-1-color);
+    color: var(--secondary-color);
+    transform: rotate(90deg); /* subtle animation on hover */
+}
+
+.up-add-btn.visible {
+    display: flex;
 }

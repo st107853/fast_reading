@@ -35,11 +35,24 @@
 
     {{template "settingsModal" .}}
 
+    
+        <a href="/library/addbook/" class="fr-btn fr-btn-right fr-btn--large fr-theme--white">+</a>
+    </div> -->
     <div class="fr-list fr-list--left fr-user-nav-tabs">
-        <button class="fr-theme--white fr-btn--chosed fr-btn--large" data-target="#favBooks" aria-pressed="true">Favourite books</button>
-        <button class="fr-theme--white fr-btn--large" data-target="#createdBooks" aria-pressed="false">Created books</button>
+        <button class="fr-theme--white fr-btn--large fr-btn-chosed--white" 
+                data-target="#favBooks" 
+                aria-pressed="true">
+            Favourite books
+        </button>
 
-        <a href="/library/addbook/" class="fr-btn fr-btn-right fr-btn--large fr-theme--white">Create book</a>
+        <button class="fr-theme--white fr-btn--large" 
+                data-target="#createdBooks" 
+                aria-pressed="false">
+            Created books
+        </button>
+
+        <!-- round add button, hidden by default -->
+        <a href="/library/addbook/" class="up-add-btn" id="addBookBtn" aria-label="Add new book" aria-hidden="true">+</a>
     </div>
     <hr class="up-hr">
 
@@ -51,8 +64,15 @@
         </div>
 
         <section id="fav-results-container" class="objects fr-card-grid">
-        {{range .FavouriteBooks}}
-            {{template "bookCard" .}}
+        {{if eq (len .FavouriteBooks) 0}}
+            <div class="fr-empty-state">
+                <h3 class="fr-text--white">No favourite books</h3>
+                <p class="fr-text--white">You haven't added any books to your favourites yet.</p>
+            </div>
+        {{else}}
+            {{range .FavouriteBooks}}
+                {{template "bookCard" .}}
+            {{end}}
         {{end}}
       </section>
     </div>
@@ -65,8 +85,15 @@
         </div>
 
       <section id="created-results-container" class="objects fr-card-grid">
-        {{range .CreatedBooks}}
-            {{template "bookCard" .}}
+        {{if eq (len .CreatedBooks) 0}}
+            <div class="fr-empty-state">
+                <h3 class="fr-text--white">No created books</h3>
+                <p class="fr-text--white">You haven't created any books yet.</p>
+            </div>
+        {{else}}
+            {{range .CreatedBooks}}
+                {{template "bookCard" .}}
+            {{end}}
         {{end}}
       </section>
     </div>

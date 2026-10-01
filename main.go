@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"log/slog"
 	"os"
@@ -16,7 +15,6 @@ import (
 	"github.com/st107853/fast_reading/services"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 var (
@@ -33,7 +31,6 @@ var (
 	AuthRouteController routes.AuthRouteController
 
 	bookService         services.BookService
-	db                  *gorm.DB
 	BookRouteController routes.BookRouteController
 )
 
@@ -41,7 +38,6 @@ func init() {
 	ctx = context.TODO()
 	var err error
 
-	fmt.Println("Starting Fast Reading API...")
 	conf, err = config.LoadConfig(".")
 	if err != nil {
 		log.Fatal("Could not load config", err)
@@ -75,7 +71,11 @@ func init() {
 	UserController = controllers.NewUserController(userService, bookService)
 	UserRouteController = routes.NewRouteUserController(UserController)
 
-	BookController := controllers.NewBookController(bookService, userService)
+	BookController, err := controllers.NewBookController(bookService, userService)
+	if err != nil {
+		logger.Log.Error("failed to create book controller", slog.Any("error", err))
+		os.Exit(1)
+	}
 	BookRouteController = routes.NewBookRouteController(BookController)
 
 	var level slog.Level
@@ -99,8 +99,6 @@ func init() {
 }
 
 func main() {
-
-	defer models.RemoveDb(db)
 
 	server.Static("/static", "./static")
 	server.Static("/covers", "./covers")

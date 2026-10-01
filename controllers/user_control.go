@@ -28,18 +28,17 @@ func NewUserController(userService services.UserService, bookService services.Bo
 	return UserController{userService: userService, bookService: bookService}
 }
 
+// GetMe handles the GET request to retrieve the current user's information and their favorite and created books and labels.
 func (uc *UserController) GetMe(ctx *gin.Context) {
 	var err error
 	currentUser := ctx.MustGet("currentUser").(*models.User)
 	data := UserData{Name: currentUser.Name}
 
-	if uc.bookService != nil {
-		if data.CreatedBooks, data.CreatedLabels, err = uc.bookService.FindBooksByCreatorID(currentUser.ID); err != nil {
-			ctx.Error(err)
-		}
+	if data.FavouriteBooks, data.FavouriteLabels, err = uc.bookService.FindFavoriteBooksByUserID(currentUser.ID); err != nil {
+		ctx.Error(err)
 	}
 
-	if data.FavouriteBooks, data.FavouriteLabels, err = uc.bookService.FindFavoriteBooksByUserID(currentUser.ID); err != nil {
+	if data.CreatedBooks, data.CreatedLabels, err = uc.bookService.FindBooksByCreatorID(currentUser.ID); err != nil {
 		ctx.Error(err)
 	}
 

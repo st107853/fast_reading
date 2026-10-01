@@ -6,7 +6,6 @@
     <title>Add book</title>
     <link rel="stylesheet" type="text/css" href="/static/style.css">
     <link rel="stylesheet" type="text/css" href="/static/create_book.css">
-    <link rel="stylesheet" type="text/css" href="/static/book_page.css">
     <script src="/static/create_book.js" defer></script>
     <script src="/static/script.js" defer></script>
 </head>
@@ -16,106 +15,166 @@
         {{template "navbar" .}}
         {{template "settingsModal" .}}
 
-    <div class="book-action-bar fr-list">
+        <div class="book-action-bar fr-list">
+            <button type="button" class="fr-btn--large fr-btn--chosed">
+                Book face
+            </button>
+            <a href="/library/addbook/{{.Book.BookID}}/chapter" 
+               class="fr-btn fr-btn--large fr-btn-right">
+                Add Chapter
+            </a>
+        </div>
+        <hr>
 
-        <button type="button" class="fr-btn--large fr-btn--chosed">Book face</button>
-    
-        <a href="/library/addbook/{{.Book.BookID}}/chapter" class="fr-btn fr-btn--large fr-btn-right">
-        Add Chapter
-        </a>
+        <form class="cb-book-editor-form">
 
-    </div>
-    <hr>
-    
-    <form class="cb-book-editor-form">
-        
-        <section class="cb-editor-info-grid">
-            <div class="fr-input-container">
-                <label for="book-name">Book naming</label>
-                <input type="text" class="fr-form-input" id="book-name" value="{{.Book.Name}}" required>
-            </div>
-
-            <div class="fr-input-container">
-                <label for="author-name">Author</label>
-                <input type="text" class="fr-form-input" id="author-name" value="{{.Book.Author}}" required>
-            </div>
-
-            <div class="cb-year-and-labels">
-                <div class="fr-input-container">
-                    <label for="publication-year">Year</label>
-                    <input type="number" id="publication-year" class="fr-form-input" value="{{.Book.PublicationYear}}" required>
+            <section class="cb-editor-photo-upload">
+                <div class="cb-photo-placeholder" id="image-preview">
+                    {{if .Book.CoverPath}}
+                        <img src="/covers/{{.Book.CoverPath}}" 
+                             alt="Book cover" 
+                             class="book-cover"
+                             style="width:100%;height:100%;object-fit:cover;">
+                    {{else}}
+                        <div class="fr-blue-box" 
+                             style="height:100%;font-size:var(--font-size-sm);">
+                            Upload image
+                        </div>
+                    {{end}}
                 </div>
 
-                <div class="fr-label-dropdown">
-                    <button type="button" class="fr-btn-with-icon" onclick="toggleDropdown(event)">
-                        <img src="/static/add.svg" alt="add icon" class="fr-icon">
-                        <span>Add label</span>
-                    </button>
+                <div class="fr-btn-with-icon" 
+                     onclick="document.getElementById('image-file').click()">
+                    <img src="/static/upload.svg" alt="upload icon" class="fr-icon">
+                    <span>Upload image</span>
+                    <input type="file" 
+                           id="image-file" 
+                           accept="image/*" 
+                           onchange="handleImageUpload()">
+                </div>
+            </section>
 
-                    <div class="fr-dropdown-menu" id="dropdownMenu">
-                        {{range .AllLabels}}
-                            <div class="fr-dropdown-item" 
-                                onclick="toggleLabelUI('{{.LabelID}}', '{{.Name}}')">
-                                {{.Name}}
-                            </div>
+            <!-- ── info ── -->
+            <section class="cb-editor-info-grid">
+                <div class="fr-input-container">
+                    <label for="book-name">Book naming</label>
+                    <input type="text" 
+                           class="fr-form-input" 
+                           id="book-name" 
+                           value="{{.Book.Name}}" 
+                           required>
+                </div>
+
+                <div class="fr-input-container">
+                    <label for="author-name">Author</label>
+                    <input type="text" 
+                           class="fr-form-input" 
+                           id="author-name" 
+                           value="{{.Book.Author}}" 
+                           required>
+                </div>
+
+                <div class="cb-year-and-labels">
+
+                    <div class="fr-label-dropdown">
+                        <button type="button" 
+                                class="fr-btn-with-icon" 
+                                id="label-menu-button"
+                                aria-haspopup="listbox"
+                                aria-expanded="false"
+                                aria-controls="dropdownMenu"
+                                onclick="toggleDropdown(event)">
+                            <img src="/static/add.svg" alt="add icon" class="fr-icon">
+                            <span>Add label</span>
+                        </button>
+
+                        <div class="fr-dropdown-menu"
+                             id="dropdownMenu"
+                             role="listbox"
+                             aria-label="Book labels"
+                             aria-multiselectable="true">
+                            {{range .AllLabels}}
+                                <div class="fr-dropdown-item"
+                                     role="option"
+                                     tabindex="-1"
+                                     data-id="{{.LabelID}}"
+                                     aria-selected="false">
+                                    {{.Name}}
+                                </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <div class="fr-input-container" id="publication-year-container">
+                        <label for="publication-year">Year</label>
+                        <input type="number" 
+                            id="publication-year" 
+                            value="{{.Book.PublicationYear}}" 
+                            required>
+                    </div>
+
+                    <div class="fr-label-list" id="labelsList">
+                        {{range .Book.BookLabels}}
+                            <div class="fr-label-item" 
+                                 data-id="{{.LabelID}}">{{.Name}}</div>
                         {{end}}
                     </div>
                 </div>
+            </section>
 
-                <div class="fr-label-list" id="labelsList">
-                    {{range .Book.BookLabels}}
-                        <div class="fr-label-item" data-id={{.LabelID}}>{{.Name}}</div>
-                    {{end}}
-                </div>
-            </div>
-        </section>
+            <!-- ── description ── -->
+            <section class="cb-editor-description">
+                <label for="book-description">Short book description</label>
+                <textarea class="cb-textarea-description" 
+                          id="book-description">{{.Book.Description}}</textarea>
+            </section>
 
-        <section class="cb-editor-photo-upload">
-            
-            <div class="cb-photo-placeholder" id="image-preview">
-                {{if .Book.CoverPath}}
-                    <img src="/covers/{{.Book.CoverPath}}" alt="Book cover" class="book-cover">
-                {{else}}
-                    <div class="fr-blue-box">
-                        Upload image
+            <!-- ── chapters ── -->
+            <section class="cb-editor-content-list">
+                <div class="fr-chapters-section">
+                    <h3>Chapters</h3>
+                    <ul class="fr-chapters-list">
+                        {{range .Book.Chapters}}
+                        <li class="fr-chapter-item">
+                            <a href="/library/addbook/{{.BookID}}/chapter/{{.ChapterID}}" 
+                               class="fr-btn">{{.Title}}</a>
+                        </li>
+                        {{end}}
+                    </ul>
+                    <div class="fr-list">
+                        <button type="button" 
+                                class="fr-btn--large" 
+                                id="add-chapter-button"
+                                onclick="addChapter(this,`{{.Book.BookID}}`)">
+                            Add Chapter
+                        </button>
                     </div>
-                {{end}}
-            </div>
-            
-            <div class="fr-btn-with-icon" onclick="document.getElementById('image-file').click()">
-                <img src="/static/upload.svg" alt="upload icon" class="fr-icon">
-                <span>Upload image</span>
-                <input type="file" id="image-file" accept="image/*" class="hidden" onchange="handleImageUpload()">
-            </div>
-        </section>
-
-        <section class="cb-editor-description">
-            <label for="book-description">Short book description</label>
-            <textarea class="cb-textarea-description" id="book-description">{{.Book.Description}}</textarea>
-        </section>
-
-        <section class="cb-editor-content-list">
-            <div class="fr-chapters-section">
-                <h3>Chapters</h3>
-                <ul class="fr-chapters-list">
-                    {{range .Book.Chapters}}
-                    <li class="fr-chapter-item">
-                        <a href="/library/addbook/{{.BookID}}/chapter/{{.ChapterID}}" class="fr-btn">{{.Title}}</a>
-                    </li>
-                    {{end}}
-                </ul>
-                <div class="fr-list" >
-                    <button type="button" class="fr-btn--large" id="add-chapter-button" onclick="addChapter(this,`{{.Book.BookID}}`)">Add Chapter</button>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <footer class="cb-editor-actions">
-            <button type="button" class="fr-btn--large" id="release-button" onclick="releaseBook(this,`{{.Book.BookID}}`)">Publish</button>
-            <button type="button" class="fr-btn--large" id="save-button" onclick="saveUpdates(this, `{{.Book.BookID}}`)">Save</button>
-            <button type="button" class="fr-btn--large" id="delete-button" onclick="deleteBook(`{{.Book.BookID}}`)">Delete</button>
-        </footer>
-    </form>
-</div>
+            <!-- ── действия ── -->
+            <footer class="cb-editor-actions">
+                <button type="button" 
+                        class="fr-btn--large" 
+                        id="release-button"
+                        onclick="releaseBook(this,`{{.Book.BookID}}`)">
+                    Publish
+                </button>
+                <button type="button" 
+                        class="fr-btn--large" 
+                        id="save-button"
+                        onclick="saveUpdates(this, `{{.Book.BookID}}`)">
+                    Save
+                </button>
+                <button type="button" 
+                        class="fr-btn--large" 
+                        id="delete-button"
+                        onclick="deleteBook(`{{.Book.BookID}}`)">
+                    Delete
+                </button>
+            </footer>
+
+        </form>
+    </div>
 </body>
 </html>

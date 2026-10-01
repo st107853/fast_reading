@@ -49,3 +49,23 @@ document.addEventListener('DOMContentLoaded', () => {
         label.addEventListener('click', toggleLabel);
     });
 });
+
+function toggleFilters() {
+    const container = document.getElementById('labels-container');
+    const btn       = document.getElementById('filterToggleBtn');
+    const applyBtn  = document.getElementById('applyBtn');
+
+    const isOpen = container.classList.contains('open');
+
+    if (isOpen) {
+        container.classList.remove('open');
+        container.setAttribute('aria-hidden', 'true');
+        btn.setAttribute('aria-expanded', 'false');
+        applyBtn.classList.remove('visible');  // hide Apply when filters close
+    } else {
+        container.classList.add('open');
+        container.setAttribute('aria-hidden', 'false');
+        btn.setAttribute('aria-expanded', 'true');
+        applyBtn.classList.add('visible');     // show Apply when filters open
+    }
+}

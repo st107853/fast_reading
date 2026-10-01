@@ -37,9 +37,63 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 // update active state on buttons
-                tabButtons.forEach(function (b) { b.classList.remove('fr-btn--chosed'); b.setAttribute('aria-pressed', 'false'); });
+                tabButtons.forEach(function (b) { b.classList.remove('fr-btn-chosed--white'); b.setAttribute('aria-pressed', 'false'); });
+                btn.classList.add('fr-btn-chosed--white');
+                btn.setAttribute('aria-pressed', 'true');
+            });
+        });
+    } catch (e) {
+        console.error('user_page toggle init error', e);
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    try {
+        var tabButtons = document.querySelectorAll('[data-target]');
+        var addBookBtn = document.getElementById('addBookBtn');
+
+        if (!tabButtons || tabButtons.length === 0) return;
+
+        var panels = function () { 
+            return document.querySelectorAll('#favBooks, #createdBooks'); 
+        };
+
+        tabButtons.forEach(function (btn) {
+            btn.addEventListener('click', function (ev) {
+                ev.preventDefault();
+                var target = btn.getAttribute('data-target');
+                if (!target) return;
+
+                // hide all panels
+                panels().forEach(function (p) { 
+                    p.classList.add('fr-hidden'); 
+                });
+
+                // show the requested panel
+                var show = document.querySelector(target);
+                if (show) show.classList.remove('fr-hidden');
+
+                // clear selected filter labels when switching tab
+                if (typeof clearSelectedLabels === 'function') {
+                    clearSelectedLabels();
+                }
+
+                // update active state on buttons
+                tabButtons.forEach(function (b) { 
+                    b.classList.remove('fr-btn--chosed'); 
+                    b.setAttribute('aria-pressed', 'false'); 
+                });
                 btn.classList.add('fr-btn--chosed');
                 btn.setAttribute('aria-pressed', 'true');
+
+                // show add button only on Created books tab
+                if (target === '#createdBooks') {
+                    addBookBtn.classList.add('visible');
+                    addBookBtn.setAttribute('aria-hidden', 'false');
+                } else {
+                    addBookBtn.classList.remove('visible');
+                    addBookBtn.setAttribute('aria-hidden', 'true');
+                }
             });
         });
     } catch (e) {

@@ -24,19 +24,41 @@
                 </div>
             </form>
 
-            <div class="fr-list" id="labels-container">
+
+            <div class="mp-controls-row">
+
+                <div class="mp-controls-left">
+                    <button class="fr-btn--large fr-btn--chosed">All books</button>
+                    <a href="/library/continue/" class="fr-btn fr-btn--large">Continue reading</a>
+                </div>
+
+                <div class="mp-controls-right">
+                    <button class="fr-btn--large mp-filter-btn" 
+                            id="filterToggleBtn"
+                            onclick="toggleFilters()"
+                            aria-expanded="false"
+                            aria-controls="labels-container">
+                        Filters
+                    </button>
+
+                    <button onclick="applyFilters()" 
+                            class="fr-btn--large mp-apply-btn" 
+                            id="applyBtn">Apply</button>
+
+                </div>
+
+            </div>
+
+            <div class="fr-list mp-labels-container" 
+                id="labels-container" 
+                aria-hidden="true">
                 {{range .Labels}}
-                    <div class="fr-label fr-label--interactive" data-id="{{.LabelID}}" tabindex="0">{{.Name}}</div>
+                    <div class="fr-label fr-label--interactive" 
+                        data-id="{{.LabelID}}" 
+                        tabindex="0">{{.Name}}</div>
                 {{end}}
             </div>
-
-            <div class="fr-list fr-list--left">
-                <button class="fr-btn--large fr-btn--chosed">All books</button>
-
-                <a href="/library/continue/" class="fr-btn fr-btn--large">Continue reading</a>
-
-                <button onclick="applyFilters()" class="fr-btn--large fr-btn-right">Apply Filters</button>
-            </div>
+ 
             <hr>
 
             <div id="results-container" class="fr-card-list" id="cardList"></div>
@@ -52,6 +74,17 @@
 
             {{range .LastReleased}}
                 <div class="mp-book-card">
+
+                    <!-- image FIRST in the DOM → top on mobile, right on desktop -->
+                    <div class="mp-book-image">
+                        {{if .CoverPath}}
+                            <img src="/covers/{{.CoverPath}}" alt="Book cover">
+                        {{else}}
+                            <div class="fr-blue-box">{{.Name}}</div>
+                        {{end}}
+                    </div>
+
+                    <!-- info SECOND in the DOM → bottom on mobile, left on desktop -->
                     <div class="mp-book-info">
                         <a class="link-standart-color" href="/library/book/{{.BookID}}">
                             <h2>{{.Name}}</h2>
@@ -64,15 +97,7 @@
                             {{end}}
                         </div>
                     </div>
-                    <div class="bp-book-cover-wrapper">
-                        {{if .CoverPath}}
-                            <img src="/covers/{{.CoverPath}}" alt="Book cover" class="book-cover">
-                        {{else}}
-                            <div class="fr-blue-box">
-                                {{.Name}}
-                            </div>
-                        {{end}}
-                    </div>
+
                 </div>
             {{end}}
         </main>

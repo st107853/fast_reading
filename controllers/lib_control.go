@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -37,10 +38,17 @@ type UpdateLabelsRequest struct {
 	LabelIDs []bool `json:"label_ids"`
 }
 
-func NewBookController(bookService services.BookService, userService services.UserService) BookController {
-	return BookController{bookService, userService}
+func NewBookController(bookService services.BookService, userService services.UserService) (BookController, error) {
+	if bookService == nil {
+		return BookController{}, fmt.Errorf("bookService must not be nil")
+	}
+	if userService == nil {
+		return BookController{}, fmt.Errorf("userService must not be nil")
+	}
+	return BookController{bookService, userService}, nil
 }
 
+// ListAllBooks handles the request to list all books, optionally filtered by keyword, labels, and code
 func (bc *BookController) ListAllBooks(c *gin.Context) {
 	keyword := c.Query("keyword")
 	labelIDsString := c.Query("labels")
@@ -69,6 +77,7 @@ func (bc *BookController) ListAllBooks(c *gin.Context) {
 	c.Data(http.StatusOK, "application/json", jsonData)
 }
 
+// AllBooks renders the page showing all books, labels, and last released books
 func (bc *BookController) AllBooks(c *gin.Context) {
 	books, err := bc.bookService.ListAllBooks()
 	if err != nil {
@@ -102,6 +111,7 @@ func (bc *BookController) AllBooks(c *gin.Context) {
 	}
 }
 
+// ContinueReading renders the page for continuing reading books, showing the user's books and available labels
 func (bc *BookController) ContinueReading(c *gin.Context) {
 	userId, _ := c.Get("UserId")
 	uID, _ := userId.(uint)
@@ -132,10 +142,16 @@ func (bc *BookController) ContinueReading(c *gin.Context) {
 	}
 }
 
+// CreateBook handles the request to create a new book, including file upload and service call
 func (bc *BookController) CreateBook(c *gin.Context) {
 	var input models.Book
 	userId, _ := c.Get("UserId")
 	uID, _ := userId.(uint)
+
+	if uID == 0 {
+		RenderError(c, services.ErrUnauthorized())
+		return
+	}
 
 	// c.ShouldBind() using binding/form for multipart/form-data
 	if err := c.ShouldBind(&input); err != nil {
@@ -162,6 +178,7 @@ func (bc *BookController) CreateBook(c *gin.Context) {
 	})
 }
 
+// CreateChapter creates a new chapter for a specific book
 func (bc *BookController) CreateChapter(c *gin.Context) {
 	var chapter models.Chapter
 	if err := c.ShouldBindJSON(&chapter); err != nil {
@@ -176,11 +193,6 @@ func (bc *BookController) CreateChapter(c *gin.Context) {
 	}
 
 	chapter.BookID = uint(uri.BookID)
-	// Persist chapter via service
-	if bc.bookService == nil {
-		RenderError(c, services.ErrServiceNotInitialized())
-		return
-	}
 
 	id, err := bc.bookService.InsertChapter(chapter)
 	if err != nil {
@@ -194,6 +206,7 @@ func (bc *BookController) CreateChapter(c *gin.Context) {
 	})
 }
 
+// EditBookChapter renders the edit chapter page after validating the user's permission
 func (bc *BookController) EditBookChapter(c *gin.Context) {
 	id := c.Param("chapter_id")
 
@@ -223,8 +236,12 @@ func (bc *BookController) EditBookChapter(c *gin.Context) {
 	}
 }
 
+// UpdateBookChapter updates a chapter's details after validating the user's permission
 func (bc *BookController) UpdateBookChapter(c *gin.Context) {
 	var chapter models.Chapter
+	userId, _ := c.Get("UserId")
+	uID, _ := userId.(uint)
+
 	if err := c.ShouldBindUri(&chapter); err != nil {
 		RenderError(c, services.ErrBadRequest("Invalid ID format"))
 		return
@@ -232,6 +249,11 @@ func (bc *BookController) UpdateBookChapter(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&chapter); err != nil {
 		RenderError(c, services.ErrBadRequest("Invalid ID format"))
+		return
+	}
+
+	if !bc.bookService.IsBookCreator(chapter.BookID, uID) {
+		RenderError(c, services.ErrForbidden("edit this chapter"))
 		return
 	}
 
@@ -244,6 +266,7 @@ func (bc *BookController) UpdateBookChapter(c *gin.Context) {
 	c.JSON(http.StatusOK, updatedChapter)
 }
 
+// ReleaseBook releases a book, making it available for others to read
 func (bc *BookController) ReleaseBook(c *gin.Context) {
 	var uri models.BookURI
 	userId, _ := c.Get("UserId")
@@ -266,6 +289,7 @@ func (bc *BookController) ReleaseBook(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Book released successfully"})
 }
 
+// BookFavourite adds a book to the user's favorite books
 func (bc *BookController) BookFavourite(c *gin.Context) {
 	var book models.BookBase
 	userId, _ := c.Get("UserId")
@@ -276,7 +300,6 @@ func (bc *BookController) BookFavourite(c *gin.Context) {
 		return
 	}
 
-	// Call the function to add the book to favorite books
 	err := bc.userService.AddBookToFavoriteBooks(uID, book.BookID)
 	if err != nil {
 		RenderError(c, err)
@@ -286,6 +309,7 @@ func (bc *BookController) BookFavourite(c *gin.Context) {
 	c.JSON(http.StatusCreated, book.Name)
 }
 
+// BookMark saves the user's reading progress for a specific book and chapter
 func (bc *BookController) BookMark(c *gin.Context) {
 	var uri models.ReadingProgress
 	userId, _ := c.Get("UserId")

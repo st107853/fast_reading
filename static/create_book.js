@@ -1,5 +1,7 @@
 const TARGET_WIDTH = 168;
 const TARGET_HEIGHT = 190;
+const MAX_INPUT_MB = 5;           // лимит входного файла
+const MAX_INPUT_BYTES = MAX_INPUT_MB * 1024 * 1024;
 
 
 // Utility function to display messages
@@ -7,9 +9,9 @@ function showMessage(message, type) {
     const messageContainer = document.getElementById('message-container');
     if (messageContainer) {
         messageContainer.textContent = message;
-        messageContainer.className = 'p-2 rounded text-sm font-medium transition-colors duration-300 ' + 
-                                        (type === 'success' ? 'bg-green-100 text-green-700' : 
-                                        type === 'error' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700');
+        messageContainer.className = `cb-editor-message cb-editor-message--${type}`;
+        messageContainer.hidden = false;
+        messageContainer.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
     } else {
         console.log(`[${type.toUpperCase()}]: ${message}`);
     }
@@ -17,43 +19,10 @@ function showMessage(message, type) {
 
 // --- Functions of Image Processing ---
 
-/**
- * Converts a Data URL (Base64) to a Blob object.
- * Used to prepare the cover image for submission via FormData.
- * @param {string} dataurl - Data URL of the image.
- * @returns {Blob} The resulting Blob object.
- */
-function dataURLtoBlob(dataurl) {
-    const parts = dataurl.split(',');
-    
-    // Data URL should have two parts: header and data
-    if (parts.length !== 2) {
-        throw new Error("Data URL is improperly formatted (missing base64 data part).");
-    }
+let pendingCoverBlob = null;
+let previewObjectURL = null;
 
-    // Get the MIME type from the first part (e.g., image/jpeg)
-    const mimeMatch = parts[0].match(/:(.*?);/);
-    if (!mimeMatch || mimeMatch.length < 2) {
-        // If MIME type is not found, use the default image/jpeg
-        console.warn("MIME type not found in Data URL header. Defaulting to 'image/jpeg'.");
-        var mime = 'image/jpeg';
-    } else {
-        var mime = mimeMatch[1];
-    }
-    
-    const base64Data = parts[1];
 
-    // Decoding Base64 string to binary data
-    const bstr = atob(base64Data);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-
-    // Convert the decoded characters to a Uint8Array
-    while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new Blob([u8arr], { type: mime });
-}
 
 // --- LOGIC FOR IMAGE UPLOAD (WITH RESIZING) ---
 function handleImageUpload() {
@@ -61,50 +30,86 @@ function handleImageUpload() {
     const imagePreview = document.getElementById("image-preview");
     const file = fileInput.files[0];
 
-    if (!file || !file.type.startsWith('image/')) {
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
         showMessage("Please select an image file.", 'error');
         return;
     }
 
-    const reader = new FileReader();
+    if (file.size > MAX_INPUT_BYTES) {
+        showMessage(
+            `Image is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). 
+             Maximum allowed size is ${MAX_INPUT_MB} MB.`,
+            'error'
+        );
+        fileInput.value = '';
+        return;
+    }
 
-    reader.onload = function(event) {
-        const img = new Image();
-        img.onload = function() {
-            // Create a canvas to resize the image
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
+    if (previewObjectURL) {
+        URL.revokeObjectURL(previewObjectURL);
+    }
+    previewObjectURL = URL.createObjectURL(file);
 
-            canvas.width = TARGET_WIDTH;
-            canvas.height = TARGET_HEIGHT;
+    imagePreview.style.backgroundImage = `url(${previewObjectURL})`;
+    imagePreview.style.backgroundSize = 'cover';
+    imagePreview.style.backgroundPosition = 'center';
+    imagePreview.textContent = '';
 
-            // Draw the image on the canvas, resizing it
-            ctx.drawImage(img, 0, 0, TARGET_WIDTH, TARGET_HEIGHT);
+    const img = new Image();
 
-            // Get the resized image in DataURL format
-            const resizedImageUrl = canvas.toDataURL('image/jpeg', 0.8); // Quality compression 0.8
+    img.onload = function () {
 
-            // Update the preview
-            imagePreview.style.backgroundImage = `url(${resizedImageUrl})`;
-            imagePreview.textContent = "";
+        const canvas  = document.createElement('canvas');
+        canvas.width  = TARGET_WIDTH;
+        canvas.height = TARGET_HEIGHT;
 
-            window.tempCoverImageBase64 = resizedImageUrl;
-            
-            showMessage(`Cover successfully uploaded and resized to ${TARGET_WIDTH}x${TARGET_HEIGHT}px.`, 'success');
-        };
-        
-        img.onerror = function() {
-            showMessage("Error loading image into memory.", 'error');
-        };
+        const ctx = canvas.getContext('2d');
 
-        img.src = event.target.result;
+        const srcRatio  = img.naturalWidth / img.naturalHeight;
+        const dstRatio  = TARGET_WIDTH / TARGET_HEIGHT;
+
+        let sx, sy, sw, sh;
+        if (srcRatio > dstRatio) {
+            sh = img.naturalHeight;
+            sw = sh * dstRatio;
+            sx = (img.naturalWidth - sw) / 2;
+            sy = 0;
+        } else {
+            sw = img.naturalWidth;
+            sh = sw / dstRatio;
+            sx = 0;
+            sy = (img.naturalHeight - sh) / 2;
+        }
+
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, TARGET_WIDTH, TARGET_HEIGHT);
+
+        canvas.toBlob(
+            function (blob) {
+                if (!blob) {
+                    showMessage("Failed to process image.", 'error');
+                    return;
+                }
+
+                pendingCoverBlob = blob;
+
+                showMessage(
+                    `Cover ready (${(blob.size / 1024).toFixed(0)} KB).`,
+                    'success'
+                );
+            },
+            'image/jpeg', 0.85
+        );
     };
 
-    reader.onerror = function() {
-        showMessage("Error reading image file.", 'error');
+    img.onerror = function () {
+        showMessage("Failed to load image.", 'error');
+        URL.revokeObjectURL(previewObjectURL);
+        previewObjectURL = null;
     };
-    
-    reader.readAsDataURL(file);
+
+    img.src = previewObjectURL;
 }
 
 async function releaseBook(button, bookId) {
@@ -167,8 +172,18 @@ async function saveUpdates(button, bookId) {
     const bookAuthor = document.getElementById('author-name');
     const publicationYear = document.getElementById('publication-year');
     const bookDescription = document.getElementById('book-description');
+    const bookForm = bookName?.form;
 
-    if (!bookName?.value.trim() || !bookAuthor?.value.trim()) {
+    if (!bookName || !bookAuthor || !publicationYear || !bookDescription || !bookForm) {
+        showMessage("Could not save: book form fields are missing.", 'error');
+        return null;
+    }
+
+    if (!bookForm.reportValidity()) {
+        return null;
+    }
+
+    if (!bookName.value.trim() || !bookAuthor.value.trim()) {
         showMessage("Book name and author are required.", 'error');
         return null;
     }
@@ -179,14 +194,8 @@ async function saveUpdates(button, bookId) {
     formData.append('publication_year', publicationYear.value.trim());
     formData.append('description', bookDescription.value.trim());
 
-    if (window.tempCoverImageBase64) {
-        try {
-            const imageBlob = dataURLtoBlob(window.tempCoverImageBase64);
-            const extension = imageBlob.type.split('/')[1] || 'jpg';
-            formData.append('cover_image', imageBlob, `cover.${extension}`);
-        } catch (e) {
-            console.error("Blob error:", e);
-        }
+    if (pendingCoverBlob) {
+        formData.append('cover_image', pendingCoverBlob, 'cover.jpg');
     }
 
     const isNew = !bookId || bookId === '0' || bookId === '';
@@ -225,14 +234,6 @@ async function saveUpdates(button, bookId) {
         if (button) button.disabled = false;
     }
 }
-
-// Initialize image preview if there's a temporary cover image stored (e.g., after page reload)
-document.addEventListener('DOMContentLoaded', () => {
-    const imagePreview = document.getElementById("image-preview");
-    if (window.tempCoverImageBase64) {
-        imagePreview.style.backgroundImage = `url(${window.tempCoverImageBase64})`;
-    }
-});
 
 function updateText() {
     const fileInput = document.getElementById("file");
@@ -286,7 +287,7 @@ async function submitChapter(button, bookId, chapterId) {
     const bookTextElement = document.getElementById('scrollable-content-reading');
 
     if (!chapterNameElement || !bookTextElement) {
-        alert("Error: Could not find one of the required chapter form elements.", !chapterNameElement, !bookTextElement);
+        showMessage("Could not save: chapter form fields are missing.", 'error');
         return;
     }
 
@@ -302,6 +303,12 @@ async function submitChapter(button, bookId, chapterId) {
         text: bookTextElement.value
     };
 
+    const originalButtonText = button?.textContent;
+    if (button) {
+        button.disabled = true;
+        button.textContent = 'Saving...';
+    }
+
     try {
         const response = await fetch(url, {
             method,
@@ -310,28 +317,46 @@ async function submitChapter(button, bookId, chapterId) {
             body: JSON.stringify(payload)
         });
 
-        const result = await response.json();
-        const id = result.chapter_id || chapterId;
+        const responseText = await response.text();
+        let result = null;
+        try {
+            result = responseText ? JSON.parse(responseText) : null;
+        } catch {
+            // Some error responses are plain text rather than JSON.
+        }
+
+        const resultMessage = result && typeof result === 'object'
+            ? result.error || result.message
+            : null;
+        const responseMessage = typeof resultMessage === 'string' && resultMessage
+            ? resultMessage
+            : responseText;
+
+        if (!response.ok) {
+            throw new Error(responseMessage || `Server error (${response.status})`);
+        }
 
         // Create chapter
         if (response.status === 201) {
-            button.classList.add('clicked');
+            const id = result?.chapter_id || chapterId;
+            if (!id || id === '0') {
+                throw new Error("Chapter was saved, but the server did not return its ID.");
+            }
             window.location.href = `/library/addbook/${encodeURIComponent(bookId)}/chapter/${id}`;
             return;
         }
 
-        // Update chapter
-        if (response.status === 200) {
-            button.classList.add('clicked');
-            return;
-        }
-
-        // Errors
-        const errorText = await response.text();
-        throw new Error(errorText || "Unknown error");
+        showMessage("Chapter saved successfully.", 'success');
 
     } catch (err) {
         console.error("Error of saving chapter:", err);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        showMessage(`Error saving chapter: ${errorMessage}`, 'error');
+    } finally {
+        if (button) {
+            button.disabled = false;
+            button.textContent = originalButtonText || 'Save';
+        }
     }
 }
 
@@ -372,13 +397,12 @@ function deleteChapter(id) {
 
 const menu = document.getElementById("dropdownMenu");
 const labelsList = document.getElementById('labelsList');
+const labelMenuButton = document.getElementById('label-menu-button');
 
-// 17 existing labels + 1 for "no label" (id=0) which is always selected
 let selectedLabels = Array(18).fill(false);
 
 if (labelsList) {
     const items = labelsList.querySelectorAll('.fr-label-item');
-
     items.forEach(item => {
         const id = parseInt(item.getAttribute('data-id'));
         if (!isNaN(id) && id >= 0 && id < selectedLabels.length) {
@@ -387,27 +411,123 @@ if (labelsList) {
     });
 }
 
+function getMenuOptions() {
+    return menu ? Array.from(menu.querySelectorAll('[role="option"]')) : [];
+}
+
+function setLabelOptionSelected(labelId, isSelected) {
+    const option = getMenuOptions().find(item => item.dataset.id === String(labelId));
+    if (option) option.setAttribute('aria-selected', String(isSelected));
+}
+
+function closeLabelMenu(restoreFocus = false) {
+    if (!menu) return;
+    menu.classList.remove('open');
+    labelMenuButton?.setAttribute('aria-expanded', 'false');
+    if (restoreFocus) labelMenuButton?.focus();
+}
+
+function openLabelMenu() {
+    if (!menu) return;
+    menu.classList.add('open');
+    labelMenuButton?.setAttribute('aria-expanded', 'true');
+
+    const options = getMenuOptions();
+    const selectedOption = options.find(option => option.getAttribute('aria-selected') === 'true');
+    (selectedOption || options[0])?.focus();
+}
+
+if (menu) {
+    getMenuOptions().forEach(option => {
+        const id = Number.parseInt(option.dataset.id, 10);
+        option.setAttribute('aria-selected', String(Number.isInteger(id) && Boolean(selectedLabels[id])));
+    });
+
+    menu.addEventListener('click', event => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const option = target.closest('[role="option"]');
+        if (!option || !menu.contains(option)) return;
+
+        toggleLabelUI(option.dataset.id, option.textContent.trim());
+        option.focus();
+    });
+
+    menu.addEventListener('keydown', event => {
+        const options = getMenuOptions();
+        if (!options.length) return;
+
+        const index = options.indexOf(document.activeElement);
+        let nextIndex;
+
+        switch (event.key) {
+            case 'ArrowDown':
+                nextIndex = index < 0 ? 0 : (index + 1) % options.length;
+                break;
+            case 'ArrowUp':
+                nextIndex = index <= 0 ? options.length - 1 : index - 1;
+                break;
+            case 'Home':
+                nextIndex = 0;
+                break;
+            case 'End':
+                nextIndex = options.length - 1;
+                break;
+            case 'Enter':
+            case ' ':
+                event.preventDefault();
+                if (index >= 0) {
+                    const option = options[index];
+                    toggleLabelUI(option.dataset.id, option.textContent.trim());
+                }
+                return;
+            case 'Escape':
+                event.preventDefault();
+                closeLabelMenu(true);
+                return;
+            case 'Tab':
+                closeLabelMenu();
+                return;
+            default:
+                return;
+        }
+
+        event.preventDefault();
+        options[nextIndex]?.focus();
+    });
+}
+
 function toggleDropdown(event) {
+    if (!menu) return;
     if (event) event.stopPropagation();
-    menu.classList.toggle("open");
+    if (menu.classList.contains('open')) {
+        closeLabelMenu();
+    } else {
+        openLabelMenu();
+    }
 }
 
 function toggleLabelUI(labelId, labelName) {
+    if (!labelsList) return;
+    
     labelId = parseInt(labelId);
     selectedLabels[0] = true;
 
-
-    if ( !selectedLabels[labelId] ) {
+    if (!selectedLabels[labelId]) {
         selectedLabels[labelId] = true;
         renderLabel(labelId, labelName);
     } else {
         selectedLabels[labelId] = false;
-        const elementToRemove = document.querySelector(`.fr-label-item[data-id="${labelId}"]`);
+        const elementToRemove = document.querySelector(
+            `.fr-label-item[data-id="${labelId}"]`);
         if (elementToRemove) elementToRemove.remove();
     }
+    setLabelOptionSelected(labelId, selectedLabels[labelId]);
 }
 
 function renderLabel(id, name) {
+    if (!labelsList) return;
+    
     const div = document.createElement('div');
     div.className = 'fr-label-item';
     div.setAttribute('data-id', id);
@@ -416,6 +536,8 @@ function renderLabel(id, name) {
 }
 
 async function saveAllLabels(bookId) {
+    if (!labelsList) return;
+    
     const url = `/library/book/${bookId}/labels`;
     const response = await fetch(url, {
         method: "PUT",
@@ -425,11 +547,12 @@ async function saveAllLabels(bookId) {
     return response;
 }
 
-// Clouse dropdown when clicking outside
-window.onclick = function(event) {
-    if (!event.target.matches('.fr-btn-with-icon') && !event.target.closest('.fr-btn-with-icon')) {
-        if (menu.classList.contains('open')) {
-            menu.classList.remove('open');
+if (menu) {
+    window.addEventListener('click', event => {
+        const target = event.target;
+        if (!(target instanceof Node)) return;
+        if (!menu.contains(target) && !labelMenuButton?.contains(target)) {
+            closeLabelMenu();
         }
-    }
+    });
 }

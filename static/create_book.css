@@ -63,6 +63,23 @@
     display: flex;
     justify-content: space-between;
     padding-top: 20px;
+    gap: 10px;
+}
+
+.cb-editor-message {
+    margin: 12px auto;
+    padding: 8px 12px;
+    width: 95%;
+}
+
+.cb-editor-message--success {
+    background-color: var(--neutral-1-color);
+    color: var(--secondary-color);
+}
+
+.cb-editor-message--error {
+    background-color: var(--neutral-1-color);
+    color: var(--error-color);
 }
 
 /*
@@ -99,9 +116,41 @@
 */
 
 .cb-year-and-labels {
+    display: flex;
+    flex-direction: row;
     align-items: center;
-    display: inline-block;
-    gap: 10px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.cb-year-and-labels .fr-label-dropdown {
+    flex-shrink: 0;
+}
+
+.cb-year-and-labels .fr-input-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    width: auto;
+    flex-shrink: 0;
+    margin-bottom: 0;
+}
+
+.cb-year-and-labels .fr-input-container label {
+    display: inline;
+    white-space: nowrap;
+    margin-bottom: 0;
+}
+
+.cb-year-and-labels input[type="number"] {
+    width: 80px;
+    margin-bottom: 0;
+}
+
+.cb-year-and-labels .fr-label-list {
+    width: 100%;
+    margin-top: 4px;
 }
 
 .cb-textarea-description {
@@ -139,4 +188,83 @@
     color: var(--primary-color);
     font-size: var(--font-size-sm);
     font-weight: 500;
+}
+
+/*
+|-----------------------------------------------------------
+| || 5. MOBILE
+|-----------------------------------------------------------
+*/
+
+@media (max-width: 700px) {
+
+    .cb-book-editor-form {
+        grid-template-areas:
+            "photo"
+            "info"
+            "description"
+            "content"
+            "actions";
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding-bottom: 30px;
+    }
+
+    .cb-editor-photo-upload {
+        align-items: center;
+        width: 100%;
+    }
+
+    .cb-photo-placeholder {
+        width: 168px;
+        height: 190px;
+        margin: 0 auto 10px auto;
+    }
+
+    .cb-editor-info-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .cb-year-and-labels {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .cb-year-and-labels .fr-input-container {
+        width: 80px;
+        flex-shrink: 0;
+    }
+
+    .cb-year-and-labels input[type="number"] {
+        width: 80px;
+    }
+
+    .fr-label-list {
+        margin-top: 8px;
+    }
+
+    .cb-editor-info-grid .fr-input-container {
+        width: 100%;
+    }
+
+    .cb-editor-info-grid .fr-form-input {
+        width: 100%;
+    }
+
+    .cb-textarea-description {
+        min-height: 100px;
+    }
+
+    .fr-chapters-section {
+        width: 100%;
+        margin: 0;
+    }
+
+    #publication-year-container {
+        width: auto;
+    }
 }

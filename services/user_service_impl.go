@@ -17,6 +17,7 @@ func NewUserServiceImpl(collection *gorm.DB, ctx context.Context) UserService {
 	return &UserServiceImpl{collection, ctx}
 }
 
+// FindUserById retrieves a user by their ID from the database.
 func (us *UserServiceImpl) FindUserById(id uint) (*models.User, error) {
 	var user *models.User
 	if err := us.collection.WithContext(us.ctx).Where("id = ?", id).First(&user).Error; err != nil {
@@ -25,6 +26,7 @@ func (us *UserServiceImpl) FindUserById(id uint) (*models.User, error) {
 	return user, nil
 }
 
+// FindUserByEmail retrieves a user by their email from the database.
 func (us *UserServiceImpl) FindUserByEmail(email string) (*models.User, error) {
 	var user *models.User
 	if err := us.collection.WithContext(us.ctx).Where("email = ?", email).First(&user).Error; err != nil {
@@ -33,6 +35,8 @@ func (us *UserServiceImpl) FindUserByEmail(email string) (*models.User, error) {
 	return user, nil
 }
 
+// AddBookToFavoriteBooks adds a book to the user's favorite books list.
+// If the book is already in the list, it removes it instead.
 func (us *UserServiceImpl) AddBookToFavoriteBooks(id, bookId uint) error {
 	var user models.User
 
@@ -60,6 +64,7 @@ func (us *UserServiceImpl) AddBookToFavoriteBooks(id, bookId uint) error {
 	return association.Append(&book)
 }
 
+// SaveBooksMark saves the user's reading progress for a specific book and chapter.
 func (us *UserServiceImpl) SaveBooksMark(userId uint, bookId uint, chapterID uint, lastIndex uint) error {
 	progress := models.ReadingProgress{
 		UserID:    userId,
@@ -80,6 +85,7 @@ func (us *UserServiceImpl) SaveBooksMark(userId uint, bookId uint, chapterID uin
 	return nil
 }
 
+// GetBooksMark retrieves the user's reading progress for a specific book.
 func (us *UserServiceImpl) GetBooksMark(userId uint, bookId uint) *models.ReadingProgress {
 	var progress = models.NewReadingProgress()
 	us.collection.WithContext(us.ctx).Where("user_id = ? AND book_id = ?", userId, bookId).Limit(1).Find(progress)
@@ -93,6 +99,13 @@ func (us *UserServiceImpl) IsBookFavorited(userID uint, bookId uint) (bool, erro
 		return false, ErrNotFound("User", err)
 	}
 
-	count := us.collection.Model(&user).Where("id = ?", bookId).Association("FavoriteBooks").Count()
+	var count int64
+	if err := us.collection.WithContext(us.ctx).
+		Table("user_favorites").
+		Where("user_id = ? AND book_id = ?", userID, bookId).
+		Count(&count).Error; err != nil {
+		return false, ErrDomainWithMsg("failed to check book favourite status", err)
+	}
+
 	return count > 0, nil
 }
